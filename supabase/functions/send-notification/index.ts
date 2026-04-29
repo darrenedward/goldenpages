@@ -49,7 +49,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Golden Pages <noreply@goldenpages.newworldalliances.nz>',
+        from: 'Golden Pages <noreply@mail.goldenpages.newworldalliances.nz>',
         to: [to],
         subject,
         html: htmlBody,
