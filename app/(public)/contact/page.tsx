@@ -4,15 +4,26 @@ import { useState } from 'react';
 import { Mail, MapPin, Globe2, Send, CheckCircle2 } from 'lucide-react';
 import { ScrollReveal } from '@/components/shared/ScrollReveal';
 import { GlowCard } from '@/components/shared/GlowCard';
+import { contactService } from '@/services/contactService';
+import toast from 'react-hot-toast';
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Wire to actual email/API endpoint
-    setSubmitted(true);
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      await contactService.submit(formData);
+      setSubmitted(true);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to send message. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -157,10 +168,11 @@ export default function ContactPage() {
 
                 <button
                   type="submit"
-                  className="flex items-center gap-2 px-6 py-3 bg-gold-600 text-white rounded-2xl font-bold hover:bg-gold-700 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  disabled={submitting}
+                  className="flex items-center gap-2 px-6 py-3 bg-gold-600 text-white rounded-2xl font-bold hover:bg-gold-700 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Send size={16} />
-                  Send Message
+                  {submitting ? 'Sending...' : 'Send Message'}
                 </button>
               </form>
             )}

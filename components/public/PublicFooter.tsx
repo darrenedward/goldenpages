@@ -1,8 +1,34 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { DotGrid } from '@/components/shared/DotGrid';
+import { contactService } from '@/services/contactService';
+import toast from 'react-hot-toast';
 
 export default function PublicFooter() {
+  const [email, setEmail] = useState('');
+  const [subscribed, setSubscribed] = useState(false);
+  const [subscribing, setSubscribing] = useState(false);
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !email.includes('@')) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+    setSubscribing(true);
+    try {
+      await contactService.subscribeNewsletter(email);
+      setSubscribed(true);
+      toast.success('Subscribed! You\'ll receive updates on human rights accountability.');
+    } catch {
+      toast.error('Failed to subscribe. Please try again.');
+    } finally {
+      setSubscribing(false);
+    }
+  };
+
   return (
     <>
       {/* Gradient top border */}
@@ -89,16 +115,27 @@ export default function PublicFooter() {
                 </a>
               </div>
               <p className="text-stone-400 text-xs mb-3">Stay updated on human rights accountability</p>
-              <div className="flex gap-2">
-                <input
-                  type="email"
-                  placeholder="your@email.com"
-                  className="flex-1 min-w-0 px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-xs text-white placeholder:text-stone-600 focus:outline-none focus:ring-1 focus:ring-gold-500"
-                />
-                <button className="px-3 py-2 bg-gold-600 text-white rounded-xl text-xs font-bold hover:bg-gold-700 transition-all whitespace-nowrap">
-                  Subscribe
-                </button>
-              </div>
+              {subscribed ? (
+                <p className="text-emerald-400 text-xs font-bold">Subscribed!</p>
+              ) : (
+                <form onSubmit={handleSubscribe} className="flex gap-2">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    required
+                    className="flex-1 min-w-0 px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-xs text-white placeholder:text-stone-600 focus:outline-none focus:ring-1 focus:ring-gold-500"
+                  />
+                  <button
+                    type="submit"
+                    disabled={subscribing}
+                    className="px-3 py-2 bg-gold-600 text-white rounded-xl text-xs font-bold hover:bg-gold-700 transition-all whitespace-nowrap disabled:opacity-50"
+                  >
+                    {subscribing ? '...' : 'Subscribe'}
+                  </button>
+                </form>
+              )}
             </div>
           </div>
 

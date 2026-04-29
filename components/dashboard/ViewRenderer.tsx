@@ -18,6 +18,7 @@ import CommunicationDetail from '@/components/communications/CommunicationDetail
 import CreateCommunicationForm from '@/components/communications/CreateCommunicationForm';
 import PublicCommunicationBrowser from '@/components/communications/PublicCommunicationBrowser';
 import AdminPanel from './AdminPanel';
+import SettingsPanel from './SettingsPanel';
 import IssueCategoryManager from '@/components/admin/IssueCategoryManager';
 import type { DashboardState } from './useDashboardState';
 
@@ -233,6 +234,9 @@ export default function ViewRenderer({ state }: ViewRendererProps) {
 
     case 'admin-categories':
       return <IssueCategoryManager />;
+
+    case 'settings':
+      return <SettingsPanel />;
 
     default:
       return (

@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { AlertTriangle, Wheat, Droplets, Heart, Globe2, Users, ShieldCheck, Gavel, Eye, CheckCircle2, Upload, FileText, type LucideIcon } from 'lucide-react';
 import { issueCategoryService, type IssueCategory } from '@/services/issueCategoryService';
+import { reportService } from '@/services/reportService';
+import toast from 'react-hot-toast';
 
 // Map icon names to lucide components
 const ICON_MAP: Record<string, LucideIcon> = {
@@ -51,6 +53,7 @@ interface FormData {
 
 export default function ReportPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [categories, setCategories] = useState<DisplayCategory[]>(FALLBACK_CATEGORIES);
   const [formData, setFormData] = useState<FormData>({
     firstName: '',
@@ -89,11 +92,18 @@ export default function ReportPage() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Wire to Supabase or API endpoint
-    console.log('Report submitted:', formData);
-    setSubmitted(true);
+    if (submitting) return;
+    setSubmitting(true);
+    try {
+      await reportService.submitReport(formData);
+      setSubmitted(true);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to submit report. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -116,7 +126,7 @@ export default function ReportPage() {
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <button
-              onClick={() => { setSubmitted(false); setFormData({ firstName: '', lastName: '', email: '', category: '', urgency: '', organizationName: '', country: '', subject: '', description: '', anonymous: false }); }}
+              onClick={() => { setSubmitted(false); setSubmitting(false); setFormData({ firstName: '', lastName: '', email: '', category: '', urgency: '', organizationName: '', country: '', subject: '', description: '', anonymous: false }); }}
               className="px-6 py-3 bg-gold-600 text-white rounded-2xl font-bold hover:bg-gold-700 transition-all"
             >
               Submit Another Report
@@ -384,10 +394,11 @@ export default function ReportPage() {
         <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
           <button
             type="submit"
-            className={`w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 bg-gold-600 text-white rounded-2xl font-bold hover:bg-gold-700 hover:scale-[1.02] active:scale-[0.98] transition-all text-base ${formData.category && formData.urgency && formData.subject && formData.description ? 'animate-pulse-glow' : ''}`}
+            disabled={submitting}
+            className={`w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 bg-gold-600 text-white rounded-2xl font-bold hover:bg-gold-700 hover:scale-[1.02] active:scale-[0.98] transition-all text-base disabled:opacity-50 disabled:cursor-not-allowed ${formData.category && formData.urgency && formData.subject && formData.description ? 'animate-pulse-glow' : ''}`}
           >
             <AlertTriangle size={18} />
-            Submit Report
+            {submitting ? 'Submitting...' : 'Submit Report'}
           </button>
           <p className="text-xs text-stone-400 text-center sm:text-left">
             By submitting, you confirm that the information provided is truthful to the best of your knowledge.

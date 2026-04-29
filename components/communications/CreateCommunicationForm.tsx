@@ -3,6 +3,7 @@
 import React, { useState, useRef } from 'react';
 import { ArrowLeft, Upload, X, Eye, EyeOff, AlertTriangle } from 'lucide-react';
 import { communicationService } from '@/services/communicationService';
+import { useAuth } from '@/lib/authContext';
 import type { CommunicationType, Contact, Department, Organization } from '@/types';
 import BreadcrumbNav from '@/components/shared/BreadcrumbNav';
 import { CategoryAutocomplete } from '@/components/shared/CategoryAutocomplete';
@@ -30,6 +31,7 @@ export default function CreateCommunicationForm({
   onSubmit,
   onCancel,
 }: CreateCommunicationFormProps) {
+  const { user } = useAuth();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [communicationType, setCommunicationType] = useState<CommunicationType>('letter');
@@ -95,7 +97,7 @@ export default function CreateCommunicationForm({
           isApproved,
           senderOrganisation: senderOrganisation.trim() || undefined,
         },
-        contact.id // TODO: use actual userId from auth context
+        user?.id || contact.id
       );
 
       // Upload files
@@ -105,7 +107,7 @@ export default function CreateCommunicationForm({
           file,
           'sent',
           filePublic,
-          contact.id // TODO: use actual userId
+          user?.id || contact.id
         );
       }
 
