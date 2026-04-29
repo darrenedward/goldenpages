@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "postinstall": "prisma generate",
+    "postinstall": "prisma generate || true",
     "start": "next start",
     "lint": "next lint",
     "check": "npm run lint && tsc --noEmit",
