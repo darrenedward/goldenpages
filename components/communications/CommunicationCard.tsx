@@ -85,6 +85,11 @@ export default function CommunicationCard({ communication, onClick, isPublicView
 
           {/* Meta row */}
           <div className="flex items-center gap-4">
+            {(communication.issueCategory || communication.category) && (
+              <span className="px-2 py-0.5 bg-gold-50 dark:bg-gold-900/20 text-gold-700 dark:text-gold-400 rounded-full text-xs font-bold">
+                {communication.issueCategory?.name || communication.category}
+              </span>
+            )}
             <StatusBadge status={communication.status} size="sm" />
             <div className="flex items-center gap-3 text-xs text-stone-400">
               <span className="flex items-center gap-1">

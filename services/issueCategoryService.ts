@@ -103,4 +103,34 @@ export const issueCategoryService = {
       .replace(/[^a-z0-9]+/g, '_')
       .replace(/^_|_$/g, '');
   },
+
+  titleCase(input: string): string {
+    return input
+      .split(/\s+/)
+      .filter(Boolean)
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  },
+
+  async getOrCreate(name: string): Promise<IssueCategory> {
+    const normalizedName = this.titleCase(name.trim());
+    const slug = this.slugify(normalizedName);
+
+    // Try to find existing
+    const { data: existing } = await supabase
+      .from('issue_categories')
+      .select('*')
+      .eq('slug', slug)
+      .single();
+
+    if (existing) return existing as IssueCategory;
+
+    // Create new
+    return this.create({
+      name: normalizedName,
+      slug,
+      icon: 'AlertTriangle',
+      sortOrder: 999,
+    });
+  },
 };

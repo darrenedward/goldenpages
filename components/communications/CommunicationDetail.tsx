@@ -171,11 +171,11 @@ export default function CommunicationDetail({ communicationId, onBack, onChangeV
         </div>
 
         {/* Tags & category */}
-        {(communication.category || communication.tags.length > 0) && (
+        {(communication.issueCategory || communication.category || communication.tags.length > 0) && (
           <div className="flex items-center gap-2 mt-4">
-            {communication.category && (
+            {(communication.issueCategory || communication.category) && (
               <span className="px-2 py-1 bg-gold-50 text-gold-700 rounded-full text-xs font-bold">
-                {communication.category}
+                {communication.issueCategory?.name || communication.category}
               </span>
             )}
             {communication.tags.map(tag => (

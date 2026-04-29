@@ -677,6 +677,7 @@ model Communication {
   departmentId        String?              @map("department_id")
   organisationId      String?              @map("organisation_id")
   category            String?              @db.VarChar(100)
+  categoryId          String?              @map("category_id")
   tags                String[]             @default([])
   expectedResponseDate DateTime?           @map("expected_response_date")
   respondedAt         DateTime?            @map("responded_at")
@@ -693,6 +694,7 @@ model Communication {
   organisation        Organisation?        @relation(fields: [organisationId], references: [id])
   createdBy           User                 @relation("CommunicationCreator", fields: [createdById], references: [id])
   documents           CommunicationDocument[]
+  issueCategory       IssueCategory?       @relation(fields: [categoryId], references: [id])
 
   @@index([contactId])
   @@index([departmentId])
@@ -741,6 +743,8 @@ model IssueCategory {
   isActive    Boolean  @default(true) @map("is_active")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
+
+  communications     Communication[]
 
   @@map("issue_categories")
 }

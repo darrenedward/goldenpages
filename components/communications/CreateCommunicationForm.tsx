@@ -5,6 +5,7 @@ import { ArrowLeft, Upload, X, Eye, EyeOff, AlertTriangle } from 'lucide-react';
 import { communicationService } from '@/services/communicationService';
 import type { CommunicationType, Contact, Department, Organization } from '@/types';
 import BreadcrumbNav from '@/components/shared/BreadcrumbNav';
+import { CategoryAutocomplete } from '@/components/shared/CategoryAutocomplete';
 import { toast } from 'react-hot-toast';
 
 interface CreateCommunicationFormProps {
@@ -33,6 +34,7 @@ export default function CreateCommunicationForm({
   const [description, setDescription] = useState('');
   const [communicationType, setCommunicationType] = useState<CommunicationType>('letter');
   const [category, setCategory] = useState('');
+  const [categoryId, setCategoryId] = useState<string | undefined>(undefined);
   const [tagsInput, setTagsInput] = useState('');
   const [expectedResponseDate, setExpectedResponseDate] = useState('');
   const [senderOrganisation, setSenderOrganisation] = useState('');
@@ -86,6 +88,7 @@ export default function CreateCommunicationForm({
           departmentId,
           organisationId,
           category: category.trim() || undefined,
+          categoryId: categoryId || undefined,
           tags: tagsInput.trim() ? tagsInput.split(',').map(t => t.trim()).filter(Boolean) : [],
           expectedResponseDate: expectedResponseDate || undefined,
           isPublic,
@@ -197,12 +200,13 @@ export default function CreateCommunicationForm({
             {/* Category */}
             <div>
               <label className="block text-sm font-bold text-stone-600 mb-1">Category</label>
-              <input
-                type="text"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
+              <CategoryAutocomplete
+                value={categoryId || ''}
+                onChange={(id, name) => {
+                  setCategoryId(id);
+                  setCategory(name);
+                }}
                 placeholder="e.g., Health, Finance, FOIA"
-                className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl focus:outline-none focus:ring-2 focus:ring-gold-500"
               />
             </div>
 

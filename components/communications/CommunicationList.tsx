@@ -54,11 +54,12 @@ export default function CommunicationList({
       if (organisationId) filters.organisationId = organisationId;
       if (isPublicView) filters.isPublic = true;
 
-      const data = isPublicView
+      const result = isPublicView
         ? await communicationService.getPublicCommunications(filters as { organisationId?: string; departmentId?: string })
         : await communicationService.getCommunications(filters as Parameters<typeof communicationService.getCommunications>[0]);
 
-      setCommunications(data);
+      // getPublicCommunications returns { data, totalCount }, getCommunications returns array
+      setCommunications(Array.isArray(result) ? result : result.data);
     } catch (err) {
       console.error('Failed to fetch communications:', err);
     } finally {

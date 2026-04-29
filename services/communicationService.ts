@@ -50,6 +50,7 @@ class CommunicationService {
         department_id: input.departmentId || null,
         organisation_id: input.organisationId || null,
         category: input.category || null,
+        category_id: input.categoryId || null,
         tags: input.tags || [],
         expected_response_date: input.expectedResponseDate || null,
         is_public: input.isPublic,
@@ -120,7 +121,28 @@ class CommunicationService {
   async getPublicCommunications(filters: {
     organisationId?: string;
     departmentId?: string;
-  }): Promise<CommunicationWithDetails[]> {
+    categoryId?: string;
+    page?: number;
+    pageSize?: number;
+  }): Promise<{ data: CommunicationWithDetails[]; totalCount: number }> {
+    const page = filters.page ?? 0;
+    const pageSize = filters.pageSize ?? 20;
+
+    // Count query
+    let countQuery = supabase
+      .from('communications')
+      .select('id', { count: 'exact', head: true })
+      .eq('is_public', true)
+      .eq('is_approved', true);
+
+    if (filters.organisationId) countQuery = countQuery.eq('organisation_id', filters.organisationId);
+    if (filters.departmentId) countQuery = countQuery.eq('department_id', filters.departmentId);
+    if (filters.categoryId) countQuery = countQuery.eq('category_id', filters.categoryId);
+
+    const { count, error: countError } = await countQuery;
+    if (countError) throw countError;
+
+    // Data query
     let query = supabase
       .from('communications')
       .select(`
@@ -128,23 +150,29 @@ class CommunicationService {
         contact:contacts(id, fullName, roleTitle),
         department:departments(id, name, portfolio),
         organisation:organisations(id, name),
-        documents:communication_documents(*)
+        documents:communication_documents(*),
+        issueCategory:issue_categories(id, name, slug, icon)
       `)
       .eq('is_public', true)
-      .order('created_at', { ascending: false });
+      .eq('is_approved', true)
+      .order('created_at', { ascending: false })
+      .range(page * pageSize, (page + 1) * pageSize - 1);
 
     if (filters.organisationId) query = query.eq('organisation_id', filters.organisationId);
     if (filters.departmentId) query = query.eq('department_id', filters.departmentId);
+    if (filters.categoryId) query = query.eq('category_id', filters.categoryId);
 
     const { data, error } = await query;
     if (error) throw error;
 
-    return (data || []).map((row: Record<string, unknown>) => {
-      const mapped = this.mapCommunicationWithDetails(row);
+    const mapped = (data || []).map((row: Record<string, unknown>) => {
+      const result = this.mapCommunicationWithDetails(row);
       // Filter out private documents for public view
-      mapped.documents = mapped.documents?.filter(d => d.isPublic) || [];
-      return mapped;
+      result.documents = result.documents?.filter(d => d.isPublic) || [];
+      return result;
     });
+
+    return { data: mapped, totalCount: count ?? 0 };
   }
 
   // ==========================================================================
@@ -291,6 +319,7 @@ class CommunicationService {
       departmentId: row.department_id as string | undefined,
       organisationId: row.organisation_id as string | undefined,
       category: row.category as string | undefined,
+      categoryId: row.category_id as string | undefined,
       tags: (row.tags as string[]) || [],
       expectedResponseDate: row.expected_response_date as string | undefined,
       respondedAt: row.responded_at as string | undefined,
@@ -333,6 +362,7 @@ class CommunicationService {
       department: row.department as CommunicationWithDetails['department'],
       organisation: row.organisation as CommunicationWithDetails['organisation'],
       documents,
+      issueCategory: row.issueCategory as CommunicationWithDetails['issueCategory'],
     };
   }
 }

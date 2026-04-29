@@ -222,6 +222,7 @@ export interface Communication {
   departmentId?: string;
   organisationId?: string;
   category?: string;
+  categoryId?: string;
   tags: string[];
   expectedResponseDate?: string;
   respondedAt?: string;
@@ -239,6 +240,7 @@ export interface CommunicationWithDetails extends Communication {
   department?: { id: string; name: string; portfolio: string };
   organisation?: { id: string; name: string };
   documents?: CommunicationDocument[];
+  issueCategory?: { id: string; name: string; slug: string; icon: string | null };
 }
 
 export interface CommunicationDocument {
@@ -264,6 +266,7 @@ export interface CreateCommunicationInput {
   departmentId?: string;
   organisationId?: string;
   category?: string;
+  categoryId?: string;
   tags?: string[];
   expectedResponseDate?: string;
   isPublic: boolean;
