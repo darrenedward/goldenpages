@@ -9,6 +9,9 @@
  */
 
 import { supabase } from './supabaseClient';
+import { activityLogService } from './activityLogService';
+import { communicationMemberService } from './communicationMemberService';
+import { notificationService } from './notificationService';
 import type {
   Communication,
   CommunicationWithDetails,
@@ -62,7 +65,22 @@ class CommunicationService {
       .single();
 
     if (error) throw error;
-    return this.mapCommunication(data);
+    const communication = this.mapCommunication(data);
+
+    // Create owner membership
+    await communicationMemberService.addMember(
+      communication.id,
+      userId,
+      'owner',
+      userId
+    ).catch(() => {
+      // If membership already exists from trigger, ignore
+    });
+
+    // Log creation
+    await activityLogService.log(communication.id, userId, 'communication:created');
+
+    return communication;
   }
 
   // ==========================================================================
@@ -182,7 +200,7 @@ class CommunicationService {
   async updateCommunicationStatus(
     id: string,
     status: CommunicationStatus,
-    _userId: string
+    userId: string
   ): Promise<Communication> {
     const updates: Record<string, unknown> = {
       status,
@@ -204,7 +222,33 @@ class CommunicationService {
       .single();
 
     if (error) throw error;
-    return this.mapCommunication(data);
+    const communication = this.mapCommunication(data);
+
+    // Log status change
+    await activityLogService.log(id, userId, 'communication:status_changed', {
+      from: communication.status,
+      to: status,
+    });
+
+    // Notify all members except the one who changed it
+    try {
+      const members = await communicationMemberService.getMembers(id);
+      const otherMembers = members.filter(m => m.userId !== userId);
+      for (const member of otherMembers) {
+        await notificationService.createNotification(
+          member.userId,
+          'communication_status_changed',
+          `Status changed to ${status}`,
+          `The status of "${communication.title}" was changed to ${status}.`,
+          id,
+          { status, changedBy: userId }
+        );
+      }
+    } catch {
+      // Notification failure is non-blocking
+    }
+
+    return communication;
   }
 
   // ==========================================================================
@@ -255,7 +299,34 @@ class CommunicationService {
       .single();
 
     if (error) throw error;
-    return this.mapDocument(data);
+    const doc = this.mapDocument(data);
+
+    // Log upload
+    await activityLogService.log(communicationId, userId, 'communication:document_uploaded', {
+      filename: file.name,
+      documentType,
+      isPublic,
+    });
+
+    // Notify members
+    try {
+      const members = await communicationMemberService.getMembers(communicationId);
+      const otherMembers = members.filter(m => m.userId !== userId);
+      for (const member of otherMembers) {
+        await notificationService.createNotification(
+          member.userId,
+          'communication_document_uploaded',
+          'New document uploaded',
+          `A document "${file.name}" was uploaded.`,
+          communicationId,
+          { filename: file.name, uploadedBy: userId }
+        );
+      }
+    } catch {
+      // Notification failure is non-blocking
+    }
+
+    return doc;
   }
 
   async deleteDocument(documentId: string): Promise<void> {

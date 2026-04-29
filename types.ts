@@ -273,3 +273,60 @@ export interface CreateCommunicationInput {
   isApproved: boolean;
   senderOrganisation?: string;
 }
+
+// ============================================================================
+// COLLABORATION TYPES
+// ============================================================================
+
+export type CommunicationMemberRole = 'owner' | 'assignee' | 'collaborator';
+
+export interface CommunicationMember {
+  id: string;
+  communicationId: string;
+  userId: string;
+  role: CommunicationMemberRole;
+  invitedBy: string;
+  joinedAt: string;
+  user?: {
+    id: string;
+    email: string;
+    displayName: string | null;
+  };
+}
+
+export type NotificationType =
+  | 'communication_assigned'
+  | 'communication_invited'
+  | 'communication_status_changed'
+  | 'communication_document_uploaded'
+  | 'communication_updated'
+  | 'communication_member_added'
+  | 'communication_member_removed';
+
+export interface AppNotification {
+  id: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  isRead: boolean;
+  readAt: string | null;
+  resourceId: string | null;
+  metadata: Record<string, unknown> | null;
+  createdAt: string;
+}
+
+export interface ActivityLogEntry {
+  id: string;
+  userId: string;
+  action: string;
+  resourceType: string;
+  resourceId: string | null;
+  changes: Record<string, unknown> | null;
+  createdAt: string;
+  user?: {
+    id: string;
+    email: string;
+    displayName: string | null;
+  };
+}

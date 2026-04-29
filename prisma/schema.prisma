@@ -182,6 +182,22 @@ enum CommunicationDocumentType {
   received
 }
 
+enum CommunicationMemberRole {
+  owner
+  assignee
+  collaborator
+}
+
+enum NotificationType {
+  communication_assigned
+  communication_invited
+  communication_status_changed
+  communication_document_uploaded
+  communication_updated
+  communication_member_added
+  communication_member_removed
+}
+
 // ============================================================================
 // CORE DATA TABLES
 // ============================================================================
@@ -518,9 +534,10 @@ model SubPackageResponse {
 // ============================================================================
 
 model User {
-  id        String   @id @default(uuid()) @map("id") // Supabase auth.users id
-  email     String   @unique
-  createdAt DateTime @default(now())
+  id          String   @id @default(uuid()) @map("id") // Supabase auth.users id
+  email       String   @unique
+  displayName String?  @map("display_name")
+  createdAt   DateTime @default(now())
 
   // Relationships
   roles         UserRoleAssignment[]
@@ -538,6 +555,11 @@ model User {
   uploadedDocuments  Document[]   @relation("DocumentCreator")
   createdCommunications    Communication[]         @relation("CommunicationCreator")
   uploadedCommunicationDocs CommunicationDocument[] @relation("CommunicationDocUploader")
+
+  // Collaboration
+  communicationMembers CommunicationMember[]
+  invitedMembers       CommunicationMember[]  @relation("MemberInviter")
+  notifications        Notification[]
 
   @@map("users")
 }
@@ -694,6 +716,7 @@ model Communication {
   organisation        Organisation?        @relation(fields: [organisationId], references: [id])
   createdBy           User                 @relation("CommunicationCreator", fields: [createdById], references: [id])
   documents           CommunicationDocument[]
+  members             CommunicationMember[]
   issueCategory       IssueCategory?       @relation(fields: [categoryId], references: [id])
 
   @@index([contactId])
@@ -750,8 +773,50 @@ model IssueCategory {
 }
 
 // ============================================================================
-// HELPER: Default permissions for each role (continued)
+// COLLABORATION: Communication Members
 // ============================================================================
+
+model CommunicationMember {
+  id              String                   @id @default(uuid())
+  communicationId String                   @map("communication_id")
+  userId          String                   @map("user_id")
+  role            CommunicationMemberRole  @default(collaborator)
+  invitedBy       String                   @map("invited_by")
+  joinedAt        DateTime                 @default(now()) @map("joined_at")
+
+  communication Communication @relation(fields: [communicationId], references: [id], onDelete: Cascade)
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  inviter       User          @relation("MemberInviter", fields: [invitedBy], references: [id])
+
+  @@unique([communicationId, userId])
+  @@index([communicationId])
+  @@index([userId])
+  @@map("communication_members")
+}
+
+// ============================================================================
+// NOTIFICATIONS
+// ============================================================================
+
+model Notification {
+  id         String           @id @default(uuid())
+  userId     String           @map("user_id")
+  type       NotificationType
+  title      String           @db.VarChar(255)
+  message    String           @db.Text
+  isRead     Boolean          @default(false) @map("is_read")
+  readAt     DateTime?        @map("read_at")
+  resourceId String?          @map("resource_id")
+  metadata   Json?
+  createdAt  DateTime         @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}
 // These are seeded via SQL, not managed by Prisma
 //
 // Admin permissions (wildcard):
