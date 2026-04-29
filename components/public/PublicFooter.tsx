@@ -117,7 +117,7 @@ export default function PublicFooter() {
               </Link>
               <span className="text-stone-700 text-xs">&middot;</span>
               <p className="text-stone-600 text-xs font-medium">
-                Communication Division &middot; Golden Pages Directory
+                Golden Pages Directory &mdash; Division of New World Alliances Foundation
               </p>
             </div>
           </div>
