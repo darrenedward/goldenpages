@@ -232,7 +232,7 @@ export default function ReportPage() {
                 onClick={() => handleChange('category', cat.value)}
                 className={`text-left p-4 rounded-2xl border transition-all ${
                   formData.category === cat.value
-                    ? 'border-gold-500 bg-gold-50 dark:bg-gold-900/20 shadow-sm'
+                    ? 'border-gold-500 border-l-4 border-l-gold-500 bg-gold-50 dark:bg-gold-900/20 shadow-sm'
                     : 'border-stone-200 dark:border-white/5 hover:border-gold-300 hover:bg-stone-50 dark:hover:bg-white/5'
                 }`}
               >
@@ -270,10 +270,10 @@ export default function ReportPage() {
                 className={`text-left p-4 rounded-2xl border transition-all ${
                   formData.urgency === level.value
                     ? level.value === 'critical'
-                      ? 'border-red-500 bg-red-50 dark:bg-red-900/20'
+                      ? 'border-red-500 border-l-4 border-l-red-500 bg-red-50 dark:bg-red-900/20'
                       : level.value === 'urgent'
-                        ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20'
-                        : 'border-gold-500 bg-gold-50 dark:bg-gold-900/20'
+                        ? 'border-orange-500 border-l-4 border-l-orange-500 bg-orange-50 dark:bg-orange-900/20'
+                        : 'border-gold-500 border-l-4 border-l-gold-500 bg-gold-50 dark:bg-gold-900/20'
                     : 'border-stone-200 dark:border-white/5 hover:border-stone-300 dark:hover:border-white/10'
                 }`}
               >
@@ -384,7 +384,7 @@ export default function ReportPage() {
         <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
           <button
             type="submit"
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 bg-gold-600 text-white rounded-2xl font-bold hover:bg-gold-700 transition-all text-base"
+            className={`w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 bg-gold-600 text-white rounded-2xl font-bold hover:bg-gold-700 hover:scale-[1.02] active:scale-[0.98] transition-all text-base ${formData.category && formData.urgency && formData.subject && formData.description ? 'animate-pulse-glow' : ''}`}
           >
             <AlertTriangle size={18} />
             Submit Report
