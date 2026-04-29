@@ -1,279 +1,272 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Globe, Building2, Users, ChevronRight, Search } from 'lucide-react';
-import { supabase } from '@/services/supabaseClient';
+import React, { useState, useEffect, useCallback } from 'react';
 import { communicationService } from '@/services/communicationService';
-import type { CommunicationWithDetails, Organization } from '@/types';
+import { issueCategoryService, type IssueCategory } from '@/services/issueCategoryService';
+import { CategorySidebar } from './CategorySidebar';
 import CommunicationCard from './CommunicationCard';
-import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import EmptyState from '@/components/shared/EmptyState';
+import { ScrollReveal } from '@/components/shared/ScrollReveal';
+import { ChevronLeft, ChevronRight, Globe2 } from 'lucide-react';
+import type { CommunicationWithDetails } from '@/types';
 
 interface PublicCommunicationBrowserProps {
   onSelectCommunication: (id: string) => void;
 }
 
-type BrowseLevel = 'countries' | 'organisations' | 'communications';
+const PAGE_SIZE = 20;
 
-interface CountryWithCounts {
-  id: string;
-  name: string;
-  code: string;
-  organisationCount: number;
-  communicationCount: number;
+function SkeletonCard(): React.ReactNode {
+  return (
+    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-stone-200 dark:border-white/5 p-6 animate-pulse">
+      <div className="flex items-start gap-4">
+        <div className="w-10 h-10 bg-stone-100 dark:bg-stone-800 rounded-xl" />
+        <div className="flex-1 space-y-3">
+          <div className="h-5 bg-stone-100 dark:bg-stone-800 rounded-lg w-3/4" />
+          <div className="h-3 bg-stone-100 dark:bg-stone-800 rounded-lg w-1/2" />
+          <div className="h-3 bg-stone-100 dark:bg-stone-800 rounded-lg w-2/3" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function range(start: number, end: number): number[] {
+  return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+}
+
+function buildPageNumbers(current: number, totalPages: number): (number | 'ellipsis')[] {
+  if (totalPages <= 7) return range(0, totalPages - 1);
+
+  const pages: (number | 'ellipsis')[] = [0];
+
+  if (current <= 3) {
+    pages.push(...range(1, 4), 'ellipsis', totalPages - 1);
+  } else if (current >= totalPages - 4) {
+    pages.push('ellipsis', ...range(totalPages - 5, totalPages - 1));
+  } else {
+    pages.push('ellipsis', current - 1, current, current + 1, 'ellipsis', totalPages - 1);
+  }
+
+  return pages;
 }
 
 export default function PublicCommunicationBrowser({ onSelectCommunication }: PublicCommunicationBrowserProps) {
-  const [level, setLevel] = useState<BrowseLevel>('countries');
-  const [countries, setCountries] = useState<CountryWithCounts[]>([]);
-  const [organisations, setOrganisations] = useState<Organization[]>([]);
   const [communications, setCommunications] = useState<CommunicationWithDetails[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [page, setPage] = useState(0);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
-  const [selectedOrg, setSelectedOrg] = useState<Organization | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [categories, setCategories] = useState<IssueCategory[]>([]);
 
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+
+  // Fetch active categories for the mobile category bar
   useEffect(() => {
-    void fetchCountries();
+    void (async () => {
+      try {
+        const cats = await issueCategoryService.getActive();
+        setCategories(cats);
+      } catch {
+        // Keep empty state
+      }
+    })();
   }, []);
 
-  const fetchCountries = async () => {
+  // Fetch communications when category or page changes
+  const fetchCommunications = useCallback(async (categoryId: string | null, pageNum: number) => {
     setLoading(true);
     try {
-      // Get all organisations with their countries
-      const { data, error } = await supabase
-        .from('organisations')
-        .select('id, name, headOfficeCountryId, headOfficeCountry:regions!organisations_headOfficeCountryId_fkey(id, name, code)')
-        .order('name');
-
-      if (error) throw error;
-
-      // Group by country and count
-      const countryMap = new Map<string, CountryWithCounts>();
-      for (const org of data || []) {
-        const country = (Array.isArray(org.headOfficeCountry) ? org.headOfficeCountry[0] : org.headOfficeCountry) as { id: string; name: string; code: string } | null;
-        if (!country) continue;
-
-        if (!countryMap.has(country.id)) {
-          countryMap.set(country.id, {
-            id: country.id,
-            name: country.name,
-            code: country.code,
-            organisationCount: 0,
-            communicationCount: 0,
-          });
-        }
-        const entry = countryMap.get(country.id)!;
-        entry.organisationCount++;
-      }
-
-      // Get public communication counts per organisation
-      const { data: commData } = await supabase
-        .from('communications')
-        .select('organisation_id')
-        .eq('is_public', true);
-
-      if (commData) {
-        const orgCommCounts = new Map<string, number>();
-        for (const c of commData) {
-          if (c.organisation_id) {
-            orgCommCounts.set(c.organisation_id, (orgCommCounts.get(c.organisation_id) || 0) + 1);
-          }
-        }
-        // Aggregate to country level
-        for (const org of data || []) {
-          const count = orgCommCounts.get(org.id) || 0;
-          const country = (Array.isArray(org.headOfficeCountry) ? org.headOfficeCountry[0] : org.headOfficeCountry) as { id: string } | null;
-          if (country && countryMap.has(country.id)) {
-            countryMap.get(country.id)!.communicationCount += count;
-          }
-        }
-      }
-
-      setCountries(Array.from(countryMap.values()).sort((a, b) => a.name.localeCompare(b.name)));
-    } catch (err) {
-      console.error('Failed to fetch countries:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchOrganisations = async (countryId: string) => {
-    setLoading(true);
-    setSelectedCountry(countryId);
-    try {
-      const { data, error } = await supabase
-        .from('organisations')
-        .select('*')
-        .eq('headOfficeCountryId', countryId)
-        .order('name');
-
-      if (error) throw error;
-      setOrganisations(data || []);
-      setLevel('organisations');
-    } catch (err) {
-      console.error('Failed to fetch organisations:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchCommunications = async (org: Organization) => {
-    setLoading(true);
-    setSelectedOrg(org);
-    try {
-      const data = await communicationService.getPublicCommunications({
-        organisationId: org.id,
+      const result = await communicationService.getPublicCommunications({
+        ...(categoryId ? { categoryId } : {}),
+        page: pageNum,
+        pageSize: PAGE_SIZE,
       });
-      setCommunications(data);
-      setLevel('communications');
+      setCommunications(result.data);
+      setTotalCount(result.totalCount);
     } catch (err) {
       console.error('Failed to fetch communications:', err);
+      setCommunications([]);
+      setTotalCount(0);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const filteredCountries = countries.filter(c =>
-    c.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  useEffect(() => {
+    void fetchCommunications(selectedCategoryId, page);
+  }, [selectedCategoryId, page, fetchCommunications]);
 
-  const filteredOrgs = organisations.filter(o =>
-    o.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Reset page when category changes
+  const handleCategorySelect = useCallback((categoryId: string | null) => {
+    setSelectedCategoryId(categoryId);
+    setPage(0);
+  }, []);
 
-  if (loading) return <LoadingSpinner message="Loading public register..." />;
+  const goToPage = useCallback((p: number) => {
+    setPage(p);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  // Computed pagination display values
+  const showingFrom = totalCount === 0 ? 0 : page * PAGE_SIZE + 1;
+  const showingTo = Math.min((page + 1) * PAGE_SIZE, totalCount);
+  const pageNumbers = buildPageNumbers(page, totalPages);
 
   return (
-    <div className="p-6 bg-stone-50 min-h-screen">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="font-serif text-3xl text-slate-800 mb-2">Public Communication Register</h1>
-        <div className="h-1 bg-gradient-to-r from-gold-500 to-gold-600 rounded-full w-24 mb-4" />
-        <p className="text-stone-500 max-w-2xl">
-          Browse all publicly available communications between organizations and government departments.
-          Transparency in action.
-        </p>
-      </div>
-
-      {/* Search */}
-      <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-stone-200 dark:border-white/5 p-4 mb-6">
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
-          <input
-            type="text"
-            placeholder={level === 'countries' ? 'Search countries...' : level === 'organisations' ? 'Search organisations...' : 'Search communications...'}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold-500"
-          />
-        </div>
-      </div>
-
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 mb-6 text-sm">
-        <button
-          onClick={() => { setLevel('countries'); setSearchQuery(''); }}
-          className="text-gold-600 hover:underline"
-        >
-          Countries
-        </button>
-        {level === 'organisations' && selectedCountry && (
-          <>
-            <ChevronRight className="w-4 h-4 text-stone-300" />
-            <span className="text-stone-600">
-              {countries.find(c => c.id === selectedCountry)?.name}
-            </span>
-          </>
-        )}
-        {level === 'communications' && selectedOrg && (
-          <>
-            <ChevronRight className="w-4 h-4 text-stone-300" />
-            <button
-              onClick={() => { setLevel('organisations'); setSearchQuery(''); }}
-              className="text-gold-600 hover:underline"
-            >
-              {countries.find(c => c.id === selectedCountry)?.name}
-            </button>
-            <ChevronRight className="w-4 h-4 text-stone-300" />
-            <span className="text-stone-600">{selectedOrg.name}</span>
-          </>
-        )}
-      </div>
-
-      {/* Content */}
-      {level === 'countries' && (
-        filteredCountries.length === 0 ? (
-          <EmptyState title="No countries found" description="No organisations with public communications found" />
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredCountries.map(country => (
-              <button
-                key={country.id}
-                onClick={() => fetchOrganisations(country.id)}
-                className="text-left bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-stone-200 dark:border-white/5 p-6 hover:shadow-md hover:border-gold-300 transition-all"
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 bg-stone-100 dark:bg-stone-800 rounded-xl flex items-center justify-center text-gold-600">
-                    <Globe className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="font-serif text-lg font-bold text-slate-800 dark:text-white">{country.name}</h3>
-                    <p className="text-xs text-stone-400 uppercase">{country.code}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4 text-sm text-stone-500">
-                  <span>{country.organisationCount} org{country.organisationCount !== 1 ? 's' : ''}</span>
-                  <span>{country.communicationCount} communication{country.communicationCount !== 1 ? 's' : ''}</span>
-                </div>
-              </button>
-            ))}
-          </div>
-        )
-      )}
-
-      {level === 'organisations' && (
-        filteredOrgs.length === 0 ? (
-          <EmptyState title="No organisations found" description="No organisations in this country with public communications" />
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredOrgs.map(org => (
-              <button
-                key={org.id}
-                onClick={() => fetchCommunications(org)}
-                className="text-left bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-stone-200 dark:border-white/5 p-6 hover:shadow-md hover:border-gold-300 transition-all"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-stone-100 dark:bg-stone-800 rounded-xl flex items-center justify-center text-gold-600">
-                    <Building2 className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="font-serif text-lg font-bold text-slate-800 dark:text-white">{org.name}</h3>
-                    <p className="text-xs text-stone-400 capitalize">{org.type.replace('_', ' ')}</p>
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
-        )
-      )}
-
-      {level === 'communications' && (
-        communications.length === 0 ? (
-          <EmptyState title="No public communications" description={`No public communications found for ${selectedOrg?.name}`} />
-        ) : (
-          <div className="space-y-3">
-            {communications.map(comm => (
-              <CommunicationCard
-                key={comm.id}
-                communication={comm}
-                onClick={onSelectCommunication}
-                isPublicView
+    <ScrollReveal>
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Desktop sidebar */}
+        <aside className="hidden lg:block w-64 flex-shrink-0">
+          <div className="sticky top-24">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-stone-200 dark:border-white/5 p-4">
+              <h2 className="font-serif text-sm font-bold text-slate-800 dark:text-white mb-3 uppercase tracking-wider">
+                Categories
+              </h2>
+              <CategorySidebar
+                activeCategoryId={selectedCategoryId}
+                onSelectCategory={handleCategorySelect}
               />
+            </div>
+          </div>
+        </aside>
+
+        {/* Main content area */}
+        <main className="flex-1 min-w-0">
+          {/* Header */}
+          <div className="mb-6">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-10 h-10 bg-gold-50 dark:bg-gold-900/20 rounded-xl flex items-center justify-center text-gold-600">
+                <Globe2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h1 className="font-serif text-2xl font-bold text-slate-800 dark:text-white">
+                  Public Register
+                </h1>
+                <p className="text-xs text-stone-400">
+                  Approved public communications &middot; Transparency in action
+                </p>
+              </div>
+            </div>
+            <div className="h-0.5 bg-gradient-to-r from-gold-500 to-gold-600 rounded-full w-16 mt-3" />
+          </div>
+
+          {/* Mobile category bar */}
+          <div className="lg:hidden flex gap-2 overflow-x-auto pb-3 -mx-4 px-4 scrollbar-hide">
+            <button
+              onClick={() => { handleCategorySelect(null); }}
+              className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                selectedCategoryId === null
+                  ? 'bg-gold-50 dark:bg-gold-900/20 text-gold-700 dark:text-gold-400 font-bold'
+                  : 'bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400'
+              }`}
+            >
+              All
+            </button>
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => { handleCategorySelect(cat.id); }}
+                className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                  selectedCategoryId === cat.id
+                    ? 'bg-gold-50 dark:bg-gold-900/20 text-gold-700 dark:text-gold-400 font-bold'
+                    : 'bg-stone-100 dark:bg-stone-800 text-stone-500 dark:text-stone-400'
+                }`}
+              >
+                {cat.name}
+              </button>
             ))}
           </div>
-        )
-      )}
-    </div>
+
+          {/* Results count */}
+          {!loading && totalCount > 0 && (
+            <p className="text-sm text-stone-400 mb-4">
+              Showing {showingFrom}&ndash;{showingTo} of {totalCount} result{totalCount !== 1 ? 's' : ''}
+            </p>
+          )}
+
+          {/* Content */}
+          {loading ? (
+            <div className="space-y-3">
+              <SkeletonCard />
+              <SkeletonCard />
+              <SkeletonCard />
+            </div>
+          ) : communications.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-64 text-center">
+              <div className="w-16 h-16 bg-stone-100 dark:bg-stone-800 rounded-full flex items-center justify-center mb-4">
+                <Globe2 className="w-8 h-8 text-stone-400" />
+              </div>
+              <h3 className="text-lg font-serif font-bold text-slate-800 dark:text-white">
+                No communications found
+              </h3>
+              <p className="text-stone-500 dark:text-stone-400 mt-1 max-w-sm">
+                No approved public communications yet. Check back soon.
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className="space-y-3">
+                {communications.map((comm) => (
+                  <CommunicationCard
+                    key={comm.id}
+                    communication={comm}
+                    onClick={onSelectCommunication}
+                    isPublicView
+                  />
+                ))}
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <nav className="mt-8 flex items-center justify-center gap-1" aria-label="Pagination">
+                  <button
+                    onClick={() => { goToPage(page - 1); }}
+                    disabled={page === 0}
+                    className="p-2 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-100 dark:hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                    aria-label="Previous page"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+
+                  {pageNumbers.map((pn, idx) =>
+                    pn === 'ellipsis' ? (
+                      <span
+                        key={`ellipsis-${idx}`}
+                        className="px-2 text-stone-400 text-sm select-none"
+                      >
+                        &hellip;
+                      </span>
+                    ) : (
+                      <button
+                        key={pn}
+                        onClick={() => { goToPage(pn); }}
+                        className={`min-w-[2rem] h-8 rounded-lg text-sm font-medium transition-all ${
+                          pn === page
+                            ? 'bg-gold-50 dark:bg-gold-900/20 text-gold-700 dark:text-gold-400 font-bold'
+                            : 'text-stone-500 hover:bg-stone-100 dark:hover:bg-white/5'
+                        }`}
+                        aria-label={`Page ${pn + 1}`}
+                        aria-current={pn === page ? 'page' : undefined}
+                      >
+                        {pn + 1}
+                      </button>
+                    )
+                  )}
+
+                  <button
+                    onClick={() => { goToPage(page + 1); }}
+                    disabled={page >= totalPages - 1}
+                    className="p-2 rounded-lg text-stone-400 hover:text-stone-600 hover:bg-stone-100 dark:hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                    aria-label="Next page"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </nav>
+              )}
+            </>
+          )}
+        </main>
+      </div>
+    </ScrollReveal>
   );
 }
