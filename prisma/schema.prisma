@@ -1,0 +1,768 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================================
+// RBAC ENUMS
+// ============================================================================
+
+enum RegionType {
+  country
+  state
+  province
+  territory
+}
+
+enum OrganisationType {
+  government
+  corporate
+  diplomatic_mission
+  international_organization
+}
+
+// Head Office Type - Classifies the type of head office/organization
+enum HeadOfficeType {
+  CORPORATE           // Companies, businesses, state-owned enterprises
+  PRIME_MINISTER      // Prime Minister's office (parliamentary systems: NZ, Australia, India, UK)
+  PRESIDENT           // President's office (presidential systems: US, France, China)
+  MINISTERIAL         // Ministerial departments (Finance, Health, Foreign Affairs, etc.)
+  DIPLOMATIC_MISSION  // Embassies, High Commissions, Consulates
+  LOCAL_GOVT          // Municipal councils, regional authorities
+}
+
+// Portfolio/Role types for departments
+enum Portfolio {
+  // Government portfolios
+  finance              // Minister of Finance / Treasury
+  transport            // Minister of Transport
+  foreign_affairs      // Minister of Foreign Affairs
+  immigration          // Minister of Immigration
+  health               // Minister of Health
+  education            // Minister of Education
+  defense              // Minister of Defense
+  justice              // Minister of Justice / Attorney General
+  trade                // Minister of Trade / Commerce
+  interior             // Minister of Interior / Home Affairs
+  agriculture          // Minister of Agriculture
+  environment           // Minister of Environment
+  labor                // Minister of Labor
+  energy               // Minister of Energy
+  communications        // Minister of Communications
+  prime_minister       // Prime Minister's Office
+  deputy_pm            // Deputy Prime Minister
+  cabinet              // Cabinet Office
+
+  // Corporate executive roles
+  ceo                  // Chief Executive Officer
+  cfo                  // Chief Financial Officer
+  cto                  // Chief Technology Officer
+  coo                  // Chief Operating Officer
+  cio                  // Chief Information Officer
+  cmo                  // Chief Marketing Officer
+  cso                  // Chief Security Officer
+  clo                  // Chief Legal Officer
+  chair                // Board Chair / Chairman
+  director             // Director
+  vp                   // Vice President
+  secretary            // Secretary / Company Secretary
+
+  // General
+  other                // Other portfolios / roles
+  unspecified           // Portfolio not yet categorized
+}
+
+enum LocationType {
+  head_office
+  branch_office
+  regional_office
+  department_office
+  embassy
+  consulate
+  mission
+}
+
+enum ContactChannelType {
+  phone
+  email
+  website
+  office_address
+  mobile
+  fax
+}
+
+enum UserRole {
+  admin // Full system access
+  editor // Can read/write most data
+  user // Read-only access
+}
+
+enum NoteVisibility {
+  private // Only creator
+  team // Same organisation
+  public // Everyone with read access
+}
+
+// ============================================================================
+// PACKAGE MANAGEMENT ENUMS
+// ============================================================================
+
+enum PackageStatus {
+  DRAFT // Being created
+  PENDING // Ready to send
+  SENT // Fully sent to all recipients
+  PARTIAL // Partially sent
+  COMPLETED // All sub-packages responded
+  CLOSED // Matter closed by admin
+  CANCELLED // Cancelled
+}
+
+enum SubPackageStatus {
+  DRAFT // Being created
+  READY // Ready to send
+  SENT // Sent to recipients
+  RESPONDED // Response received
+  OVERDUE // Past expected reply without response
+  CANCELLED // Cancelled
+}
+
+enum DeliveryStatus {
+  PENDING // Not yet sent
+  SENDING // In progress
+  SENT // Sent successfully
+  DELIVERED // Confirmed delivery
+  FAILED // Send failed
+  BOUNCED // Email bounced
+}
+
+enum ResponseStatus {
+  RECEIVED
+  REVIEWING
+  ACCEPTED
+  REJECTED
+  INCOMPLETE
+}
+
+enum DocumentCategory {
+  NOTICE
+  FORM
+  CERTIFICATE
+  CORRESPONDENCE
+  REPORT
+  OTHER
+}
+
+// ============================================================================
+// COMMUNICATION TRACKER ENUMS
+// ============================================================================
+
+enum CommunicationType {
+  letter
+  email
+  physical_mail
+  meeting
+}
+
+enum CommunicationStatus {
+  SENT
+  AWAITING_RESPONSE
+  RESPONDED
+  CLOSED
+  CANCELLED
+}
+
+enum CommunicationDocumentType {
+  sent
+  received
+}
+
+// ============================================================================
+// CORE DATA TABLES
+// ============================================================================
+
+model Region {
+  id             String                 @id @default(uuid())
+  name           String
+  code           String
+  regionType     RegionType
+  parentRegion   Region?                @relation("RegionHierarchy", fields: [parentRegionId], references: [id])
+  parentRegionId String?
+  childRegions   Region[]               @relation("RegionHierarchy")
+  organisations  Organisation[]         @relation("OrganisationCountry")
+  locations      OrganisationLocation[] @relation("LocationCountry")
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+
+  @@unique([code, regionType])
+  @@map("regions")
+}
+
+// ============================================================================
+// DEPARTMENTS TABLE (NEW - Foundation for hierarchy & packages)
+// ============================================================================
+
+model Department {
+  id          String  @id @default(uuid())
+  name        String
+  code        String? // e.g., "FIN-001"
+  description String?
+  portfolio   Portfolio @default(unspecified) // Standardized portfolio/role for recipient selection
+
+  // Organisation relation
+  organisation   Organisation @relation("DepartmentOrganisation", fields: [organisationId], references: [id])
+  organisationId String
+
+  // Hierarchical structure (parent-child departments)
+  parentId String?
+  parent   Department?  @relation("DepartmentHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children Department[] @relation("DepartmentHierarchy")
+
+  // Active status for filtering
+  isActive Boolean @default(true)
+
+  // Audit trail
+  createdAt DateTime @default(now())
+  createdBy String?
+  updatedAt DateTime @updatedAt
+  updatedBy String?
+
+  // Relations
+  contacts          Contact[]          @relation("ContactDepartment")
+  packageRecipients PackageRecipient[]
+  communications    Communication[]
+
+  @@unique([organisationId, name])
+  @@unique([organisationId, code])
+  @@index([organisationId])
+  @@index([parentId])
+  @@index([isActive])
+  @@index([portfolio])
+  @@index([code])
+  @@map("departments")
+}
+
+model Organisation {
+  id                  String           @id @default(uuid())
+  name                String
+  type                OrganisationType
+  headOfficeType      HeadOfficeType   @default(CORPORATE)
+  headOfficeCountry   Region           @relation("OrganisationCountry", fields: [headOfficeCountryId], references: [id])
+  headOfficeCountryId String
+  headOfficeCity      String?
+  headOfficeAddress   String?
+  headOfficePhone     String?
+  headOfficeEmail     String?
+  headOfficeWebsite   String?
+  description         String?
+
+  // Optional owner for multi-tenancy
+  ownerId String?
+  owner   User?   @relation("OrgOwner", fields: [ownerId], references: [id])
+
+  contacts    Contact[]
+  departments Department[]           @relation("DepartmentOrganisation")
+  locations   OrganisationLocation[]
+  notes       OrganisationNote[]
+  communications Communication[]
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+
+  @@map("organisations")
+}
+
+model OrganisationLocation {
+  id             String       @id @default(uuid())
+  organisation   Organisation @relation(fields: [organisationId], references: [id])
+  organisationId String
+  locationName   String?
+  country        Region       @relation("LocationCountry", fields: [countryId], references: [id])
+  countryId      String
+  city           String?
+  address        String?
+  phone          String?
+  email          String?
+  locationType   LocationType @default(branch_office)
+  contacts       Contact[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @default(now())
+
+  @@map("organisation_locations")
+}
+
+model Contact {
+  id        String  @id @default(uuid())
+  fullName  String
+  roleTitle String?
+
+  // Department relation (NEW)
+  department   Department? @relation("ContactDepartment", fields: [departmentId], references: [id])
+  departmentId String?
+
+  // Legacy field for migration (keep original string value)
+  departmentLegacy String? @map("department_legacy")
+
+  organisation      Organisation          @relation(fields: [organisationId], references: [id])
+  organisationId    String
+  primaryLocation   OrganisationLocation? @relation(fields: [primaryLocationId], references: [id])
+  primaryLocationId String?
+
+  // Optional owner for multi-tenancy
+  ownerId String?
+  owner   User?   @relation("ContactOwner", fields: [ownerId], references: [id])
+
+  isHeadOfficeBased Boolean          @default(false)
+  contactChannels   ContactChannel[]
+  notes             ContactNote[]
+  outreachLogs      OutreachLog[]
+  communications    Communication[]
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  @@index([organisationId])
+  @@index([departmentId])
+  @@map("contacts")
+}
+
+model ContactChannel {
+  id              String             @id @default(uuid())
+  contact         Contact            @relation(fields: [contactId], references: [id])
+  contactId       String
+  channelType     ContactChannelType
+  value           String
+  displayValue    String?
+  phoneNormalized String?
+  addressLine1    String?
+  addressLine2    String?
+  city            String?
+  state           String?
+  postalCode      String?
+  country         String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@unique([contactId, channelType, value])
+  @@map("contact_channels")
+}
+
+// ============================================================================
+// PACKAGE MANAGEMENT TABLES (NEW)
+// ============================================================================
+
+model Package {
+  id          String  @id @default(uuid())
+  name        String  @db.VarChar(255)
+  description String? @db.Text
+
+  // Status tracking
+  status PackageStatus @default(DRAFT)
+
+  // Matter closure
+  closedAt DateTime? @map("closed_at")
+  closedBy String?   @map("closed_by")
+
+  // Audit
+  createdAt DateTime @default(now()) @map("created_at")
+  createdBy String   @map("created_by")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  updatedBy String?  @map("updated_by")
+
+  // Relations
+  creator User  @relation("PackageCreator", fields: [createdBy], references: [id])
+  closer  User? @relation("PackageCloser", fields: [closedBy], references: [id])
+
+  subPackages SubPackage[]
+  recipients  PackageRecipient[]
+
+  @@index([status])
+  @@index([createdBy])
+  @@index([closedAt])
+  @@map("packages")
+}
+
+model SubPackage {
+  id          String  @id @default(uuid())
+  packageId   String  @map("package_id")
+  name        String  @db.VarChar(255)
+  description String? @db.Text
+  sequence    Int     @default(0)
+
+  // Reply tracking
+  expectedReply DateTime? @map("expected_reply")
+  actualReply   DateTime? @map("actual_reply")
+
+  // Status
+  status SubPackageStatus @default(DRAFT)
+  sentAt DateTime?        @map("sent_at")
+
+  // Audit
+  createdAt DateTime @default(now()) @map("created_at")
+  createdBy String   @map("created_by")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  updatedBy String?  @map("updated_by")
+
+  // Relations
+  package Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  creator User    @relation("SubPackageCreator", fields: [createdBy], references: [id])
+
+  documents PackageDocument[]
+  responses SubPackageResponse[]
+
+  @@index([packageId])
+  @@index([status])
+  @@index([expectedReply])
+  @@map("sub_packages")
+}
+
+model Document {
+  id           String  @id @default(uuid())
+  filename     String  @db.VarChar(255)
+  originalName String  @map("original_name") @db.VarChar(255)
+  mimeType     String  @map("mime_type") @db.VarChar(100)
+  sizeBytes    Int     @map("size_bytes")
+  storagePath  String  @map("storage_path") @db.VarChar(500)
+  checksum     String? @db.VarChar(64)
+
+  description String?           @db.Text
+  category    DocumentCategory? @default(OTHER)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  createdBy String   @map("created_by")
+
+  // Relations
+  creator     User              @relation("DocumentCreator", fields: [createdBy], references: [id])
+  attachments PackageDocument[]
+
+  @@index([createdBy])
+  @@index([category])
+  @@map("documents")
+}
+
+model PackageDocument {
+  id           String @id @default(uuid())
+  subPackageId String @map("sub_package_id")
+  documentId   String @map("document_id")
+
+  attachedAt  DateTime @default(now()) @map("attached_at")
+  attachedBy  String   @map("attached_by")
+  description String?  @db.Text
+
+  // Relations
+  subPackage SubPackage @relation(fields: [subPackageId], references: [id], onDelete: Cascade)
+  document   Document   @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@unique([subPackageId, documentId])
+  @@index([subPackageId])
+  @@map("package_documents")
+}
+
+model PackageRecipient {
+  id           String @id @default(uuid())
+  packageId    String @map("package_id")
+  departmentId String @map("department_id")
+
+  // Delivery tracking
+  deliveryStatus DeliveryStatus @default(PENDING)
+  sentAt         DateTime?      @map("sent_at")
+  deliveredAt    DateTime?      @map("delivered_at")
+
+  // Recipient snapshot
+  recipientName  String? @map("recipient_name")
+  recipientEmail String? @map("recipient_email")
+
+  notes String? @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at")
+  createdBy String   @map("created_by")
+
+  // Relations
+  package    Package    @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  department Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+
+  @@unique([packageId, departmentId])
+  @@index([packageId])
+  @@index([departmentId])
+  @@index([deliveryStatus])
+  @@map("package_recipients")
+}
+
+model SubPackageResponse {
+  id           String @id @default(uuid())
+  subPackageId String @map("sub_package_id")
+  departmentId String @map("department_id")
+
+  responseDate DateTime       @map("response_date")
+  status       ResponseStatus @default(RECEIVED)
+  notes        String?        @db.Text
+
+  documentIds String[] @map("document_ids")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  createdBy String   @map("created_by")
+
+  // Relations
+  subPackage SubPackage @relation(fields: [subPackageId], references: [id], onDelete: Cascade)
+
+  @@index([subPackageId])
+  @@index([departmentId])
+  @@map("sub_package_responses")
+}
+
+// ============================================================================
+// RBAC TABLES
+// ============================================================================
+
+model User {
+  id        String   @id @default(uuid()) @map("id") // Supabase auth.users id
+  email     String   @unique
+  createdAt DateTime @default(now())
+
+  // Relationships
+  roles         UserRoleAssignment[]
+  ownedOrgs     Organisation[]       @relation("OrgOwner")
+  ownedContacts Contact[]            @relation("ContactOwner")
+  activityLogs  ActivityLog[]
+  notesOrg      OrganisationNote[]
+  notesContact  ContactNote[]
+  outreachLogs  OutreachLog[]
+
+  // Package relations (NEW)
+  createdPackages    Package[]    @relation("PackageCreator")
+  closedPackages     Package[]    @relation("PackageCloser")
+  createdSubPackages SubPackage[] @relation("SubPackageCreator")
+  uploadedDocuments  Document[]   @relation("DocumentCreator")
+  createdCommunications    Communication[]         @relation("CommunicationCreator")
+  uploadedCommunicationDocs CommunicationDocument[] @relation("CommunicationDocUploader")
+
+  @@map("users")
+}
+
+model Role {
+  id          String               @id @default(uuid())
+  name        UserRole             @unique // 'admin', 'editor', 'user'
+  description String?
+  permissions RolePermission[]
+  userRoles   UserRoleAssignment[] @relation("RoleAssignments")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("roles")
+}
+
+model UserRoleAssignment {
+  user_id    String   @map("userId")
+  role_id    String   @map("roleId")
+  assignedAt DateTime @default(now()) @map("assignedAt")
+  assignedBy String?  @map("assignedBy") // User who assigned this role
+
+  user User @relation(fields: [user_id], references: [id])
+  role Role @relation("RoleAssignments", fields: [role_id], references: [id])
+
+  @@id([user_id, role_id])
+  @@map("user_roles")
+}
+
+model RolePermission {
+  role_id    String @map("roleId")
+  permission String // Format: 'resource:action' e.g., 'org:write'
+
+  role Role @relation(fields: [role_id], references: [id])
+
+  @@id([role_id, permission])
+  @@map("role_permissions")
+}
+
+// ============================================================================
+// AUDIT LOGGING
+// ============================================================================
+
+model ActivityLog {
+  id           String   @id @default(uuid())
+  userId       String   @map("userId")
+  action       String // e.g., 'contact:create', 'org:update', 'contact:delete'
+  resourceType String   @map("resource_type") // 'organisation', 'contact', 'note'
+  resourceId   String?  @map("resource_id")
+  changes      Json? // JSON diff of what changed
+  ipAddress    String?  @map("ip_address")
+  userAgent    String?  @map("user_agent")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([resourceType, resourceId])
+  @@index([createdAt])
+  @@map("activity_logs")
+}
+
+// ============================================================================
+// NOTES AND OUTREACH
+// ============================================================================
+
+model OrganisationNote {
+  id             String       @id @default(uuid())
+  organisation   Organisation @relation(fields: [organisationId], references: [id])
+  organisationId String       @map("organisation_id")
+
+  content    String
+  visibility NoteVisibility @default(private)
+
+  createdBy   User   @relation(fields: [createdById], references: [id])
+  createdById String @map("created_by_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@map("organisation_notes")
+}
+
+model ContactNote {
+  id        String  @id @default(uuid())
+  contact   Contact @relation(fields: [contactId], references: [id])
+  contactId String  @map("contact_id")
+
+  content    String
+  visibility NoteVisibility @default(private)
+
+  createdBy   User   @relation(fields: [createdById], references: [id])
+  createdById String @map("created_by_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@map("contact_notes")
+}
+
+model OutreachLog {
+  id        String  @id @default(uuid())
+  contact   Contact @relation(fields: [contactId], references: [id])
+  contactId String  @map("contact_id")
+
+  type    String // 'email', 'phone', 'mail', 'meeting'
+  subject String? // For email/letter
+  status  String // 'pending', 'sent', 'delivered', 'failed', 'responded'
+  notes   String?
+  sentAt  DateTime? @map("sent_at")
+
+  createdBy   User   @relation(fields: [createdById], references: [id])
+  createdById String @map("created_by_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@map("outreach_logs")
+}
+
+// ============================================================================
+// HELPER: Default permissions for each role
+// ============================================================================
+
+// ============================================================================
+// COMMUNICATION TRACKER TABLES
+// ============================================================================
+
+model Communication {
+  id                  String               @id @default(uuid())
+  title               String               @db.VarChar(255)
+  description         String?              @db.Text
+  communicationType   CommunicationType
+  status              CommunicationStatus  @default(SENT)
+  contactId           String               @map("contact_id")
+  departmentId        String?              @map("department_id")
+  organisationId      String?              @map("organisation_id")
+  category            String?              @db.VarChar(100)
+  tags                String[]             @default([])
+  expectedResponseDate DateTime?           @map("expected_response_date")
+  respondedAt         DateTime?            @map("responded_at")
+  closedAt            DateTime?            @map("closed_at")
+  isPublic            Boolean              @default(true) @map("is_public")
+  isApproved          Boolean              @default(false) @map("is_approved")
+  createdById         String               @map("created_by_id")
+  senderOrganisation  String?              @map("sender_organisation") @db.VarChar(255)
+  createdAt           DateTime             @default(now()) @map("created_at")
+  updatedAt           DateTime             @updatedAt @map("updated_at")
+
+  contact             Contact              @relation(fields: [contactId], references: [id])
+  department          Department?          @relation(fields: [departmentId], references: [id])
+  organisation        Organisation?        @relation(fields: [organisationId], references: [id])
+  createdBy           User                 @relation("CommunicationCreator", fields: [createdById], references: [id])
+  documents           CommunicationDocument[]
+
+  @@index([contactId])
+  @@index([departmentId])
+  @@index([organisationId])
+  @@index([status])
+  @@index([isPublic])
+  @@index([createdById])
+  @@index([createdAt])
+  @@map("communications")
+}
+
+model CommunicationDocument {
+  id               String                  @id @default(uuid())
+  communicationId  String                  @map("communication_id")
+  documentType     CommunicationDocumentType
+  filename         String                  @db.VarChar(255)
+  originalName     String                  @map("original_name") @db.VarChar(255)
+  mimeType         String                  @map("mime_type") @db.VarChar(100)
+  sizeBytes        Int                     @map("size_bytes")
+  storagePath      String                  @map("storage_path") @db.VarChar(500)
+  isPublic         Boolean                 @default(true) @map("is_public")
+  description      String?                 @db.Text
+  uploadedAt       DateTime                @default(now()) @map("uploaded_at")
+  uploadedBy       String                  @map("uploaded_by")
+
+  communication    Communication           @relation(fields: [communicationId], references: [id], onDelete: Cascade)
+  uploader         User                    @relation("CommunicationDocUploader", fields: [uploadedBy], references: [id])
+
+  @@index([communicationId])
+  @@index([documentType])
+  @@index([isPublic])
+  @@map("communication_documents")
+}
+
+// ============================================================================
+// ISSUE CATEGORIES (Admin-managed)
+// ============================================================================
+
+model IssueCategory {
+  id          String   @id @default(uuid())
+  name        String   @db.VarChar(255)
+  slug        String   @unique @db.VarChar(100)
+  description String?  @db.Text
+  icon        String?  @db.VarChar(50) // lucide-react icon name
+  sortOrder   Int      @default(0) @map("sort_order")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("issue_categories")
+}
+
+// ============================================================================
+// HELPER: Default permissions for each role (continued)
+// ============================================================================
+// These are seeded via SQL, not managed by Prisma
+//
+// Admin permissions (wildcard):
+//   '*:*' - All resources, all actions
+//
+// Editor permissions:
+//   'org:read', 'org:write'
+//   'contact:read', 'contact:write', 'contact:archive'
+//   'channel:read', 'channel:write'
+//   'note:read', 'note:write'
+//   'outreach:read', 'outreach:initiate'
+//
+// User permissions:
+//   'org:read'
+//   'contact:read'
+//   'channel:read'
+//   'note:read' (filtered by visibility)
+// ============================================================================

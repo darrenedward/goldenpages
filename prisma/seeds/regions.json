@@ -1,0 +1,209 @@
+[
+  {
+    "id": "ad02fdd0-e705-4a98-9708-a7da64111398",
+    "name": "African Union",
+    "code": "AUC",
+    "regionType": "country",
+    "parentRegionId": null,
+    "createdAt": "2026-01-30T16:51:52.857881",
+    "updatedAt": "2026-01-30T16:51:52.857887"
+  },
+  {
+    "id": "4c4f87c0-f099-4d6f-a6dd-16c54b8dfd26",
+    "name": "Argentina",
+    "code": "AR",
+    "regionType": "country",
+    "parentRegionId": null,
+    "createdAt": "2026-01-30T16:51:52.857896",
+    "updatedAt": "2026-01-30T16:51:52.857897"
+  },
+  {
+    "id": "2f9799f3-059c-4b5c-92dc-5091d7d7ec4a",
+    "name": "Australia",
+    "code": "AU",
+    "regionType": "country",
+    "parentRegionId": null,
+    "createdAt": "2026-01-30T16:51:52.857902",
+    "updatedAt": "2026-01-30T16:51:52.857903"
+  },
+  {
+    "id": "5a3bef9f-156c-46db-8992-43cb823b3dba",
+    "name": "Brazil",
+    "code": "BR",
+    "regionType": "country",
+    "parentRegionId": null,
+    "createdAt": "2026-01-30T16:51:52.857906",
+    "updatedAt": "2026-01-30T16:51:52.857907"
+  },
+  {
+    "id": "a714427e-d651-4b6d-85cc-88d7942615c6",
+    "name": "Canada",
+    "code": "CA",
+    "regionType": "country",
+    "parentRegionId": null,
+    "createdAt": "2026-01-30T16:51:52.857910",
+    "updatedAt": "2026-01-30T16:51:52.857911"
+  },
+  {
+    "id": "b4ec2056-0286-4a3b-aa5d-463c3a2c9094",
+    "name": "China",
+    "code": "CN",
+    "regionType": "country",
+    "parentRegionId": null,
+    "createdAt": "2026-01-30T16:51:52.857914",
+    "updatedAt": "2026-01-30T16:51:52.857915"
+  },
+  {
+    "id": "66821dbd-1ac5-44ab-9505-67fdbdebf8ae",
+    "name": "European Union",
+    "code": "EU",
+    "regionType": "country",
+    "parentRegionId": null,
+    "createdAt": "2026-01-30T16:51:52.857918",
+    "updatedAt": "2026-01-30T16:51:52.857919"
+  },
+  {
+    "id": "23b23295-0daa-4c1c-affc-0da6335b530c",
+    "name": "France",
+    "code": "FR",
+    "regionType": "country",
+    "parentRegionId": null,
+    "createdAt": "2026-01-30T16:51:52.857923",
+    "updatedAt": "2026-01-30T16:51:52.857923"
+  },
+  {
+    "id": "a3c08b7e-fdd2-444a-b24d-c72c1e1b831c",
+    "name": "Germany",
+    "code": "DE",
+    "regionType": "country",
+    "parentRegionId": null,
+    "createdAt": "2026-01-30T16:51:52.857926",
+    "updatedAt": "2026-01-30T16:51:52.857927"
+  },
+  {
+    "id": "9938d860-ca2a-4483-a944-032bf65b20c0",
+    "name": "India",
+    "code": "IN",
+    "regionType": "country",
+    "parentRegionId": null,
+    "createdAt": "2026-01-30T16:51:52.857930",
+    "updatedAt": "2026-01-30T16:51:52.857931"
+  },
+  {
+    "id": "e7746f21-7d98-4619-8eae-138e089b378b",
+    "name": "Indonesia",
+    "code": "ID",
+    "regionType": "country",
+    "parentRegionId": null,
+    "createdAt": "2026-01-30T16:51:52.857934",
+    "updatedAt": "2026-01-30T16:51:52.857935"
+  },
+  {
+    "id": "bc0989a8-7083-4003-94eb-068822d276e9",
+    "name": "International",
+    "code": "XX",
+    "regionType": "country",
+    "parentRegionId": null,
+    "createdAt": "2026-01-30T16:51:52.857938",
+    "updatedAt": "2026-01-30T16:51:52.857942"
+  },
+  {
+    "id": "c9ba0adc-a400-47c8-867a-feb59aef53c0",
+    "name": "Italy",
+    "code": "IT",
+    "regionType": "country",
+    "parentRegionId": null,
+    "createdAt": "2026-01-30T16:51:52.857945",
+    "updatedAt": "2026-01-30T16:51:52.857946"
+  },
+  {
+    "id": "a8cad2f5-0be4-45d2-be3b-4fb69b9bf04f",
+    "name": "Japan",
+    "code": "JP",
+    "regionType": "country",
+    "parentRegionId": null,
+    "createdAt": "2026-01-30T16:51:52.857949",
+    "updatedAt": "2026-01-30T16:51:52.857950"
+  },
+  {
+    "id": "7e3047f3-2bf0-48ed-b9bf-68cafdd6d220",
+    "name": "Mexico",
+    "code": "MX",
+    "regionType": "country",
+    "parentRegionId": null,
+    "createdAt": "2026-01-30T16:51:52.857955",
+    "updatedAt": "2026-01-30T16:51:52.857956"
+  },
+  {
+    "id": "f32e3950-bb69-42ff-9244-e21750899ab3",
+    "name": "New Zealand",
+    "code": "NZ",
+    "regionType": "country",
+    "parentRegionId": null,
+    "createdAt": "2026-01-30T16:51:52.857959",
+    "updatedAt": "2026-01-30T16:51:52.857959"
+  },
+  {
+    "id": "027939c9-0763-4c7c-ab56-6990f2e9ad8f",
+    "name": "Russia",
+    "code": "RU",
+    "regionType": "country",
+    "parentRegionId": null,
+    "createdAt": "2026-01-30T16:51:52.857962",
+    "updatedAt": "2026-01-30T16:51:52.857963"
+  },
+  {
+    "id": "29282998-002c-47ee-81c7-b772a734dce0",
+    "name": "Saudi Arabia",
+    "code": "SA",
+    "regionType": "country",
+    "parentRegionId": null,
+    "createdAt": "2026-01-30T16:51:52.857966",
+    "updatedAt": "2026-01-30T16:51:52.857967"
+  },
+  {
+    "id": "5cbfc037-2b4c-450e-9b6f-02259386cdc4",
+    "name": "South Africa",
+    "code": "ZA",
+    "regionType": "country",
+    "parentRegionId": null,
+    "createdAt": "2026-01-30T16:51:52.857970",
+    "updatedAt": "2026-01-30T16:51:52.857971"
+  },
+  {
+    "id": "7d47920f-7d0c-4a4f-ba48-7335fbdf3f4a",
+    "name": "South Korea",
+    "code": "KR",
+    "regionType": "country",
+    "parentRegionId": null,
+    "createdAt": "2026-01-30T16:51:52.857974",
+    "updatedAt": "2026-01-30T16:51:52.857974"
+  },
+  {
+    "id": "10707656-cc68-42e6-9250-59b8108ea893",
+    "name": "Turkey",
+    "code": "TR",
+    "regionType": "country",
+    "parentRegionId": null,
+    "createdAt": "2026-01-30T16:51:52.857977",
+    "updatedAt": "2026-01-30T16:51:52.857978"
+  },
+  {
+    "id": "31ea07bc-5160-4fe1-b534-9ec98ff8b777",
+    "name": "United Kingdom",
+    "code": "GB",
+    "regionType": "country",
+    "parentRegionId": null,
+    "createdAt": "2026-01-30T16:51:52.857981",
+    "updatedAt": "2026-01-30T16:51:52.857981"
+  },
+  {
+    "id": "e22f26d1-049b-44ad-8b03-06d58ac8f586",
+    "name": "United States",
+    "code": "US",
+    "regionType": "country",
+    "parentRegionId": null,
+    "createdAt": "2026-01-30T16:51:52.857985",
+    "updatedAt": "2026-01-30T16:51:52.857985"
+  }
+]

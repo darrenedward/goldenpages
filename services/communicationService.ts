@@ -1,0 +1,340 @@
+/**
+ * Communication Service
+ *
+ * Handles CRUD operations for the Communication Tracker feature:
+ * - Create communications (letters, emails sent to contacts)
+ * - Upload sent/received documents
+ * - Track status transitions
+ * - Public transparency queries
+ */
+
+import { supabase } from './supabaseClient';
+import type {
+  Communication,
+  CommunicationWithDetails,
+  CommunicationDocument,
+  CommunicationType,
+  CommunicationStatus,
+  CommunicationDocumentType,
+  CreateCommunicationInput,
+} from '@/types';
+
+class CommunicationService {
+  private static instance: CommunicationService;
+
+  private constructor() {}
+
+  static getInstance(): CommunicationService {
+    if (!CommunicationService.instance) {
+      CommunicationService.instance = new CommunicationService();
+    }
+    return CommunicationService.instance;
+  }
+
+  // ==========================================================================
+  // CREATE
+  // ==========================================================================
+
+  async createCommunication(
+    input: CreateCommunicationInput,
+    userId: string
+  ): Promise<Communication> {
+    const { data, error } = await supabase
+      .from('communications')
+      .insert({
+        title: input.title,
+        description: input.description || null,
+        communication_type: input.communicationType,
+        status: 'SENT',
+        contact_id: input.contactId,
+        department_id: input.departmentId || null,
+        organisation_id: input.organisationId || null,
+        category: input.category || null,
+        tags: input.tags || [],
+        expected_response_date: input.expectedResponseDate || null,
+        is_public: input.isPublic,
+        is_approved: input.isApproved,
+        created_by_id: userId,
+        sender_organisation: input.senderOrganisation || null,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return this.mapCommunication(data);
+  }
+
+  // ==========================================================================
+  // READ
+  // ==========================================================================
+
+  async getCommunications(filters: {
+    contactId?: string;
+    departmentId?: string;
+    organisationId?: string;
+    status?: CommunicationStatus;
+    isPublic?: boolean;
+  }): Promise<CommunicationWithDetails[]> {
+    let query = supabase
+      .from('communications')
+      .select(`
+        *,
+        contact:contacts(id, fullName, roleTitle),
+        department:departments(id, name, portfolio),
+        organisation:organisations(id, name),
+        documents:communication_documents(*)
+      `)
+      .order('created_at', { ascending: false });
+
+    if (filters.contactId) query = query.eq('contact_id', filters.contactId);
+    if (filters.departmentId) query = query.eq('department_id', filters.departmentId);
+    if (filters.organisationId) query = query.eq('organisation_id', filters.organisationId);
+    if (filters.status) query = query.eq('status', filters.status);
+    if (filters.isPublic !== undefined) query = query.eq('is_public', filters.isPublic);
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    return (data || []).map((row: Record<string, unknown>) => this.mapCommunicationWithDetails(row));
+  }
+
+  async getCommunication(id: string): Promise<CommunicationWithDetails | null> {
+    const { data, error } = await supabase
+      .from('communications')
+      .select(`
+        *,
+        contact:contacts(id, fullName, roleTitle, organisationId),
+        department:departments(id, name, portfolio, organisationId),
+        organisation:organisations(id, name),
+        documents:communication_documents(*)
+      `)
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    if (!data) return null;
+
+    return this.mapCommunicationWithDetails(data);
+  }
+
+  async getPublicCommunications(filters: {
+    organisationId?: string;
+    departmentId?: string;
+  }): Promise<CommunicationWithDetails[]> {
+    let query = supabase
+      .from('communications')
+      .select(`
+        *,
+        contact:contacts(id, fullName, roleTitle),
+        department:departments(id, name, portfolio),
+        organisation:organisations(id, name),
+        documents:communication_documents(*)
+      `)
+      .eq('is_public', true)
+      .order('created_at', { ascending: false });
+
+    if (filters.organisationId) query = query.eq('organisation_id', filters.organisationId);
+    if (filters.departmentId) query = query.eq('department_id', filters.departmentId);
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    return (data || []).map((row: Record<string, unknown>) => {
+      const mapped = this.mapCommunicationWithDetails(row);
+      // Filter out private documents for public view
+      mapped.documents = mapped.documents?.filter(d => d.isPublic) || [];
+      return mapped;
+    });
+  }
+
+  // ==========================================================================
+  // UPDATE
+  // ==========================================================================
+
+  async updateCommunicationStatus(
+    id: string,
+    status: CommunicationStatus,
+    _userId: string
+  ): Promise<Communication> {
+    const updates: Record<string, unknown> = {
+      status,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (status === 'RESPONDED') {
+      updates.responded_at = new Date().toISOString();
+    }
+    if (status === 'CLOSED') {
+      updates.closed_at = new Date().toISOString();
+    }
+
+    const { data, error } = await supabase
+      .from('communications')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return this.mapCommunication(data);
+  }
+
+  // ==========================================================================
+  // DOCUMENTS
+  // ==========================================================================
+
+  async uploadDocument(
+    communicationId: string,
+    file: File,
+    documentType: CommunicationDocumentType,
+    isPublic: boolean,
+    userId: string,
+    description?: string
+  ): Promise<CommunicationDocument> {
+    // Validate file size (50MB max)
+    if (file.size > 50 * 1024 * 1024) {
+      throw new Error('File size exceeds 50MB limit');
+    }
+
+    // Generate storage path
+    const ext = file.name.split('.').pop() || 'pdf';
+    const filename = `${crypto.randomUUID()}.${ext}`;
+    const storagePath = `communications/${communicationId}/${filename}`;
+
+    // Upload to Supabase Storage
+    const { error: uploadError } = await supabase.storage
+      .from('packages-storage')
+      .upload(storagePath, file);
+
+    if (uploadError) throw uploadError;
+
+    // Insert metadata
+    const { data, error } = await supabase
+      .from('communication_documents')
+      .insert({
+        communication_id: communicationId,
+        document_type: documentType,
+        filename,
+        original_name: file.name,
+        mime_type: file.type,
+        size_bytes: file.size,
+        storage_path: storagePath,
+        is_public: isPublic,
+        description: description || null,
+        uploaded_by: userId,
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return this.mapDocument(data);
+  }
+
+  async deleteDocument(documentId: string): Promise<void> {
+    // Get document to find storage path
+    const { data: doc, error: fetchError } = await supabase
+      .from('communication_documents')
+      .select('storage_path')
+      .eq('id', documentId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    // Delete from storage
+    if (doc?.storage_path) {
+      await supabase.storage.from('packages-storage').remove([doc.storage_path]);
+    }
+
+    // Delete metadata
+    const { error } = await supabase
+      .from('communication_documents')
+      .delete()
+      .eq('id', documentId);
+
+    if (error) throw error;
+  }
+
+  async getDocumentUrl(storagePath: string): Promise<string> {
+    const { data } = supabase.storage
+      .from('packages-storage')
+      .getPublicUrl(storagePath);
+
+    return data?.publicUrl || '';
+  }
+
+  // ==========================================================================
+  // DELETE
+  // ==========================================================================
+
+  async deleteCommunication(id: string): Promise<void> {
+    // Cascade delete handles documents + storage
+    const { error } = await supabase
+      .from('communications')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+  }
+
+  // ==========================================================================
+  // MAPPERS
+  // ==========================================================================
+
+  private mapCommunication(row: Record<string, unknown>): Communication {
+    return {
+      id: row.id as string,
+      title: row.title as string,
+      description: row.description as string | undefined,
+      communicationType: row.communication_type as CommunicationType,
+      status: row.status as CommunicationStatus,
+      contactId: row.contact_id as string,
+      departmentId: row.department_id as string | undefined,
+      organisationId: row.organisation_id as string | undefined,
+      category: row.category as string | undefined,
+      tags: (row.tags as string[]) || [],
+      expectedResponseDate: row.expected_response_date as string | undefined,
+      respondedAt: row.responded_at as string | undefined,
+      closedAt: row.closed_at as string | undefined,
+      isPublic: row.is_public as boolean,
+      isApproved: row.is_approved as boolean,
+      createdById: row.created_by_id as string,
+      senderOrganisation: row.sender_organisation as string | undefined,
+      createdAt: row.created_at as string,
+      updatedAt: row.updated_at as string,
+    };
+  }
+
+  private mapDocument(row: Record<string, unknown>): CommunicationDocument {
+    return {
+      id: row.id as string,
+      communicationId: row.communication_id as string,
+      documentType: row.document_type as CommunicationDocumentType,
+      filename: row.filename as string,
+      originalName: row.original_name as string,
+      mimeType: row.mime_type as string,
+      sizeBytes: row.size_bytes as number,
+      storagePath: row.storage_path as string,
+      isPublic: row.is_public as boolean,
+      description: row.description as string | undefined,
+      uploadedAt: row.uploaded_at as string,
+      uploadedBy: row.uploaded_by as string,
+    };
+  }
+
+  private mapCommunicationWithDetails(row: Record<string, unknown>): CommunicationWithDetails {
+    const communication = this.mapCommunication(row);
+    const documents = Array.isArray(row.documents)
+      ? row.documents.map((d: Record<string, unknown>) => this.mapDocument(d))
+      : [];
+
+    return {
+      ...communication,
+      contact: row.contact as CommunicationWithDetails['contact'],
+      department: row.department as CommunicationWithDetails['department'],
+      organisation: row.organisation as CommunicationWithDetails['organisation'],
+      documents,
+    };
+  }
+}
+
+export const communicationService = CommunicationService.getInstance();

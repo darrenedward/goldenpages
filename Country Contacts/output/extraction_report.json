@@ -1,0 +1,856 @@
+{
+  "summary": {
+    "total_files_processed": 23,
+    "total_contacts_extracted": 1028,
+    "total_countries_found": 23,
+    "total_departments_found": 128,
+    "total_organizations_found": 64,
+    "total_errors": 0
+  },
+  "countries": [
+    "African Union",
+    "Argentina",
+    "Australia",
+    "Brazil",
+    "Canada",
+    "China",
+    "European Union",
+    "France",
+    "Germany",
+    "India",
+    "Indonesia",
+    "International",
+    "Italy",
+    "Japan",
+    "Mexico",
+    "New Zealand",
+    "Russia",
+    "Saudi Arabia",
+    "South Africa",
+    "South Korea",
+    "Turkey",
+    "United Kingdom",
+    "United States"
+  ],
+  "departments": [
+    "+86-10-6596-1111",
+    "13",
+    "23",
+    "25",
+    "34",
+    "40",
+    "43",
+    "50",
+    "57",
+    "59",
+    "60",
+    "62",
+    "75",
+    "76",
+    "77",
+    "78",
+    "83",
+    "87",
+    "91",
+    "92",
+    "93",
+    "94",
+    "Agriculture",
+    "Blue House",
+    "Cabinet Office",
+    "Cabinet Secretariat",
+    "Casa Rosada",
+    "Civil Protection Department",
+    "Commerce",
+    "Communist Party Central Committee",
+    "Coordinating Ministry",
+    "Council of Ministers",
+    "Crown Prince Court",
+    "Defense",
+    "Department of Communications",
+    "Department of Cooperative Governance",
+    "Department of Correctional Services",
+    "Department of Human Settlements",
+    "Department of International Relations",
+    "Department of Land Reform",
+    "Department of Mineral Resources",
+    "Department of Planning, Monitoring and Evaluation",
+    "Department of Public Service and Administration",
+    "Department of Public Works",
+    "Department of Science and Innovation",
+    "Department of Small Business Development",
+    "Department of Social Development",
+    "Department of Sports, Arts and Culture",
+    "Department of Tourism",
+    "Department of Water and Sanitation",
+    "Digital Agency",
+    "Education",
+    "Energy",
+    "Environment",
+    "Executive Leadership",
+    "Executive Office",
+    "Finance",
+    "Foreign Affairs",
+    "Government of Russia",
+    "Health",
+    "Industry",
+    "Interior",
+    "Justice",
+    "Labor",
+    "Legislature",
+    "Ministry for Public Administration",
+    "Ministry of Agrarian Development (SEDATU)",
+    "Ministry of Agricultural Development (SADER)",
+    "Ministry of Business and Made in Italy",
+    "Ministry of Communications (SCT)",
+    "Ministry of Construction",
+    "Ministry of Culture",
+    "Ministry of Culture (SC)",
+    "Ministry of Culture and Tourism",
+    "Ministry of Culture, Sports and Tourism",
+    "Ministry of Deregulation",
+    "Ministry of Development",
+    "Ministry of Digital Development",
+    "Ministry of Economic Development",
+    "Ministry of Economy",
+    "Ministry of Economy (SE)",
+    "Ministry of Emergency Situations",
+    "Ministry of Family and Social Services",
+    "Ministry of Food and Drug Safety",
+    "Ministry of Gender Equality and Family",
+    "Ministry of Government (SEGOB)",
+    "Ministry of Hajj and Umrah",
+    "Ministry of Human Capital",
+    "Ministry of Human Resources",
+    "Ministry of Human Rights",
+    "Ministry of Infrastructure",
+    "Ministry of Internal Affairs",
+    "Ministry of Internal Affairs and Communications",
+    "Ministry of Islamic Affairs",
+    "Ministry of Maritime Affairs",
+    "Ministry of National Guard",
+    "Ministry of Natural Resources",
+    "Ministry of Patriots and Veterans Affairs",
+    "Ministry of Public Administration (SFP)",
+    "Ministry of Public Works",
+    "Ministry of SMEs and Startups",
+    "Ministry of Science",
+    "Ministry of Science and Technology",
+    "Ministry of Security",
+    "Ministry of Security (SSPC)",
+    "Ministry of Sport",
+    "Ministry of Sport (CONADE)",
+    "Ministry of Tourism",
+    "Ministry of Tourism (SECTUR)",
+    "Ministry of Unification",
+    "Ministry of University and Research",
+    "Ministry of Villages",
+    "Ministry of Welfare (BIENESTAR)",
+    "Ministry of Women",
+    "Ministry of Youth and Sports",
+    "Ministry of the Navy (SEMAR)",
+    "National Public Safety Commission",
+    "Office of the Chief of Staff",
+    "Political Affairs, Peace and Security",
+    "Reconstruction Agency",
+    "Royal Court",
+    "Secretariat of Social Communication",
+    "Social Affairs, Human Rights and Humanitarian Affairs",
+    "Social Secretariat",
+    "South African Police Service",
+    "The Presidency",
+    "Trade",
+    "Transportation"
+  ],
+  "organizations": [
+    " - Bundestag Contact",
+    " - Cabinet Ministers",
+    " - Congress Contact",
+    " - Contact Methods",
+    " - Federal Assembly Contact",
+    " - Federal Cabinet",
+    " - Government Contact",
+    " - Grand National Assembly",
+    " - Lula Cabinet",
+    " - Mishustin Cabinet",
+    " - National Assembly",
+    " - National Diet Contact",
+    " - Parliament Contact",
+    " - Prime Minister",
+    " - Red and White Cabinet",
+    " - Senators - ACT to NSW",
+    " - Senators - NT to QLD",
+    " - Senators - SA to VIC",
+    " - Senators - WA",
+    " - Shura Council",
+    " - Takaichi Cabinet",
+    "African Union - AU Commission Leadership",
+    "African Union - AU Headquarters Contact",
+    "African Union - Pan-African Parliament",
+    "Canada - Bloc Qu\u00e9b\u00e9cois and Green",
+    "Canada - Conservative Opposition MPs",
+    "Canada - Liberal Government MPs",
+    "Canada - NDP Opposition MPs",
+    "Canada - Prime Minister",
+    "China - Communist Party Central Committ",
+    "China - Politburo Standing Committee",
+    "China - President and Premier",
+    "China - Provincial Governments (Sample)",
+    "China - State Council Ministers",
+    "Diplomatic Missions To New Zealand - Ambassadors & High Commissioner",
+    "Diplomatic Missions To New Zealand - Wellington Missions Contact",
+    "European Union - EU Commission Leadership",
+    "European Union - EU Institutions Contact",
+    "European Union - EU Parliament & Council",
+    "France - Far-right Opposition (National ",
+    "France - Left-wing Opposition (NUPES)",
+    "France - Majority Coalition (LREM-led)",
+    "France - President and Prime Minister",
+    "France - Right-wing Opposition (Republic",
+    "India - BJP Government MPs",
+    "India - Dravida Munnetra Kazhagam (DMK)",
+    "India - Indian National Congress (INC)",
+    "India - Other Regional Parties",
+    "India - Prime Minister",
+    "Leaders  Database - Instructions & Notes",
+    "Leaders  Database - Regional Groups & Contacts",
+    "UK - Conservative MPs",
+    "UK - Contact Guide and Reference",
+    "UK - Green Party and Others",
+    "UK - Labour MPs - A to D",
+    "UK - Liberal Democrat MPs",
+    "UK - Prime Minister and Cabinet",
+    "UK - Scottish National Party (SNP)",
+    "US - Contact Methods",
+    "US - President",
+    "US - Senators - AL to CO",
+    "US - Senators - CT to KS",
+    "US - Senators - KY to NY",
+    "US - Senators - NC to WY"
+  ],
+  "file_details": [
+    {
+      "file": "China Parliament Contact Directory.xlsx",
+      "sheets": 9,
+      "contacts": 33,
+      "countries": [
+        "China"
+      ],
+      "departments": [
+        "Communist Party Central Committee",
+        "Legislature",
+        "+86-10-6596-1111"
+      ],
+      "organizations": [
+        "China - Politburo Standing Committee",
+        "China - Provincial Governments (Sample)",
+        "China - State Council Ministers",
+        "China - Communist Party Central Committ",
+        "China - President and Premier"
+      ],
+      "errors": []
+    },
+    {
+      "file": "South Korean Government Officials Directory.xlsx",
+      "sheets": 3,
+      "contacts": 28,
+      "countries": [
+        "South Korea"
+      ],
+      "departments": [
+        "Transportation",
+        "Education",
+        "Ministry of Gender Equality and Family",
+        "Interior",
+        "Blue House",
+        "Defense",
+        "Executive Office",
+        "Justice",
+        "Ministry of Unification",
+        "Ministry of Culture, Sports and Tourism",
+        "Health",
+        "Ministry of Patriots and Veterans Affairs",
+        "Trade",
+        "Agriculture",
+        "Labor",
+        "Foreign Affairs",
+        "Environment",
+        "Finance",
+        "Ministry of Food and Drug Safety",
+        "Ministry of SMEs and Startups"
+      ],
+      "organizations": [
+        " - National Assembly",
+        " - Cabinet Ministers",
+        " - Government Contact"
+      ],
+      "errors": []
+    },
+    {
+      "file": "Saudi Arabian Government Officials Directory.xlsx",
+      "sheets": 3,
+      "contacts": 27,
+      "countries": [
+        "Saudi Arabia"
+      ],
+      "departments": [
+        "Transportation",
+        "Education",
+        "Ministry of Islamic Affairs",
+        "Interior",
+        "Ministry of Human Resources",
+        "Defense",
+        "Ministry of Culture",
+        "Energy",
+        "Ministry of National Guard",
+        "Justice",
+        "Health",
+        "Commerce",
+        "Royal Court",
+        "Agriculture",
+        "Crown Prince Court",
+        "Council of Ministers",
+        "Finance",
+        "Foreign Affairs",
+        "Ministry of Hajj and Umrah"
+      ],
+      "organizations": [
+        " - Government Contact",
+        " - Cabinet Ministers",
+        " - Shura Council"
+      ],
+      "errors": []
+    },
+    {
+      "file": "German Government Officials.xlsx",
+      "sheets": 3,
+      "contacts": 23,
+      "countries": [
+        "Germany"
+      ],
+      "departments": [],
+      "organizations": [
+        " - Government Contact",
+        " - Federal Cabinet",
+        " - Bundestag Contact"
+      ],
+      "errors": []
+    },
+    {
+      "file": "US Government Officials.xlsx",
+      "sheets": 6,
+      "contacts": 109,
+      "countries": [
+        "United States"
+      ],
+      "departments": [],
+      "organizations": [
+        "US - Senators - AL to CO",
+        "US - Senators - KY to NY",
+        "US - President",
+        "US - Contact Methods",
+        "US - Senators - CT to KS",
+        "US - Senators - NC to WY"
+      ],
+      "errors": []
+    },
+    {
+      "file": "African Union Leadership Directory.xlsx",
+      "sheets": 3,
+      "contacts": 16,
+      "countries": [
+        "African Union"
+      ],
+      "departments": [
+        "Education",
+        "Energy",
+        "Trade",
+        "Social Affairs, Human Rights and Humanitarian Affairs",
+        "Political Affairs, Peace and Security",
+        "Executive Leadership"
+      ],
+      "organizations": [
+        "African Union - AU Commission Leadership",
+        "African Union - AU Headquarters Contact",
+        "African Union - Pan-African Parliament"
+      ],
+      "errors": []
+    },
+    {
+      "file": "Indonesian Government Officials Directory.xlsx",
+      "sheets": 3,
+      "contacts": 32,
+      "countries": [
+        "Indonesia"
+      ],
+      "departments": [
+        "Education",
+        "Ministry of Public Works",
+        "Coordinating Ministry",
+        "Interior",
+        "Defense",
+        "Ministry of Maritime Affairs",
+        "Ministry of Culture",
+        "Energy",
+        "Cabinet Secretariat",
+        "Executive Office",
+        "Health",
+        "Industry",
+        "Trade",
+        "Agriculture",
+        "Ministry of Human Rights",
+        "Ministry of Villages",
+        "Foreign Affairs",
+        "Finance"
+      ],
+      "organizations": [
+        " - Government Contact",
+        " - Red and White Cabinet",
+        " - Parliament Contact"
+      ],
+      "errors": []
+    },
+    {
+      "file": "Russian Government Officials Directory.xlsx",
+      "sheets": 3,
+      "contacts": 39,
+      "countries": [
+        "Russia"
+      ],
+      "departments": [
+        "Education",
+        "Defense",
+        "Ministry of Economic Development",
+        "Ministry of Digital Development",
+        "Ministry of Culture",
+        "Ministry of Internal Affairs",
+        "Energy",
+        "Ministry of Natural Resources",
+        "Executive Office",
+        "Ministry of Sport",
+        "Justice",
+        "Health",
+        "Trade",
+        "Agriculture",
+        "Government of Russia",
+        "Labor",
+        "Ministry of Construction",
+        "Foreign Affairs",
+        "Ministry of Emergency Situations",
+        "Finance"
+      ],
+      "organizations": [
+        " - Government Contact",
+        " - Mishustin Cabinet",
+        " - Federal Assembly Contact"
+      ],
+      "errors": []
+    },
+    {
+      "file": "Japanese Government Officials Directory.xlsx",
+      "sheets": 3,
+      "contacts": 27,
+      "countries": [
+        "Japan"
+      ],
+      "departments": [
+        "Education",
+        "Transportation",
+        "National Public Safety Commission",
+        "Digital Agency",
+        "Defense",
+        "Cabinet Secretariat",
+        "Executive Office",
+        "Justice",
+        "Health",
+        "Trade",
+        "Agriculture",
+        "Reconstruction Agency",
+        "Ministry of Internal Affairs and Communications",
+        "Cabinet Office",
+        "Foreign Affairs",
+        "Environment",
+        "Finance"
+      ],
+      "organizations": [
+        " - Takaichi Cabinet",
+        " - Government Contact",
+        " - National Diet Contact"
+      ],
+      "errors": []
+    },
+    {
+      "file": "India Parliament Contact Directory.xlsx",
+      "sheets": 9,
+      "contacts": 37,
+      "countries": [
+        "India"
+      ],
+      "departments": [],
+      "organizations": [
+        "India - Indian National Congress (INC)",
+        "India - BJP Government MPs",
+        "India - Other Regional Parties",
+        "India - Prime Minister",
+        "India - Dravida Munnetra Kazhagam (DMK)"
+      ],
+      "errors": []
+    },
+    {
+      "file": "Argentine Government Officials Directory.xlsx",
+      "sheets": 3,
+      "contacts": 26,
+      "countries": [
+        "Argentina"
+      ],
+      "departments": [
+        "Ministry of Public Works",
+        "Ministry of Human Capital",
+        "Interior",
+        "Defense",
+        "Foreign Affairs",
+        "Ministry of Science",
+        "Executive Office",
+        "Ministry of Security",
+        "Justice",
+        "Casa Rosada",
+        "Health",
+        "Commerce",
+        "Ministry of Economy",
+        "Ministry of Tourism",
+        "Environment",
+        "Ministry of Deregulation",
+        "Ministry of Infrastructure"
+      ],
+      "organizations": [
+        " - Government Contact",
+        " - Cabinet Ministers",
+        " - Congress Contact"
+      ],
+      "errors": []
+    },
+    {
+      "file": "Diplomatic Missions To New Zealand.xlsx",
+      "sheets": 2,
+      "contacts": 182,
+      "countries": [
+        "New Zealand"
+      ],
+      "departments": [],
+      "organizations": [
+        "Diplomatic Missions To New Zealand - Ambassadors & High Commissioner",
+        "Diplomatic Missions To New Zealand - Wellington Missions Contact"
+      ],
+      "errors": []
+    },
+    {
+      "file": "Turkish Government Officials Directory.xlsx",
+      "sheets": 3,
+      "contacts": 27,
+      "countries": [
+        "Turkey"
+      ],
+      "departments": [
+        "Education",
+        "Transportation",
+        "Interior",
+        "Defense",
+        "Ministry of Culture and Tourism",
+        "Energy",
+        "Executive Office",
+        "Justice",
+        "Health",
+        "Industry",
+        "Ministry of Youth and Sports",
+        "Trade",
+        "Labor",
+        "Agriculture",
+        "Ministry of Family and Social Services",
+        "Foreign Affairs",
+        "Environment",
+        "Finance"
+      ],
+      "organizations": [
+        " - Government Contact",
+        " - Cabinet Ministers",
+        " - Grand National Assembly"
+      ],
+      "errors": []
+    },
+    {
+      "file": "Australian Parliament Contact Directory.xlsx",
+      "sheets": 6,
+      "contacts": 85,
+      "countries": [
+        "Australia"
+      ],
+      "departments": [],
+      "organizations": [
+        " - Senators - NT to QLD",
+        " - Senators - WA",
+        " - Prime Minister",
+        " - Senators - SA to VIC",
+        " - Contact Methods",
+        " - Senators - ACT to NSW"
+      ],
+      "errors": []
+    },
+    {
+      "file": "Canada Parliament Contact Directory.xlsx",
+      "sheets": 9,
+      "contacts": 33,
+      "countries": [
+        "Canada"
+      ],
+      "departments": [],
+      "organizations": [
+        "Canada - Liberal Government MPs",
+        "Canada - Bloc Qu\u00e9b\u00e9cois and Green",
+        "Canada - Prime Minister",
+        "Canada - Conservative Opposition MPs",
+        "Canada - NDP Opposition MPs"
+      ],
+      "errors": []
+    },
+    {
+      "file": "European Union Leadership Directory.xlsx",
+      "sheets": 3,
+      "contacts": 36,
+      "countries": [
+        "European Union"
+      ],
+      "departments": [],
+      "organizations": [
+        "European Union - EU Parliament & Council",
+        "European Union - EU Institutions Contact",
+        "European Union - EU Commission Leadership"
+      ],
+      "errors": []
+    },
+    {
+      "file": "Italian Government Officials Directory.xlsx",
+      "sheets": 3,
+      "contacts": 33,
+      "countries": [
+        "Italy"
+      ],
+      "departments": [
+        "Transportation",
+        "Education",
+        "Interior",
+        "Defense",
+        "Foreign Affairs",
+        "Ministry of Culture",
+        "Executive Office",
+        "Ministry of Sport",
+        "Justice",
+        "Health",
+        "Agriculture",
+        "Labor",
+        "Ministry of University and Research",
+        "Ministry of Business and Made in Italy",
+        "Civil Protection Department",
+        "Ministry of Tourism",
+        "Environment",
+        "Finance",
+        "Ministry for Public Administration"
+      ],
+      "organizations": [
+        " - Government Contact",
+        " - Federal Cabinet",
+        " - Parliament Contact"
+      ],
+      "errors": []
+    },
+    {
+      "file": "South African Government Officials Directory.xlsx",
+      "sheets": 3,
+      "contacts": 42,
+      "countries": [
+        "South Africa"
+      ],
+      "departments": [
+        "Transportation",
+        "Education",
+        "The Presidency",
+        "Interior",
+        "Department of Public Works",
+        "Defense",
+        "Department of Public Service and Administration",
+        "Department of Human Settlements",
+        "Energy",
+        "Department of Land Reform",
+        "Executive Office",
+        "Department of Communications",
+        "Department of Water and Sanitation",
+        "Justice",
+        "Health",
+        "Department of Social Development",
+        "Department of Mineral Resources",
+        "Department of Correctional Services",
+        "Department of Planning, Monitoring and Evaluation",
+        "Trade",
+        "Agriculture",
+        "Department of Cooperative Governance",
+        "Department of International Relations",
+        "Labor",
+        "Department of Small Business Development",
+        "Department of Science and Innovation",
+        "Environment",
+        "Department of Sports, Arts and Culture",
+        "Finance",
+        "South African Police Service",
+        "Department of Tourism"
+      ],
+      "organizations": [
+        " - Government Contact",
+        " - Cabinet Ministers",
+        " - Parliament Contact"
+      ],
+      "errors": []
+    },
+    {
+      "file": "UK Parliament Contact Directory.xlsx",
+      "sheets": 7,
+      "contacts": 91,
+      "countries": [
+        "United Kingdom"
+      ],
+      "departments": [],
+      "organizations": [
+        "UK - Green Party and Others",
+        "UK - Scottish National Party (SNP)",
+        "UK - Liberal Democrat MPs",
+        "UK - Contact Guide and Reference",
+        "UK - Labour MPs - A to D",
+        "UK - Prime Minister and Cabinet",
+        "UK - Conservative MPs"
+      ],
+      "errors": []
+    },
+    {
+      "file": "Government Leaders Contact Database.xlsx",
+      "sheets": 4,
+      "contacts": 19,
+      "countries": [
+        "International"
+      ],
+      "departments": [],
+      "organizations": [
+        "Leaders  Database - Instructions & Notes",
+        "Leaders  Database - Regional Groups & Contacts"
+      ],
+      "errors": []
+    },
+    {
+      "file": "France Parliament Contact Directory.xlsx",
+      "sheets": 8,
+      "contacts": 27,
+      "countries": [
+        "France"
+      ],
+      "departments": [
+        "34",
+        "77",
+        "57",
+        "87",
+        "23",
+        "94",
+        "75",
+        "59",
+        "78",
+        "43",
+        "76",
+        "60",
+        "50",
+        "13",
+        "62",
+        "40",
+        "25",
+        "93",
+        "91",
+        "83",
+        "92"
+      ],
+      "organizations": [
+        "France - Left-wing Opposition (NUPES)",
+        "France - Right-wing Opposition (Republic",
+        "France - Majority Coalition (LREM-led)",
+        "France - Far-right Opposition (National ",
+        "France - President and Prime Minister"
+      ],
+      "errors": []
+    },
+    {
+      "file": "Brazilian Government Officials Directory.xlsx",
+      "sheets": 3,
+      "contacts": 26,
+      "countries": [
+        "Brazil"
+      ],
+      "departments": [
+        "Education",
+        "Social Secretariat",
+        "Transportation",
+        "Ministry of Women",
+        "Defense",
+        "Ministry of Development",
+        "Ministry of Culture",
+        "Energy",
+        "Office of the Chief of Staff",
+        "Executive Office",
+        "Justice",
+        "Health",
+        "Agriculture",
+        "Secretariat of Social Communication",
+        "Foreign Affairs",
+        "Environment",
+        "Ministry of Science and Technology",
+        "Finance"
+      ],
+      "organizations": [
+        " - Government Contact",
+        " - Congress Contact",
+        " - Lula Cabinet"
+      ],
+      "errors": []
+    },
+    {
+      "file": "Mexican Government Officials Directory.xlsx",
+      "sheets": 3,
+      "contacts": 30,
+      "countries": [
+        "Mexico"
+      ],
+      "departments": [
+        "Education",
+        "Environment",
+        "Defense",
+        "Ministry of Public Administration (SFP)",
+        "Ministry of Tourism (SECTUR)",
+        "Ministry of Agricultural Development (SADER)",
+        "Foreign Affairs",
+        "Energy",
+        "Ministry of Welfare (BIENESTAR)",
+        "Executive Office",
+        "Ministry of Security (SSPC)",
+        "Ministry of Economy (SE)",
+        "Health",
+        "Labor",
+        "Ministry of Agrarian Development (SEDATU)",
+        "Ministry of Communications (SCT)",
+        "Ministry of Government (SEGOB)",
+        "Ministry of the Navy (SEMAR)",
+        "Ministry of Sport (CONADE)",
+        "Ministry of Culture (SC)",
+        "Finance"
+      ],
+      "organizations": [
+        " - Government Contact",
+        " - Federal Cabinet",
+        " - Parliament Contact"
+      ],
+      "errors": []
+    }
+  ]
+}
