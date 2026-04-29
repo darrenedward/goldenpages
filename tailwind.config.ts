@@ -53,6 +53,26 @@ const config: Config = {
         '2xl': '1rem',
         '2.5xl': '1.5rem',
       },
+      keyframes: {
+        shimmer: {
+          '0%': { backgroundPosition: '200% 0' },
+          '100%': { backgroundPosition: '-200% 0' },
+        },
+        float: {
+          '0%, 100%': { transform: 'translateY(0px) translateX(0px)' },
+          '33%': { transform: 'translateY(-12px) translateX(6px)' },
+          '66%': { transform: 'translateY(6px) translateX(-8px)' },
+        },
+        'pulse-glow': {
+          '0%, 100%': { boxShadow: '0 0 20px hsl(45 93% 47% / 0.2)' },
+          '50%': { boxShadow: '0 0 40px hsl(45 93% 47% / 0.4)' },
+        },
+      },
+      animation: {
+        shimmer: 'shimmer 3s ease-in-out infinite',
+        float: 'float 6s ease-in-out infinite',
+        'pulse-glow': 'pulse-glow 3s ease-in-out infinite',
+      },
     },
   },
   plugins: [],

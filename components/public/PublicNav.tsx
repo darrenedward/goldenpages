@@ -26,7 +26,7 @@ export default function PublicNav() {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-stone-200 dark:border-white/10 shadow-sm">
+    <header className="sticky top-0 z-50 glass border-b border-white/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -43,13 +43,16 @@ export default function PublicNav() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                className={`relative px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                   isActive(link.href)
                     ? 'text-gold-700 dark:text-gold-400 bg-gold-50 dark:bg-gold-900/20'
                     : 'text-slate-600 dark:text-slate-400 hover:text-gold-700 dark:hover:text-gold-400 hover:bg-stone-50 dark:hover:bg-white/5'
                 }`}
               >
                 {link.label}
+                {isActive(link.href) && (
+                  <span className="absolute bottom-0 left-3 right-3 h-[2px] bg-gradient-to-r from-gold-500 to-gold-600 rounded-full" />
+                )}
               </Link>
             ))}
           </nav>
@@ -67,7 +70,7 @@ export default function PublicNav() {
             ) : (
               <Link
                 href="/login"
-                className="flex items-center gap-2 px-4 py-2 bg-gold-600 text-white rounded-xl text-sm font-bold hover:bg-gold-700 transition-all"
+                className="flex items-center gap-2 px-4 py-2 bg-gold-600 text-white rounded-xl text-sm font-bold hover:bg-gold-700 transition-all animate-pulse-glow"
               >
                 <LogIn size={16} />
                 Sign In
@@ -87,7 +90,7 @@ export default function PublicNav() {
 
         {/* Mobile menu */}
         {mobileOpen && (
-          <div className="md:hidden border-t border-stone-200 dark:border-white/10 py-4 space-y-1 animate-fade-in">
+          <div className="md:hidden border-t border-white/10 py-4 space-y-1 animate-slide-in-up">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -102,7 +105,7 @@ export default function PublicNav() {
                 {link.label}
               </Link>
             ))}
-            <div className="pt-3 border-t border-stone-200 dark:border-white/10">
+            <div className="pt-3 border-t border-white/10">
               {isAuthenticated ? (
                 <Link
                   href="/dashboard"
