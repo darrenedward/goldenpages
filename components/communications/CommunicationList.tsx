@@ -3,7 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, Plus, MessageSquare } from 'lucide-react';
 import { communicationService } from '@/services/communicationService';
+import { communicationMemberService } from '@/services/communicationMemberService';
 import { usePermissions } from '@/lib/hooks/usePermissions';
+import { useAuth } from '@/lib/authContext';
 import type { CommunicationWithDetails, CommunicationStatus } from '@/types';
 import CommunicationCard from './CommunicationCard';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
@@ -14,6 +16,7 @@ interface CommunicationListProps {
   departmentId?: string;
   organisationId?: string;
   isPublicView?: boolean;
+  myOnly?: boolean;
   onSelectCommunication: (id: string) => void;
   onStartCommunication?: (contactId: string) => void;
   onChangeView?: (view: string) => void;
@@ -32,6 +35,7 @@ export default function CommunicationList({
   departmentId,
   organisationId,
   isPublicView,
+  myOnly,
   onSelectCommunication,
   onStartCommunication,
 }: CommunicationListProps) {
@@ -40,6 +44,7 @@ export default function CommunicationList({
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<CommunicationStatus | 'ALL'>('ALL');
   const { canWriteCommunications } = usePermissions();
+  const { user } = useAuth();
 
   useEffect(() => {
     void fetchCommunications();
@@ -48,18 +53,25 @@ export default function CommunicationList({
   const fetchCommunications = async () => {
     setLoading(true);
     try {
-      const filters: Record<string, unknown> = {};
-      if (contactId) filters.contactId = contactId;
-      if (departmentId) filters.departmentId = departmentId;
-      if (organisationId) filters.organisationId = organisationId;
-      if (isPublicView) filters.isPublic = true;
+      if (myOnly && user?.id) {
+        // "My Communications" — fetch IDs then fetch details
+        const { data: commIds } = await communicationMemberService.getCommunicationsForUser(user.id);
+        const allComms = await communicationService.getCommunications({});
+        const memberSet = new Set(commIds);
+        setCommunications(allComms.filter(c => memberSet.has(c.id)));
+      } else {
+        const filters: Record<string, unknown> = {};
+        if (contactId) filters.contactId = contactId;
+        if (departmentId) filters.departmentId = departmentId;
+        if (organisationId) filters.organisationId = organisationId;
+        if (isPublicView) filters.isPublic = true;
 
-      const result = isPublicView
-        ? await communicationService.getPublicCommunications(filters as { organisationId?: string; departmentId?: string })
-        : await communicationService.getCommunications(filters as Parameters<typeof communicationService.getCommunications>[0]);
+        const result = isPublicView
+          ? await communicationService.getPublicCommunications(filters as { organisationId?: string; departmentId?: string })
+          : await communicationService.getCommunications(filters as Parameters<typeof communicationService.getCommunications>[0]);
 
-      // getPublicCommunications returns { data, totalCount }, getCommunications returns array
-      setCommunications(Array.isArray(result) ? result : result.data);
+        setCommunications(Array.isArray(result) ? result : result.data);
+      }
     } catch (err) {
       console.error('Failed to fetch communications:', err);
     } finally {

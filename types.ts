@@ -330,3 +330,9 @@ export interface ActivityLogEntry {
     displayName: string | null;
   };
 }
+
+export interface UserResult {
+  id: string;
+  email: string;
+  displayName: string | null;
+}

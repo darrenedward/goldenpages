@@ -1,5 +1,6 @@
 import React from 'react';
-import { LayoutDashboard, Building2, FileText, Settings, ShieldCheck, LogOut, Briefcase, MessageSquare, Eye, Tags } from 'lucide-react';
+import { LayoutDashboard, Building2, FileText, Settings, ShieldCheck, LogOut, Briefcase, MessageSquare, Eye, Tags, Bell, Users } from 'lucide-react';
+import NotificationBell from '@/components/notifications/NotificationBell';
 
 interface SidebarProps {
   activeView: string;
@@ -13,12 +14,14 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, onChangeView, isAdmin, on
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'organizations', label: 'Organizations', icon: Briefcase },
     { id: 'communications', label: 'Communications', icon: MessageSquare },
+    { id: 'my-communications', label: 'My Communications', icon: Users },
     { id: 'packages', label: 'Packages', icon: Briefcase },
     { id: 'documents', label: 'Documents', icon: FileText },
   ];
 
   const publicItems = [
     { id: 'public-register', label: 'Public Register', icon: Eye },
+    { id: 'notifications', label: 'Notifications', icon: Bell },
   ];
 
   const adminItems = [
@@ -29,11 +32,20 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, onChangeView, isAdmin, on
 
   return (
     <aside className="w-64 bg-slate-900 text-white flex flex-col h-screen fixed left-0 top-0 border-r border-gold-600/30 shadow-2xl z-20">
-      <div className="p-6 border-b border-white/10 flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gold-300 to-gold-600 shadow-lg shadow-gold-500/20" />
-        <h1 className="text-xl font-serif font-bold tracking-wide text-gold-100">
-          Golden<span className="text-gold-400">Pages</span>
-        </h1>
+      <div className="p-6 border-b border-white/10 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gold-300 to-gold-600 shadow-lg shadow-gold-500/20" />
+          <h1 className="text-xl font-serif font-bold tracking-wide text-gold-100">
+            Golden<span className="text-gold-400">Pages</span>
+          </h1>
+        </div>
+        <NotificationBell onNavigate={(view, data) => {
+          if (data?.communicationId) {
+            onChangeView(view);
+          } else {
+            onChangeView(view);
+          }
+        }} />
       </div>
 
       <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto">

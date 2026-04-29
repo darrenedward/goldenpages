@@ -4,8 +4,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Upload, CheckCircle2, XCircle, Clock, AlertCircle, FileText, Eye, EyeOff } from 'lucide-react';
 import { communicationService } from '@/services/communicationService';
 import { usePermissions } from '@/lib/hooks/usePermissions';
+import { useAuth } from '@/lib/authContext';
 import type { CommunicationWithDetails, CommunicationStatus, CommunicationDocumentType } from '@/types';
 import CommunicationTimeline from './CommunicationTimeline';
+import ActivityFeed from './ActivityFeed';
+import MemberManager from './MemberManager';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import StatusBadge from '@/components/shared/StatusBadge';
 import BreadcrumbNav from '@/components/shared/BreadcrumbNav';
@@ -23,8 +26,10 @@ export default function CommunicationDetail({ communicationId, onBack, onChangeV
   const [uploadingFile, setUploadingFile] = useState(false);
   const [uploadType, setUploadType] = useState<CommunicationDocumentType>('received');
   const [uploadPublic, setUploadPublic] = useState(true);
+  const [activeTab, setActiveTab] = useState<'documents' | 'activity' | 'team'>('documents');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { canWriteCommunications } = usePermissions();
+  const { user } = useAuth();
 
   useEffect(() => {
     void fetchCommunication();
@@ -49,7 +54,7 @@ export default function CommunicationDetail({ communicationId, onBack, onChangeV
       await communicationService.updateCommunicationStatus(
         communicationId,
         newStatus,
-        communication.createdById
+        user?.id || communication.createdById
       );
       toast.success(`Communication marked as ${newStatus.replace('_', ' ')}`);
       void fetchCommunication();
@@ -69,7 +74,7 @@ export default function CommunicationDetail({ communicationId, onBack, onChangeV
         file,
         uploadType,
         uploadPublic,
-        communication.createdById
+        user?.id || communication.createdById
       );
       toast.success(`${uploadType === 'sent' ? 'Sent' : 'Received'} document uploaded`);
       void fetchCommunication();
@@ -241,17 +246,47 @@ export default function CommunicationDetail({ communicationId, onBack, onChangeV
         </div>
       )}
 
-      {/* Timeline */}
-      <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-stone-200 dark:border-white/5 p-8">
-        <h2 className="font-serif text-xl font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-2">
-          <FileText className="w-5 h-5 text-gold-600" />
-          Correspondence Timeline
-        </h2>
-        <CommunicationTimeline
-          communication={communication}
-          onDownload={handleDownload}
-          onDelete={canWriteCommunications ? handleDeleteDocument : undefined}
-        />
+      {/* Tabs: Documents / Activity / Team */}
+      <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-stone-200 dark:border-white/5 overflow-hidden">
+        <div className="flex border-b border-stone-100 dark:border-stone-800">
+          {[
+            { key: 'documents' as const, label: 'Documents', icon: <FileText className="w-4 h-4" /> },
+            { key: 'activity' as const, label: 'Activity', icon: <Clock className="w-4 h-4" /> },
+            { key: 'team' as const, label: 'Team', icon: <AlertCircle className="w-4 h-4" /> },
+          ].map(tab => (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
+              className={`flex items-center gap-2 px-6 py-4 text-sm font-bold transition-colors ${
+                activeTab === tab.key
+                  ? 'text-gold-600 border-b-2 border-gold-600 bg-gold-50/50 dark:bg-gold-900/10'
+                  : 'text-stone-400 hover:text-stone-600'
+              }`}
+            >
+              {tab.icon}
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="p-8">
+          {activeTab === 'documents' && (
+            <>
+              <h2 className="font-serif text-xl font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-2">
+                <FileText className="w-5 h-5 text-gold-600" />
+                Correspondence Timeline
+              </h2>
+              <CommunicationTimeline
+                communication={communication}
+                onDownload={handleDownload}
+                onDelete={canWriteCommunications ? handleDeleteDocument : undefined}
+              />
+            </>
+          )}
+          {activeTab === 'activity' && <ActivityFeed communicationId={communicationId} />}
+          {activeTab === 'team' && <MemberManager communicationId={communicationId} />}
+        </div>
       </div>
     </div>
   );

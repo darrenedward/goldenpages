@@ -20,6 +20,7 @@ import PublicCommunicationBrowser from '@/components/communications/PublicCommun
 import AdminPanel from './AdminPanel';
 import SettingsPanel from './SettingsPanel';
 import IssueCategoryManager from '@/components/admin/IssueCategoryManager';
+import NotificationList from '@/components/notifications/NotificationList';
 import type { DashboardState } from './useDashboardState';
 
 interface ViewRendererProps {
@@ -237,6 +238,18 @@ export default function ViewRenderer({ state }: ViewRendererProps) {
 
     case 'settings':
       return <SettingsPanel />;
+
+    case 'notifications':
+      return <NotificationList />;
+
+    case 'my-communications':
+      return (
+        <CommunicationList
+          myOnly={true}
+          onSelectCommunication={(id) => { setSelectedCommunicationId(id); setActiveView('communication-detail'); }}
+          onChangeView={setActiveView}
+        />
+      );
 
     default:
       return (
