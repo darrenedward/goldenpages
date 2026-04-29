@@ -1,11 +1,16 @@
-import { PrismaClient, RegionType, OrganisationType, ContactChannelType } from '@prisma/client'
+import { PrismaClient } from '@prisma/client'
+import { PrismaPg } from '@prisma/adapter-pg'
+import pg from 'pg'
+import { RegionType, OrganisationType, ContactChannelType } from '@prisma/client'
 import regionsData from './seeds/regions.json'
 import organisationsData from './seeds/organisations.json'
 import departmentsData from './seeds/departments.json'
 import contactsData from './seeds/contacts.json'
 import contactChannelsData from './seeds/contact_channels.json'
 
-const prisma = new PrismaClient()
+const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL })
+const adapter = new PrismaPg(pool)
+const prisma = new PrismaClient({ adapter })
 
 // Type imports for JSON data
 interface Region {
