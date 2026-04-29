@@ -4,15 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Golden Pages** is a centralized, versioned contact directory for organizations (government, corporate, diplomatic missions, international organizations, businesses, nonprofits). It serves as a "Golden Record" system designed for outreach workflows and data management.
+**Golden Pages** is a centralized, versioned contact directory for organizations (government, corporate, diplomatic missions, international organizations). It serves as a "Golden Record" system designed for outreach workflows, communication tracking, and public transparency.
 
 ## Commands
 
 ### Development
 ```bash
-npm run dev          # Start Vite dev server (port 3000, host 0.0.0.0)
-npm run build        # TypeScript compile + Vite build
-npm run preview      # Preview production build
+npm run dev          # Start Next.js dev server
+npm run build        # Next.js production build (TypeScript compile + bundling)
+npm run start        # Start production server
 ```
 
 ### Code Quality
@@ -27,42 +27,69 @@ npm run db:push      # Push Prisma schema to database
 npm tsx prisma/seed.ts   # Seed database (use this exact command - NOT npm run db:seed)
 ```
 
+### Deployment
+```bash
+vercel --prod        # Deploy to production on Vercel
+```
+
 ## Architecture
 
 ### Tech Stack
-- **Frontend**: React 18.3+ with TypeScript 5.7
-- **Build Tool**: Vite 6.0 (browser-native ES Modules via import maps)
-- **Styling**: Tailwind CSS 3.4 (configured via CDN in `index.html`)
+- **Framework**: Next.js 16 (App Router) with React 18.3+ and TypeScript 5.7
+- **Styling**: Tailwind CSS 3.4
 - **Backend/Database**: Supabase (PostgreSQL with Row Level Security)
-- **ORM**: Prisma 6.2
+- **ORM**: Prisma 7.4
 - **Validation**: Zod 3.22
 - **Icons**: Lucide React 0.469
+- **Auth**: Supabase Auth (email/password + OAuth)
+- **Deployment**: Vercel
 
 ### Project Type
-Modern React SPA with Supabase backend - client-side React application with direct Supabase client calls (no API middleware layer). Row Level Security (RLS) handles data access control.
+Next.js App Router application with two distinct areas:
+1. **Public site** (`app/(public)/`) — Marketing pages, public transparency register, report form, contact form. Server-rendered with client interactivity.
+2. **Dashboard** (`app/dashboard/`) — Client-side SPA using view-state pattern (single route, `activeView` state drives component rendering via `ViewRenderer.tsx`).
+
+Row Level Security (RLS) handles data access control at the database level.
 
 ### Key Directories
 ```
-components/              # React UI components (Dashboard, OrganizationTable, OrgDetail, Sidebar)
-services/               # Business logic & API clients (supabaseClient.ts, frontendSeeder.ts, seedContent.ts)
-prisma/                 # Database schema & seeding (schema.prisma, seed.ts, utils/seed-helper.ts)
-docs/                   # Documentation (RBAC_SYSTEM.md, etc.)
-"Country Contacts/"     # Excel data import pipeline (Python scripts → SQL seeds)
+app/
+  (public)/            # Public pages (home, about, contact, report, communications, privacy, terms)
+  dashboard/           # Dashboard SPA (single page with view-state routing)
+  login/               # Authentication page
+components/
+  public/              # PublicNav, PublicFooter
+  dashboard/           # ViewRenderer, AdminPanel, SettingsPanel, useDashboardState
+  hierarchy/           # OrganizationsList, OrganizationDetail, DepartmentContacts, etc.
+  packages/            # PackageList, PackageDetail, CreatePackageWizard, etc.
+  communications/      # CommunicationList, PublicCommunicationBrowser, CategorySidebar, etc.
+  documents/           # DocumentLibrary, DocumentUploader
+  shared/              # BreadcrumbNav, LoadingSpinner, EmptyState, StatusBadge, visual components
+  auth/                # LoginForm, ProtectedRoute
+  admin/               # IssueCategoryManager
+services/              # Business logic (supabaseClient, authService, hierarchyService, communicationService, etc.)
+lib/                   # Auth context, hooks (usePermissions, useUser)
+prisma/                # Schema, migrations, seeds
+types.ts               # Centralized TypeScript definitions
 ```
 
-### Data Model (Conceptual)
-Core tables (from PRD):
-- `organisations` - Organizations with hierarchical support (parent_org_id)
+### Data Model
+Core tables:
+- `organisations` - Organizations (government, corporate, diplomatic, international)
+- `departments` - Departments within organizations with portfolio types
 - `contacts` - People within organizations
-- `contact_channels` - Versioned contact methods (email, phone, postal) with `is_current` flag
-- `organisation_notes` / `contact_notes` - Notes with visibility levels
+- `contact_channels` - Contact methods (email, phone, address) with versioning
+- `communications` - Communication tracker (letters, emails, meetings)
+- `communication_documents` - Documents attached to communications
+- `issue_categories` - Admin-managed categories for communications/reports
+- `reports` - Public issue reports from the transparency form
+- `contact_submissions` - Contact form submissions
+- `newsletter_subscribers` - Newsletter email subscriptions
+- `packages` / `sub_packages` - Package management for document delivery
 - `regions` - Geographic regions (countries, states)
-- `outreach_logs` - Communication tracking
-- `user_roles` / `permissions` - RBAC tables
+- `user_roles` / `role_permissions` - RBAC tables
 
-Data is versioned - changes preserve historical records.
-
-## Critical Engineering Standards (from gemini.md)
+## Critical Engineering Standards
 
 ### TypeScript Rules
 - **Zero tolerance for `any` type** - use `unknown` with type guards if necessary
@@ -77,14 +104,15 @@ Data is versioned - changes preserve historical records.
 - Keys: Do not use array indexes as keys - use stable IDs
 
 ### Data Handling
-- No hardcoded "magic" data - use `services/mockData.ts` or proper constants
 - Always use the singleton Supabase client from `services/supabaseClient.ts`
+- Use service layer files (not inline Supabase calls in components) for data operations
 - Zod validation required for all forms
 
 ### File Organization
 - Root: Configuration files only
 - `components/`: React UI components
-- `services/`: API clients, mock data, helpers
+- `services/`: API clients, business logic
+- `lib/`: Context providers, hooks
 - `docs/`: Documentation
 - `types.ts`: Centralized TypeScript definitions
 - **Do NOT create unrelated files in the project root**
@@ -100,6 +128,11 @@ Data is versioned - changes preserve historical records.
 - **Gold**: `gold-50` (Bg) to `gold-600` (Primary Action)
 - **Stone**: `stone-50` (App Bg), `stone-200` (Borders)
 
+### Visual Enhancement Layer
+- `app/globals.css` — Custom keyframes, glass morphism, shimmer, dot grid, noise overlay
+- `components/shared/` — ScrollReveal, GradientMesh, DotGrid, GlowCard, AnimatedCounter, etc.
+- `@media (prefers-reduced-motion: reduce)` kills all animations for accessibility
+
 ## RBAC System
 
 **Users gain permissions through assigned roles, NOT individually.**
@@ -114,31 +147,24 @@ Data is versioned - changes preserve historical records.
 
 ### Enforcement
 - **Database**: Postgres RLS policies checking `user_roles` table
-- **Frontend**: UI elements hidden/disabled based on loaded permissions
+- **Frontend**: UI elements hidden/disabled based on loaded permissions via `usePermissions()` hook
 - See `docs/RBAC_SYSTEM.md` for authoritative permission matrix
-
-### Audit Logging
-All write operations must log to `activity_logs`: `user_id`, `action`, `resource_id`, `timestamp`, `changes` (JSONB diff)
-
-## PDF & File Generation Standards
-
-**Thumbnail/Preview Generation**: Use `pdftocairo` (Cairo Graphics) in Edge Functions/Backend
-- ❌ FORBIDDEN: `pdftoppm`, ImageMagick `convert`, `pdf2png` (they fail to render embedded text correctly)
-- Exported PDFs must allow text selection and searchability (no raster-only exports)
 
 ## Environment
 
 ### Required
-- `GEMINI_API_KEY` in `.env.local`
-- Node.js
+- `NEXT_PUBLIC_SUPABASE_URL` — Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` — Supabase anon/public key
+- `DATABASE_URL` — PostgreSQL connection string (for Prisma CLI)
+- See `.env.example` for full list
 
-### Vite Configuration
-- Port 3000, host 0.0.0.0
-- Environment variables accessed via `process.env.GEMINI_API_KEY`
+### Next.js Configuration
 - Path alias: `@` resolves to project root
+- Edge runtime used for OG image generation (`app/opengraph-image.tsx`)
 
 ## Current State
 
-- **Prisma schema**: Currently empty (schema defined in SQL files instead)
-- **RLS policies**: Set to permissive/demo mode (`USING (true)`) - production requires strict role-based policies
+- **Prisma schema**: Full schema with 20+ models in `prisma/schema.prisma`
+- **RLS policies**: Zero-trust mode — communications require `is_public AND is_approved` for anon access
 - **Testing**: No test framework currently configured
+- **Deployment**: Live at goldenpages.vercel.app
