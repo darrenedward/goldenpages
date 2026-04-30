@@ -18,7 +18,7 @@ import CommunicationDetail from '@/components/communications/CommunicationDetail
 import CreateCommunicationForm from '@/components/communications/CreateCommunicationForm';
 import PublicCommunicationBrowser from '@/components/communications/PublicCommunicationBrowser';
 import UserManagementPanel from '@/components/admin/UserManagementPanel';
-import SettingsPanel from './SettingsPanel';
+import SettingsPanel from './settings/SettingsPanel';
 import IssueCategoryManager from '@/components/admin/IssueCategoryManager';
 import NotificationList from '@/components/notifications/NotificationList';
 import InboundEmailList from '@/components/inbound/InboundEmailList';

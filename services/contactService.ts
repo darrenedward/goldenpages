@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient';
 import { notificationService } from './notificationService';
+import { settingsService } from './settingsService';
 
 export interface ContactSubmission {
   id: string;
@@ -35,11 +36,12 @@ export const contactService = {
     };
 
     // Fire-and-forget confirmation email to submitter
+    const contactEmail = await settingsService.getContactEmail();
     notificationService.sendEmail({
       to: submission.email,
       subject: 'We received your message — Golden Pages',
       html: notificationService.buildContactConfirmationHtml(submission.name, submission.subject, submission.message),
-      fromEmail: `contact@${EMAIL_DOMAIN}`,
+      fromEmail: contactEmail,
       fromName: 'Golden Pages Contact',
     }).catch(() => {
       // Email failure is non-blocking
@@ -62,8 +64,6 @@ export const contactService = {
     }
   },
 };
-
-const EMAIL_DOMAIN = 'mail.goldenpages.newworldalliances.nz';
 
 async function notifyAdmins(type: string, title: string, message: string, resourceId: string): Promise<void> {
   const { data: adminRole } = await supabase

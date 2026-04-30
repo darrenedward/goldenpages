@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient';
 import { notificationService } from './notificationService';
+import { settingsService } from './settingsService';
 
 export interface ReportSubmission {
   id: string;
@@ -29,8 +30,6 @@ export interface CreateReportInput {
   description: string;
   anonymous?: boolean;
 }
-
-const EMAIL_DOMAIN = 'mail.goldenpages.newworldalliances.nz';
 
 export const reportService = {
   async submitReport(input: CreateReportInput): Promise<ReportSubmission> {
@@ -75,6 +74,7 @@ export const reportService = {
 
     // Fire-and-forget confirmation email to reporter
     if (!submission.isAnonymous) {
+      const senderName = await settingsService.getSenderName();
       notificationService.sendEmail({
         to: submission.email,
         subject: `Your report has been received [${shortRef}]`,
@@ -83,7 +83,7 @@ export const reportService = {
           shortRef,
           submission.subject
         ),
-        fromName: 'Golden Pages',
+        fromName: senderName,
       }).catch(() => {
         // Email failure is non-blocking
       });

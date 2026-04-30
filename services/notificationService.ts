@@ -9,9 +9,8 @@
  */
 
 import { supabase } from './supabaseClient';
+import { settingsService } from './settingsService';
 import type { AppNotification, NotificationType } from '@/types';
-
-const EMAIL_DOMAIN = 'mail.goldenpages.newworldalliances.nz';
 
 interface SendEmailOptions {
   to: string;
@@ -65,9 +64,10 @@ class NotificationService {
     }
 
     // Fire-and-forget email attempt
+    const emailDomain = await settingsService.getEmailDomain();
     this.sendEmailNotification(userId, title, message, {
       replyTo: metadata?.communicationId
-        ? `reply+${metadata.communicationId}@${EMAIL_DOMAIN}`
+        ? `reply+${metadata.communicationId}@${emailDomain}`
         : undefined,
     }).catch(() => {
       // Email failure is non-blocking

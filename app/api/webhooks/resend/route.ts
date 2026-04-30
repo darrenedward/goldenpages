@@ -15,8 +15,6 @@ import { getAdminClient } from '@/services/adminClient';
 const WEBHOOK_SECRET = process.env.RESEND_WEBHOOK_SECRET || '';
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 
-const EMAIL_DOMAIN = 'mail.goldenpages.newworldalliances.nz';
-
 // ============================================================================
 // Svix Signature Verification
 // ============================================================================

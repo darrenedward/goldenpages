@@ -869,3 +869,19 @@ model InboundEmail {
 //   'channel:read'
 //   'note:read' (filtered by visibility)
 // ============================================================================
+
+model SiteSetting {
+  id          String   @id @default(uuid())
+  key         String   @unique @db.VarChar(100)
+  value       String   @db.Text
+  valueType   String   @default("string") @map("value_type") @db.VarChar(20)
+  category    String   @db.VarChar(50)
+  label       String   @db.VarChar(255)
+  description String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  updatedBy   String?  @map("updated_by")
+
+  @@index([category])
+  @@map("site_settings")
+}

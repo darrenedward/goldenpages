@@ -373,3 +373,22 @@ export interface ManagedUser {
   roles: string[];
   createdAt: string;
 }
+
+export interface SiteSetting {
+  id: string;
+  key: string;
+  value: string;
+  valueType: 'string' | 'json' | 'boolean';
+  category: string;
+  label: string;
+  description: string | null;
+  createdAt: string;
+  updatedAt: string;
+  updatedBy: string | null;
+}
+
+export interface SocialLink {
+  platform: string;
+  url: string;
+  label: string;
+}
