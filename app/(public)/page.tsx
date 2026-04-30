@@ -1,5 +1,6 @@
 'use client';
 
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Eye, ShieldCheck, Globe2, Users, ArrowRight, Scale, Heart, Droplets, Wheat, Gavel } from 'lucide-react';
 import { ScrollReveal } from '@/components/shared/ScrollReveal';
@@ -9,8 +10,21 @@ import { DotGrid } from '@/components/shared/DotGrid';
 import { GlowCard } from '@/components/shared/GlowCard';
 import { AnimatedGradientText } from '@/components/shared/AnimatedGradientText';
 import { HeroBeamLine } from '@/components/shared/HeroBeamLine';
+import { statsService } from '@/services/statsService';
 
 export default function LandingPage() {
+  const [stats, setStats] = useState<{ countryCount: number; contactCount: number; deptCount: number; channelCount: number } | null>(null);
+
+  useEffect(() => {
+    void (async () => {
+      try {
+        const data = await statsService.getPublicStats();
+        setStats(data);
+      } catch {
+        // Stats are supplementary — silent fail
+      }
+    })();
+  }, []);
   return (
     <div>
       {/* Hero Section */}
@@ -173,10 +187,10 @@ export default function LandingPage() {
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               {[
-                { target: 24, label: 'Countries Monitored' },
-                { target: 1000, label: 'Decision-Makers Tracked' },
-                { target: 127, label: 'Government Departments' },
-                { target: 2720, label: 'Contact Channels' },
+                { target: stats?.countryCount ?? 0, label: 'Countries Monitored' },
+                { target: stats?.contactCount ?? 0, label: 'Decision-Makers Tracked' },
+                { target: stats?.deptCount ?? 0, label: 'Government Departments' },
+                { target: stats?.channelCount ?? 0, label: 'Contact Channels' },
               ].map((stat, i) => (
                 <ScrollReveal key={stat.label} delay={i * 100}>
                   <p className="text-3xl md:text-4xl font-serif font-black text-gold-400">
