@@ -18,7 +18,7 @@ const ROLES = [
 ];
 
 export default function EditUserRolesModal({ user, open, onClose, onSaved }: EditUserRolesModalProps) {
-  const [selectedRoles, setSelectedRoles] = useState<string[]>(user.roles);
+  const [selectedRoles, setSelectedRoles] = useState<string[]>(user.roles || []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 

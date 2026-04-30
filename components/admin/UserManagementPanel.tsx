@@ -210,12 +210,14 @@ export default function UserManagementPanel() {
         onInvited={() => void fetchUsers()}
       />
 
-      <EditUserRolesModal
-        user={editingUser!}
-        open={!!editingUser}
-        onClose={() => setEditingUser(null)}
-        onSaved={() => void fetchUsers()}
-      />
+      {editingUser && (
+        <EditUserRolesModal
+          user={editingUser}
+          open={true}
+          onClose={() => setEditingUser(null)}
+          onSaved={() => void fetchUsers()}
+        />
+      )}
 
       {/* Remove confirmation */}
       {removingUser && (
