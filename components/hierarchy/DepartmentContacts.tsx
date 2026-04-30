@@ -33,13 +33,20 @@ export default function DepartmentContacts({ orgId, deptId, onChangeView }: Depa
     setLoading(true);
     setError(null);
     try {
-      const contactsData = await hierarchyService.getDepartmentContacts(deptId);
+      // Fetch department and org info independently so breadcrumb works even with 0 contacts
+      const [contactsData, deptData, orgData] = await Promise.all([
+        hierarchyService.getDepartmentContacts(deptId),
+        hierarchyService.getDepartment(deptId),
+        orgId ? hierarchyService.getOrganization(orgId) : Promise.resolve(null),
+      ]);
 
+      // Prefer nested data from contacts (already loaded), fall back to direct fetch
       if (contactsData.length > 0) {
-        const dept = contactsData[0].department || null;
-        const org = contactsData[0].organisation || null;
-        setDepartment(dept);
-        setOrganization(org);
+        setDepartment(contactsData[0].department || deptData);
+        setOrganization(contactsData[0].organisation || orgData);
+      } else {
+        setDepartment(deptData);
+        setOrganization(orgData);
       }
 
       setContacts(contactsData);
