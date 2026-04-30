@@ -33,7 +33,7 @@ const Dashboard: React.FC<DashboardProps> = ({ orgs, contacts, onNavigate }) => 
           <p className="text-stone-400 font-bold uppercase tracking-widest text-xs mt-1">Directory Health & Performance Matrix</p>
         </div>
         <div className="flex gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-stone-200 dark:border-slate-700 rounded-xl text-sm font-bold shadow-sm hover:shadow-md transition-all">
+          <button className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-stone-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-700 dark:text-white shadow-sm hover:shadow-md transition-all">
             <Download size={16} className="text-gold-600" /> Export PDF
           </button>
           <button onClick={() => onNavigate('directory')} className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-xl text-sm font-bold shadow-lg shadow-slate-900/20 hover:bg-slate-800 transition-all">
@@ -68,7 +68,7 @@ const Dashboard: React.FC<DashboardProps> = ({ orgs, contacts, onNavigate }) => 
               <h3 className="text-xl font-serif font-black text-slate-900 dark:text-white">Communication Velocity</h3>
               <p className="text-xs text-stone-400 font-medium">Monthly outreach volume across all channels</p>
             </div>
-            <select className="bg-stone-50 dark:bg-white/5 border-none text-xs font-bold rounded-lg px-3 py-1.5 focus:ring-0 cursor-pointer">
+            <select aria-label="Time period" className="bg-stone-50 dark:bg-white/5 border-none text-xs font-bold text-slate-700 dark:text-white rounded-lg px-3 py-1.5 focus:ring-0 cursor-pointer">
               <option>Last 6 Months</option>
               <option>Last Year</option>
             </select>
@@ -162,7 +162,7 @@ const Dashboard: React.FC<DashboardProps> = ({ orgs, contacts, onNavigate }) => 
                     <p className="text-stone-400 leading-relaxed">
                       <span className="text-stone-100 font-bold">{log.user}</span> {log.action} <span className="text-gold-400 font-black">{log.target}</span>
                     </p>
-                    <span className="text-[10px] text-stone-600 font-bold uppercase mt-1 block">{log.time}</span>
+                    <span className="text-[10px] text-stone-400 font-bold uppercase mt-1 block">{log.time}</span>
                   </div>
                 </div>
               ))}
