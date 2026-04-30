@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Bell, CheckCheck, FileUp, UserPlus, RefreshCw, Edit3, UserMinus } from 'lucide-react';
+import { Bell, CheckCheck, FileUp, UserPlus, RefreshCw, Edit3, UserMinus, Mail, MessageSquare, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@/lib/authContext';
 import { useNotifications } from '@/lib/hooks/useNotifications';
 import type { NotificationType } from '@/types';
@@ -14,6 +14,9 @@ const TYPE_ICONS: Record<NotificationType, React.ReactNode> = {
   communication_updated: <Edit3 className="w-4 h-4 text-stone-500" />,
   communication_member_added: <UserPlus className="w-4 h-4 text-violet-500" />,
   communication_member_removed: <UserMinus className="w-4 h-4 text-red-500" />,
+  inbound_email_received: <Mail className="w-4 h-4 text-blue-500" />,
+  contact_submission_received: <MessageSquare className="w-4 h-4 text-green-500" />,
+  report_submission_received: <AlertTriangle className="w-4 h-4 text-orange-500" />,
 };
 
 function formatRelativeTime(dateStr: string): string {

@@ -301,7 +301,10 @@ export type NotificationType =
   | 'communication_document_uploaded'
   | 'communication_updated'
   | 'communication_member_added'
-  | 'communication_member_removed';
+  | 'communication_member_removed'
+  | 'inbound_email_received'
+  | 'contact_submission_received'
+  | 'report_submission_received';
 
 export interface AppNotification {
   id: string;
@@ -335,4 +338,28 @@ export interface UserResult {
   id: string;
   email: string;
   displayName: string | null;
+}
+
+// ============================================================================
+// INBOUND EMAIL TYPES
+// ============================================================================
+
+export type InboundEmailStatus = 'received' | 'linked' | 'unlinked' | 'error';
+
+export interface InboundEmail {
+  id: string;
+  fromEmail: string;
+  fromName: string | null;
+  toEmail: string;
+  subject: string;
+  bodyText: string | null;
+  bodyHtml: string | null;
+  headers: Record<string, unknown> | null;
+  messageId: string | null;
+  inReplyTo: string | null;
+  communicationId: string | null;
+  contactSubmissionId: string | null;
+  status: InboundEmailStatus;
+  processedAt: string | null;
+  createdAt: string;
 }

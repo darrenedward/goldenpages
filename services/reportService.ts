@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient';
+import { notificationService } from './notificationService';
 
 export interface ReportSubmission {
   id: string;
@@ -29,6 +30,8 @@ export interface CreateReportInput {
   anonymous?: boolean;
 }
 
+const EMAIL_DOMAIN = 'mail.goldenpages.newworldalliances.nz';
+
 export const reportService = {
   async submitReport(input: CreateReportInput): Promise<ReportSubmission> {
     const { data, error } = await supabase
@@ -50,7 +53,8 @@ export const reportService = {
       .single();
 
     if (error) throw error;
-    return {
+
+    const submission: ReportSubmission = {
       id: data.id,
       firstName: data.first_name,
       lastName: data.last_name,
@@ -65,5 +69,61 @@ export const reportService = {
       status: data.status,
       createdAt: data.created_at,
     };
+
+    // Generate short reference ID from submission ID
+    const shortRef = `GP-${submission.id.substring(0, 8).toUpperCase()}`;
+
+    // Fire-and-forget confirmation email to reporter
+    if (!submission.isAnonymous) {
+      notificationService.sendEmail({
+        to: submission.email,
+        subject: `Your report has been received [${shortRef}]`,
+        html: notificationService.buildReportConfirmationHtml(
+          `${submission.firstName} ${submission.lastName}`,
+          shortRef,
+          submission.subject
+        ),
+        fromName: 'Golden Pages',
+      }).catch(() => {
+        // Email failure is non-blocking
+      });
+    }
+
+    // Fire-and-forget notification to admin users
+    notifyAdmins(
+      'report_submission_received',
+      'New Report Submitted',
+      `${submission.firstName} ${submission.lastName}: ${submission.subject} [${submission.urgency}]`,
+      submission.id
+    ).catch(() => {});
+
+    return submission;
   },
 };
+
+async function notifyAdmins(type: string, title: string, message: string, resourceId: string): Promise<void> {
+  const { data: adminRole } = await supabase
+    .from('roles')
+    .select('id')
+    .eq('name', 'admin')
+    .maybeSingle();
+
+  if (!adminRole) return;
+
+  const { data: admins } = await supabase
+    .from('user_roles')
+    .select('user_id')
+    .eq('"roleId"', adminRole.id);
+
+  if (!admins?.length) return;
+
+  for (const admin of admins) {
+    await supabase.from('notifications').insert({
+      user_id: admin.user_id,
+      type,
+      title,
+      message,
+      resource_id: resourceId,
+    });
+  }
+}

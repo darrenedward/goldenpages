@@ -21,6 +21,7 @@ import AdminPanel from './AdminPanel';
 import SettingsPanel from './SettingsPanel';
 import IssueCategoryManager from '@/components/admin/IssueCategoryManager';
 import NotificationList from '@/components/notifications/NotificationList';
+import InboundEmailList from '@/components/inbound/InboundEmailList';
 import type { DashboardState } from './useDashboardState';
 
 interface ViewRendererProps {
@@ -241,6 +242,14 @@ export default function ViewRenderer({ state }: ViewRendererProps) {
 
     case 'notifications':
       return <NotificationList />;
+
+    case 'inbound-emails':
+      return (
+        <InboundEmailList
+          onSelectEmail={(id) => { setSelectedCommunicationId(id); }}
+          onChangeView={setActiveView}
+        />
+      );
 
     case 'my-communications':
       return (

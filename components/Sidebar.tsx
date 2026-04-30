@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Building2, FileText, Settings, ShieldCheck, LogOut, Briefcase, MessageSquare, Eye, Tags, Bell, Users } from 'lucide-react';
+import { LayoutDashboard, Building2, FileText, Settings, ShieldCheck, LogOut, Briefcase, MessageSquare, Eye, Tags, Bell, Users, Inbox } from 'lucide-react';
 import NotificationBell from '@/components/notifications/NotificationBell';
 
 interface SidebarProps {
@@ -21,6 +21,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, onChangeView, isAdmin, on
 
   const publicItems = [
     { id: 'public-register', label: 'Public Register', icon: Eye },
+    { id: 'inbound-emails', label: 'Inbound Emails', icon: Inbox },
     { id: 'notifications', label: 'Notifications', icon: Bell },
   ];
 
