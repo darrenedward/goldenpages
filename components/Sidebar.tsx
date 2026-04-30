@@ -4,7 +4,7 @@ import NotificationBell from '@/components/notifications/NotificationBell';
 
 interface SidebarProps {
   activeView: string;
-  onChangeView: (view: string) => void;
+  onChangeView: (view: string, data?: Record<string, string>) => void;
   isAdmin: boolean;
   onSignOut: () => void;
 }
@@ -41,11 +41,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, onChangeView, isAdmin, on
           </h1>
         </div>
         <NotificationBell onNavigate={(view, data) => {
-          if (data?.communicationId) {
-            onChangeView(view);
-          } else {
-            onChangeView(view);
-          }
+          onChangeView(view, data);
         }} />
       </div>
 

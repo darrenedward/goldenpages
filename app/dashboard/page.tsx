@@ -23,11 +23,13 @@ export default function DashboardPage() {
     <>
       <Sidebar
         activeView={state.activeView}
-        onChangeView={(view) => {
+        onChangeView={(view, data) => {
           state.setActiveView(view);
           if (view !== 'detail' && view !== 'organization-detail') state.setSelectedOrg(null);
           state.setSelectedDept(null);
-          if (view !== 'communication-detail' && view !== 'create-communication' && view !== 'communication-list') {
+          if (data?.communicationId) {
+            state.setSelectedCommunicationId(data.communicationId);
+          } else if (view !== 'communication-detail' && view !== 'create-communication' && view !== 'communication-list') {
             state.setSelectedCommunicationId(null);
             state.setCommunicationContext(null);
           }

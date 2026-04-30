@@ -1,9 +1,10 @@
 /**
- * Resend Webhook Handler
+ * Resend Webhook Handler — Inbound Email
  *
- * Receives inbound email events from Resend.
+ * Receives `email.received` events from Resend webhooks.
  * - Verifies Svix signature
- * - Processes inbound emails: links to communications or creates contact submissions
+ * - Fetches full email content via Resend Receiving API
+ * - Links replies to communications or creates contact submissions
  * - Notifies relevant users
  */
 
@@ -14,10 +15,10 @@ import crypto from 'crypto';
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const WEBHOOK_SECRET = process.env.RESEND_WEBHOOK_SECRET || '';
+const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 
 const EMAIL_DOMAIN = 'mail.goldenpages.newworldalliances.nz';
 
-// Supabase admin client (bypasses RLS for webhook operations)
 function getAdminClient() {
   return createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 }
@@ -59,22 +60,94 @@ function verifySvixSignature(
 }
 
 // ============================================================================
-// Types
+// Types — Resend Webhook Payload
 // ============================================================================
 
-interface InboundEmailPayload {
-  id: string;
-  from: string;
-  to: string[];
-  subject: string;
-  text?: string;
+interface ResendWebhookEvent {
+  type: string;
+  created_at: string;
+  data: {
+    email_id: string;
+    created_at: string;
+    from: string;
+    to: string[];
+    bcc: string[];
+    cc: string[];
+    subject: string;
+    message_id?: string;
+    attachments?: Array<{
+      id: string;
+      filename: string;
+      content_type: string;
+      content_disposition?: string;
+      content_id?: string;
+    }>;
+  };
+}
+
+interface FullEmailContent {
   html?: string;
+  text?: string;
   headers?: Record<string, string>;
-  attachments?: Array<{
-    filename: string;
-    content_type: string;
-    size: number;
-  }>;
+  reply_to?: string[];
+}
+
+// ============================================================================
+// Fetch Full Email Content via Resend Receiving API
+// ============================================================================
+
+async function fetchFullEmail(emailId: string): Promise<FullEmailContent | null> {
+  if (!RESEND_API_KEY) {
+    console.warn('[Webhook] RESEND_API_KEY not set — skipping content fetch');
+    return null;
+  }
+
+  try {
+    const res = await fetch(`https://api.resend.com/emails/${emailId}/received`, {
+      headers: { Authorization: `Bearer ${RESEND_API_KEY}` },
+    });
+
+    if (!res.ok) {
+      console.error(`[Webhook] Failed to fetch email ${emailId}: ${res.status}`);
+      return null;
+    }
+
+    const data = await res.json();
+    return {
+      html: data.html || undefined,
+      text: data.text || undefined,
+      headers: data.headers || undefined,
+      reply_to: data.reply_to || undefined,
+    };
+  } catch (err) {
+    console.error('[Webhook] Error fetching full email:', err);
+    return null;
+  }
+}
+
+// ============================================================================
+// Helpers
+// ============================================================================
+
+function extractName(fromHeader: string): string | null {
+  const match = fromHeader.match(/^(.+?)\s*<[^>]+>$/);
+  return match ? match[1].trim().replace(/^["']|["']$/g, '') : null;
+}
+
+function extractEmail(fromHeader: string): string {
+  const match = fromHeader.match(/<([^>]+)>/);
+  return match ? match[1].toLowerCase() : fromHeader.toLowerCase();
+}
+
+async function getAdminRoleId(
+  supabase: ReturnType<typeof getAdminClient>
+): Promise<string> {
+  const { data } = await supabase
+    .from('roles')
+    .select('id')
+    .eq('name', 'admin')
+    .single();
+  return data?.id || '';
 }
 
 // ============================================================================
@@ -84,7 +157,7 @@ interface InboundEmailPayload {
 export async function POST(request: NextRequest) {
   const body = await request.text();
 
-  // Verify signature
+  // Verify Svix signature
   const svixId = request.headers.get('svix-id') || '';
   const svixTimestamp = request.headers.get('svix-timestamp') || '';
   const svixSignature = request.headers.get('svix-signature') || '';
@@ -93,28 +166,39 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
   }
 
-  let payload: InboundEmailPayload;
+  let event: ResendWebhookEvent;
   try {
-    payload = JSON.parse(body);
+    event = JSON.parse(body);
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const toEmail = payload.to?.[0]?.toLowerCase() || '';
-  const fromEmail = payload.from?.toLowerCase() || '';
+  // Only handle email.received events
+  if (event.type !== 'email.received') {
+    return NextResponse.json({ ignored: true, type: event.type });
+  }
+
+  const { data } = event;
+  const toEmail = data.to?.[0]?.toLowerCase() || '';
+  const fromEmail = extractEmail(data.from);
 
   if (!toEmail || !fromEmail) {
     return NextResponse.json({ error: 'Missing from/to' }, { status: 400 });
   }
 
+  console.log(`[Webhook] Inbound email from ${data.from} to ${toEmail}: "${data.subject}"`);
+
   const supabase = getAdminClient();
 
   try {
+    // Fetch full email content (html/text/headers) via Resend API
+    const fullContent = await fetchFullEmail(data.email_id);
+
     // Parse reply+{commId}@ pattern from to address
     const replyMatch = toEmail.match(/^reply\+([a-f0-9-]+)@/);
     const communicationId = replyMatch ? replyMatch[1] : null;
 
-    // Determine email type
+    // Determine email routing
     const isInboundEnquiry = toEmail.startsWith('enquiries@');
     const isInboundContact = toEmail.startsWith('contact@');
 
@@ -123,14 +207,14 @@ export async function POST(request: NextRequest) {
       .from('inbound_emails')
       .insert({
         from_email: fromEmail,
-        from_name: extractName(payload.from),
+        from_name: extractName(data.from),
         to_email: toEmail,
-        subject: payload.subject || '(No Subject)',
-        body_text: payload.text || null,
-        body_html: payload.html || null,
-        headers: payload.headers || null,
-        message_id: payload.headers?.['message-id'] || null,
-        in_reply_to: payload.headers?.['in-reply-to'] || null,
+        subject: data.subject || '(No Subject)',
+        body_text: fullContent?.text || null,
+        body_html: fullContent?.html || null,
+        headers: fullContent?.headers || null,
+        message_id: data.message_id || null,
+        in_reply_to: fullContent?.headers?.['in-reply-to'] || null,
         communication_id: communicationId,
         status: communicationId ? 'linked' : 'received',
         processed_at: communicationId ? new Date().toISOString() : null,
@@ -150,7 +234,12 @@ export async function POST(request: NextRequest) {
 
     // If sent to enquiries@ or contact@ → create contact submission
     if (isInboundEnquiry || isInboundContact) {
-      await handleEnquiryEmail(supabase, fromEmail, payload, inboundEmail.id, isInboundEnquiry ? 'inbound_enquiry' : 'inbound_contact');
+      const bodyContent = fullContent?.text || fullContent?.html || '(No content)';
+      await handleEnquiryEmail(
+        supabase, fromEmail, data.subject || '(No Subject)',
+        bodyContent, inboundEmail.id,
+        isInboundEnquiry ? 'inbound_enquiry' : 'inbound_contact'
+      );
     }
 
     // If not linked and not an enquiry → mark as unlinked
@@ -169,14 +258,8 @@ export async function POST(request: NextRequest) {
 }
 
 // ============================================================================
-// Helpers
+// Communication Reply Handler
 // ============================================================================
-
-function extractName(fromHeader: string): string | null {
-  // Parse "Name <email@example.com>" format
-  const match = fromHeader.match(/^(.+?)\s*<[^>]+>$/);
-  return match ? match[1].trim().replace(/^["']|["']$/g, '') : null;
-}
 
 async function handleCommunicationReply(
   supabase: ReturnType<typeof getAdminClient>,
@@ -184,7 +267,6 @@ async function handleCommunicationReply(
   fromEmail: string,
   inboundEmailId: string
 ) {
-  // Get communication members
   const { data: members } = await supabase
     .from('communication_members')
     .select('user_id')
@@ -194,7 +276,7 @@ async function handleCommunicationReply(
 
   // Log activity
   await supabase.from('activity_logs').insert({
-    user_id: members[0].user_id, // Use first member as proxy
+    user_id: members[0].user_id,
     action: 'communication:inbound_email',
     resource_type: 'communication',
     resource_id: communicationId,
@@ -214,27 +296,30 @@ async function handleCommunicationReply(
   }
 }
 
+// ============================================================================
+// Enquiry Email Handler
+// ============================================================================
+
 async function handleEnquiryEmail(
   supabase: ReturnType<typeof getAdminClient>,
   fromEmail: string,
-  payload: InboundEmailPayload,
+  subject: string,
+  body: string,
   inboundEmailId: string,
   emailType: 'inbound_enquiry' | 'inbound_contact'
 ) {
-  // Create contact submission from email
   const { data: submission } = await supabase
     .from('contact_submissions')
     .insert({
-      name: extractName(payload.from) || fromEmail,
+      name: fromEmail,
       email: fromEmail,
-      subject: payload.subject || '(No Subject)',
-      message: payload.text || payload.html || '(No content)',
+      subject,
+      message: body,
       email_type: emailType,
     })
     .select()
     .single();
 
-  // Link inbound email to contact submission
   if (submission) {
     await supabase
       .from('inbound_emails')
@@ -246,10 +331,13 @@ async function handleEnquiryEmail(
       .eq('id', inboundEmailId);
 
     // Notify admin users
+    const adminRoleId = await getAdminRoleId(supabase);
+    if (!adminRoleId) return;
+
     const { data: admins } = await supabase
       .from('user_roles')
       .select('user_id')
-      .eq('"roleId"', (await getAdminRoleId(supabase)));
+      .eq('"roleId"', adminRoleId);
 
     if (admins?.length) {
       for (const admin of admins) {
@@ -257,24 +345,13 @@ async function handleEnquiryEmail(
           user_id: admin.user_id,
           type: 'contact_submission_received',
           title: emailType === 'inbound_enquiry' ? 'New Email Enquiry' : 'New Contact Email',
-          message: `${fromEmail}: ${payload.subject}`,
+          message: `${fromEmail}: ${subject}`,
           resource_id: submission.id,
           metadata: { inbound_email_id: inboundEmailId },
         });
       }
     }
   }
-}
-
-async function getAdminRoleId(
-  supabase: ReturnType<typeof getAdminClient>
-): Promise<string> {
-  const { data } = await supabase
-    .from('roles')
-    .select('id')
-    .eq('name', 'admin')
-    .single();
-  return data?.id || '';
 }
 
 // Handle OPTIONS for CORS preflight
