@@ -127,9 +127,9 @@ export default function LandingPage() {
                 <div className="w-12 h-12 bg-gold-50 dark:bg-gold-900/20 rounded-2xl flex items-center justify-center text-gold-600 mb-5 group-hover:scale-110 transition-transform">
                   <card.icon size={24} />
                 </div>
-                <h3 className="font-serif text-xl font-bold text-slate-900 dark:text-white mb-3">
+                <h2 className="font-serif text-xl font-bold text-slate-900 dark:text-white mb-3">
                   {card.title}
-                </h3>
+                </h2>
                 <p className="text-stone-500 dark:text-stone-400 text-sm leading-relaxed">
                   {card.description}
                 </p>
