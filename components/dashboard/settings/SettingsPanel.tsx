@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Settings, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { settingsService } from '@/services/settingsService';
 import { usePermissions } from '@/lib/hooks/usePermissions';
 import ProfileSection from './ProfileSection';
@@ -39,10 +39,12 @@ export default function SettingsPanel() {
   };
 
   return (
-    <div className="p-6 bg-stone-50 min-h-screen">
-      <div className="mb-8">
-        <h1 className="font-serif text-3xl font-bold text-slate-800 dark:text-white mb-2">Settings</h1>
-        <div className="h-1 bg-gradient-to-r from-gold-500 to-gold-600 rounded-full w-24" />
+    <div className="space-y-6 animate-fade-in pb-12">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-serif font-bold text-slate-800 dark:text-white">Settings</h2>
+          <p className="text-sm text-stone-500 dark:text-stone-400 mt-1">Manage your account and site configuration</p>
+        </div>
       </div>
 
       <div className="space-y-6 max-w-2xl">
