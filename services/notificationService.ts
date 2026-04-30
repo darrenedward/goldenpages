@@ -149,7 +149,7 @@ class NotificationService {
         body: {
           to: user.email,
           subject: title,
-          htmlBody: this.buildEmailHtml(user.display_name || user.email, title, message),
+          html: this.buildEmailHtml(user.display_name || user.email, title, message),
         },
       });
 
