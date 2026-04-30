@@ -29,9 +29,10 @@ export async function GET() {
     email: user.email,
     displayName: user.display_name || null,
     roles: Array.isArray(user.user_roles)
-      ? (user.user_roles as Array<Record<string, unknown>>).map(
-          (ur: Record<string, unknown>) => (ur.roles as Record<string, unknown>)?.name
-        ).filter(Boolean)
+      ? (user.user_roles as Array<Record<string, unknown>>)
+        .filter((ur) => ur != null)
+        .map((ur: Record<string, unknown>) => (ur.roles as Record<string, unknown>)?.name)
+        .filter(Boolean) as string[]
       : [],
     createdAt: user.createdAt,
   }));

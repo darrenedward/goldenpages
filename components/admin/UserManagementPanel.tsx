@@ -156,7 +156,7 @@ export default function UserManagementPanel() {
                       <p className="text-xs text-stone-500 truncate">{u.email}</p>
                     )}
                     <div className="flex items-center gap-1.5 mt-1.5">
-                      {u.roles.length === 0 ? (
+                      {(!u.roles || u.roles.length === 0) ? (
                         <span className="text-xs text-stone-400 italic">No role assigned</span>
                       ) : (
                         u.roles.map((role) => {
