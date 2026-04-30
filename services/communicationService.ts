@@ -11,11 +11,14 @@
 import { supabase } from './supabaseClient';
 import { activityLogService } from './activityLogService';
 import { communicationMemberService } from './communicationMemberService';
+import { communicationRecipientService } from './communicationRecipientService';
 import { notificationService } from './notificationService';
+import { addWorkingDays } from '@/lib/dateHelpers';
 import type {
   Communication,
   CommunicationWithDetails,
   CommunicationDocument,
+  CommunicationRecipient,
   CommunicationType,
   CommunicationStatus,
   CommunicationDocumentType,
@@ -42,6 +45,13 @@ class CommunicationService {
     input: CreateCommunicationInput,
     userId: string
   ): Promise<Communication> {
+    // Calculate expected response date from working days
+    let expectedResponseDate = input.expectedResponseDate || null;
+    if (!expectedResponseDate && input.expectedResponseDays) {
+      const calculated = addWorkingDays(new Date(), input.expectedResponseDays);
+      expectedResponseDate = calculated.toISOString();
+    }
+
     const { data, error } = await supabase
       .from('communications')
       .insert({
@@ -49,13 +59,13 @@ class CommunicationService {
         description: input.description || null,
         communication_type: input.communicationType,
         status: 'SENT',
-        contact_id: input.contactId,
+        contact_id: input.contactId || null,
         department_id: input.departmentId || null,
         organisation_id: input.organisationId || null,
         category: input.category || null,
         category_id: input.categoryId || null,
         tags: input.tags || [],
-        expected_response_date: input.expectedResponseDate || null,
+        expected_response_date: expectedResponseDate,
         is_public: input.isPublic,
         is_approved: input.isApproved,
         created_by_id: userId,
@@ -66,6 +76,22 @@ class CommunicationService {
 
     if (error) throw error;
     const communication = this.mapCommunication(data);
+
+    // Add recipients if provided
+    if (input.recipients && input.recipients.length > 0) {
+      await communicationRecipientService.addRecipients(
+        communication.id,
+        input.recipients,
+        userId
+      );
+    } else if (input.contactId) {
+      // Legacy: single contact → single recipient
+      await communicationRecipientService.addRecipients(
+        communication.id,
+        [{ departmentId: input.departmentId || input.contactId, contactId: input.contactId }],
+        userId
+      ).catch(() => {});
+    }
 
     // Create owner membership
     await communicationMemberService.addMember(
@@ -101,7 +127,12 @@ class CommunicationService {
         contact:contacts(id, fullName, roleTitle),
         department:departments(id, name, portfolio),
         organisation:organisations(id, name),
-        documents:communication_documents(*)
+        documents:communication_documents(*),
+        recipients:communication_recipients(
+          *,
+          department:departments(id, name, portfolio, organisationId),
+          contact:contacts(id, fullName, roleTitle)
+        )
       `)
       .order('created_at', { ascending: false });
 
@@ -125,7 +156,12 @@ class CommunicationService {
         contact:contacts(id, fullName, roleTitle, organisationId),
         department:departments(id, name, portfolio, organisationId),
         organisation:organisations(id, name),
-        documents:communication_documents(*)
+        documents:communication_documents(*),
+        recipients:communication_recipients(
+          *,
+          department:departments(id, name, portfolio, organisationId),
+          contact:contacts(id, fullName, roleTitle)
+        )
       `)
       .eq('id', id)
       .single();
@@ -169,6 +205,11 @@ class CommunicationService {
         department:departments(id, name, portfolio),
         organisation:organisations(id, name),
         documents:communication_documents(*),
+        recipients:communication_recipients(
+          *,
+          department:departments(id, name, portfolio, organisationId),
+          contact:contacts(id, fullName, roleTitle)
+        ),
         issueCategory:issue_categories(id, name, slug, icon)
       `)
       .eq('is_public', true)
@@ -261,7 +302,8 @@ class CommunicationService {
     documentType: CommunicationDocumentType,
     isPublic: boolean,
     userId: string,
-    description?: string
+    description?: string,
+    recipientId?: string
   ): Promise<CommunicationDocument> {
     // Validate file size (50MB max)
     if (file.size > 50 * 1024 * 1024) {
@@ -294,6 +336,7 @@ class CommunicationService {
         is_public: isPublic,
         description: description || null,
         uploaded_by: userId,
+        recipient_id: recipientId || null,
       })
       .select()
       .single();
@@ -386,7 +429,7 @@ class CommunicationService {
       description: row.description as string | undefined,
       communicationType: row.communication_type as CommunicationType,
       status: row.status as CommunicationStatus,
-      contactId: row.contact_id as string,
+      contactId: row.contact_id as string | undefined,
       departmentId: row.department_id as string | undefined,
       organisationId: row.organisation_id as string | undefined,
       category: row.category as string | undefined,
@@ -418,6 +461,7 @@ class CommunicationService {
       description: row.description as string | undefined,
       uploadedAt: row.uploaded_at as string,
       uploadedBy: row.uploaded_by as string,
+      recipientId: row.recipient_id as string | undefined,
     };
   }
 
@@ -427,13 +471,43 @@ class CommunicationService {
       ? row.documents.map((d: Record<string, unknown>) => this.mapDocument(d))
       : [];
 
+    const recipients = Array.isArray(row.recipients)
+      ? row.recipients.map((r: Record<string, unknown>) => this.mapRecipient(r))
+      : [];
+
     return {
       ...communication,
       contact: row.contact as CommunicationWithDetails['contact'],
       department: row.department as CommunicationWithDetails['department'],
       organisation: row.organisation as CommunicationWithDetails['organisation'],
       documents,
+      recipients,
       issueCategory: row.issueCategory as CommunicationWithDetails['issueCategory'],
+    };
+  }
+
+  private mapRecipient(row: Record<string, unknown>): CommunicationRecipient {
+    const dept = row.department as Record<string, unknown> | null;
+    return {
+      id: row.id as string,
+      communicationId: row.communication_id as string,
+      departmentId: row.department_id as string,
+      contactId: row.contact_id as string | undefined,
+      deliveryStatus: (row.delivery_status as CommunicationRecipient['deliveryStatus']) || 'PENDING',
+      sentAt: row.sent_at as string | undefined,
+      deliveredAt: row.delivered_at as string | undefined,
+      responseStatus: (row.response_status as CommunicationRecipient['responseStatus']) || 'RECEIVED',
+      responseDate: row.response_date as string | undefined,
+      notes: row.notes as string | undefined,
+      createdAt: row.created_at as string,
+      createdBy: row.created_by as string | undefined,
+      department: dept ? {
+        id: dept.id as string,
+        name: dept.name as string,
+        portfolio: dept.portfolio as string,
+        organisationId: dept.organisationId as string,
+      } : undefined,
+      contact: row.contact as CommunicationRecipient['contact'],
     };
   }
 }

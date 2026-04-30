@@ -7,15 +7,9 @@ import OrgDetail from '@/components/OrgDetail';
 import OrganizationsList from '@/components/hierarchy/OrganizationsList';
 import OrganizationDetail from '@/components/hierarchy/OrganizationDetail';
 import DepartmentContacts from '@/components/hierarchy/DepartmentContacts';
-import PackageList from '@/components/packages/PackageList';
-import PackageDetail from '@/components/packages/PackageDetail';
-import SubPackageDetail from '@/components/packages/SubPackageDetail';
-import ResponseTracker from '@/components/packages/ResponseTracker';
-import CreatePackageWizard from '@/components/packages/CreatePackageWizard';
-import DocumentLibrary from '@/components/documents/DocumentLibrary';
 import CommunicationList from '@/components/communications/CommunicationList';
 import CommunicationDetail from '@/components/communications/CommunicationDetail';
-import CreateCommunicationForm from '@/components/communications/CreateCommunicationForm';
+import CreateCommunicationWizard from '@/components/communications/wizard/CreateCommunicationWizard';
 import PublicCommunicationBrowser from '@/components/communications/PublicCommunicationBrowser';
 import UserManagementPanel from '@/components/admin/UserManagementPanel';
 import SettingsPanel from './settings/SettingsPanel';
@@ -122,50 +116,6 @@ export default function ViewRenderer({ state }: ViewRendererProps) {
         />
       );
 
-    case 'packages':
-      return (
-        <PackageList
-          onSelectPkg={(id) => { setSelectedPkgId(id); setActiveView('package-detail'); }}
-          onChangeView={setActiveView}
-        />
-      );
-
-    case 'create-package':
-      return (
-        <CreatePackageWizard
-          onCancel={() => setActiveView('packages')}
-          onComplete={() => { setActiveView('packages'); void fetchBaseData(); }}
-        />
-      );
-
-    case 'package-detail':
-      if (!selectedPkgId) return null;
-      return (
-        <PackageDetail
-          pkgId={selectedPkgId}
-          onBack={() => { setSelectedPkgId(null); setActiveView('packages'); }}
-          onChangeView={(view, id) => {
-            if (id) setSelectedSubPkgId(id);
-            setActiveView(view);
-          }}
-        />
-      );
-
-    case 'sub-package-detail':
-      if (!selectedSubPkgId) return null;
-      return (
-        <SubPackageDetail
-          subPkgId={selectedSubPkgId}
-          onBack={() => { setSelectedSubPkgId(null); setActiveView('package-detail'); }}
-        />
-      );
-
-    case 'outreach':
-      return <ResponseTracker />;
-
-    case 'documents':
-      return <DocumentLibrary onChangeView={setActiveView} />;
-
     case 'communications':
       return (
         <CommunicationList
@@ -201,22 +151,11 @@ export default function ViewRenderer({ state }: ViewRendererProps) {
       );
 
     case 'create-communication':
-      if (!communicationContext) return null;
       return (
-        <CreateCommunicationForm
-          contact={{
-            id: communicationContext.contactId,
-            fullName: '',
-            organisationId: communicationContext.organisationId,
-            isHeadOfficeBased: false,
-            isActive: true,
-            createdAt: '',
-            updatedAt: '',
-          }}
-          departmentId={communicationContext.departmentId || undefined}
-          organisationId={communicationContext.organisationId || undefined}
-          onSubmit={(id) => { setSelectedCommunicationId(id); setActiveView('communication-detail'); }}
+        <CreateCommunicationWizard
           onCancel={() => setActiveView('communications')}
+          onSubmit={(id) => { setSelectedCommunicationId(id); setActiveView('communication-detail'); }}
+          preselectedRecipients={communicationContext?.preselectedRecipients}
         />
       );
 

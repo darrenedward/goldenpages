@@ -269,40 +269,6 @@ class NotificationService {
   }
 
   // ==========================================================================
-  // LEGACY: Package notification (preserved for backward compat)
-  // ==========================================================================
-
-  async sendPackageNotification(payload: {
-    recipientId: string;
-    recipientEmail: string;
-    recipientName: string;
-    packageId: string;
-    packageName: string;
-    documentCount: number;
-  }): Promise<{ success: boolean; error?: string }> {
-    console.log(`[NotificationService] Package notification for "${payload.packageName}" to ${payload.recipientEmail}`);
-    return { success: true };
-  }
-
-  async batchSendNotifications(notifications: Array<{
-    recipientId: string;
-    recipientEmail: string;
-    recipientName: string;
-    packageId: string;
-    packageName: string;
-    documentCount: number;
-  }>): Promise<{ successCount: number; failureCount: number }> {
-    let successCount = 0;
-    let failureCount = 0;
-    for (const n of notifications) {
-      const result = await this.sendPackageNotification(n);
-      if (result.success) successCount++;
-      else failureCount++;
-    }
-    return { successCount, failureCount };
-  }
-
-  // ==========================================================================
   // MAPPER
   // ==========================================================================
 

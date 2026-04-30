@@ -141,69 +141,10 @@ export interface ContactChannel {
   updatedAt: string;
 }
 
-// Package Management Types (Phase 0)
-export type PackageStatus = 'DRAFT' | 'PENDING' | 'SENT' | 'PARTIAL' | 'COMPLETED' | 'CLOSED' | 'CANCELLED';
-export type SubPackageStatus = 'DRAFT' | 'READY' | 'SENT' | 'RESPONDED' | 'OVERDUE' | 'CANCELLED';
+// Package Management Types (reused for communications)
 export type DeliveryStatus = 'PENDING' | 'SENDING' | 'SENT' | 'DELIVERED' | 'FAILED' | 'BOUNCED';
 export type ResponseStatus = 'RECEIVED' | 'REVIEWING' | 'ACCEPTED' | 'REJECTED' | 'INCOMPLETE';
 export type DocumentCategory = 'NOTICE' | 'FORM' | 'CERTIFICATE' | 'CORRESPONDENCE' | 'REPORT' | 'OTHER';
-
-export interface Package {
-  id: string;
-  name: string;
-  description?: string;
-  status: PackageStatus;
-  closedAt?: string;
-  closedBy?: string;
-  createdAt: string;
-  createdBy: string;
-  updatedAt: string;
-  updatedBy?: string;
-}
-
-export interface SubPackage {
-  id: string;
-  packageId: string;
-  name: string;
-  description?: string;
-  sequence: number;
-  expectedReply?: string;
-  actualReply?: string;
-  status: SubPackageStatus;
-  sentAt?: string;
-  createdAt: string;
-  createdBy: string;
-  updatedAt: string;
-  updatedBy?: string;
-}
-
-export interface Document {
-  id: string;
-  filename: string;
-  originalName: string;
-  mimeType: string;
-  sizeBytes: number;
-  storagePath: string;
-  checksum?: string;
-  description?: string;
-  category?: DocumentCategory;
-  createdAt: string;
-  createdBy: string;
-}
-
-export interface PackageRecipient {
-  id: string;
-  packageId: string;
-  departmentId: string;
-  deliveryStatus: DeliveryStatus;
-  sentAt?: string;
-  deliveredAt?: string;
-  recipientName?: string;
-  recipientEmail?: string;
-  notes?: string;
-  createdAt: string;
-  createdBy: string;
-}
 
 // ============================================================================
 // COMMUNICATION TRACKER TYPES
@@ -219,7 +160,7 @@ export interface Communication {
   description?: string;
   communicationType: CommunicationType;
   status: CommunicationStatus;
-  contactId: string;
+  contactId?: string;
   departmentId?: string;
   organisationId?: string;
   category?: string;
@@ -236,11 +177,31 @@ export interface Communication {
   updatedAt: string;
 }
 
+export interface CommunicationRecipient {
+  id: string;
+  communicationId: string;
+  departmentId: string;
+  contactId?: string;
+  deliveryStatus: DeliveryStatus;
+  sentAt?: string;
+  deliveredAt?: string;
+  responseStatus: ResponseStatus;
+  responseDate?: string;
+  notes?: string;
+  createdAt: string;
+  createdBy?: string;
+  // Joined data
+  department?: { id: string; name: string; portfolio: string; organisationId: string };
+  contact?: { id: string; fullName: string; roleTitle?: string };
+  organisation?: { id: string; name: string };
+}
+
 export interface CommunicationWithDetails extends Communication {
   contact?: { id: string; fullName: string; roleTitle?: string };
   department?: { id: string; name: string; portfolio: string };
   organisation?: { id: string; name: string };
   documents?: CommunicationDocument[];
+  recipients?: CommunicationRecipient[];
   issueCategory?: { id: string; name: string; slug: string; icon: string | null };
 }
 
@@ -257,22 +218,25 @@ export interface CommunicationDocument {
   description?: string;
   uploadedAt: string;
   uploadedBy: string;
+  recipientId?: string;
 }
 
 export interface CreateCommunicationInput {
   title: string;
   description?: string;
   communicationType: CommunicationType;
-  contactId: string;
+  contactId?: string;
   departmentId?: string;
   organisationId?: string;
   category?: string;
   categoryId?: string;
   tags?: string[];
   expectedResponseDate?: string;
+  expectedResponseDays?: number;
   isPublic: boolean;
   isApproved: boolean;
   senderOrganisation?: string;
+  recipients?: { departmentId: string; contactId?: string }[];
 }
 
 // ============================================================================

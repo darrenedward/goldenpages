@@ -110,27 +110,8 @@ enum NoteVisibility {
 }
 
 // ============================================================================
-// PACKAGE MANAGEMENT ENUMS
+// PACKAGE MANAGEMENT ENUMS (kept for communication recipient reuse)
 // ============================================================================
-
-enum PackageStatus {
-  DRAFT // Being created
-  PENDING // Ready to send
-  SENT // Fully sent to all recipients
-  PARTIAL // Partially sent
-  COMPLETED // All sub-packages responded
-  CLOSED // Matter closed by admin
-  CANCELLED // Cancelled
-}
-
-enum SubPackageStatus {
-  DRAFT // Being created
-  READY // Ready to send
-  SENT // Sent to recipients
-  RESPONDED // Response received
-  OVERDUE // Past expected reply without response
-  CANCELLED // Cancelled
-}
 
 enum DeliveryStatus {
   PENDING // Not yet sent
@@ -253,8 +234,8 @@ model Department {
 
   // Relations
   contacts          Contact[]          @relation("ContactDepartment")
-  packageRecipients PackageRecipient[]
   communications    Communication[]
+  communicationRecipients CommunicationRecipient[]
 
   @@unique([organisationId, name])
   @@unique([organisationId, code])
@@ -341,6 +322,7 @@ model Contact {
   notes             ContactNote[]
   outreachLogs      OutreachLog[]
   communications    Communication[]
+  communicationRecipients CommunicationRecipient[]
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
 
@@ -372,169 +354,6 @@ model ContactChannel {
 }
 
 // ============================================================================
-// PACKAGE MANAGEMENT TABLES (NEW)
-// ============================================================================
-
-model Package {
-  id          String  @id @default(uuid())
-  name        String  @db.VarChar(255)
-  description String? @db.Text
-
-  // Status tracking
-  status PackageStatus @default(DRAFT)
-
-  // Matter closure
-  closedAt DateTime? @map("closed_at")
-  closedBy String?   @map("closed_by")
-
-  // Audit
-  createdAt DateTime @default(now()) @map("created_at")
-  createdBy String   @map("created_by")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  updatedBy String?  @map("updated_by")
-
-  // Relations
-  creator User  @relation("PackageCreator", fields: [createdBy], references: [id])
-  closer  User? @relation("PackageCloser", fields: [closedBy], references: [id])
-
-  subPackages SubPackage[]
-  recipients  PackageRecipient[]
-
-  @@index([status])
-  @@index([createdBy])
-  @@index([closedAt])
-  @@map("packages")
-}
-
-model SubPackage {
-  id          String  @id @default(uuid())
-  packageId   String  @map("package_id")
-  name        String  @db.VarChar(255)
-  description String? @db.Text
-  sequence    Int     @default(0)
-
-  // Reply tracking
-  expectedReply DateTime? @map("expected_reply")
-  actualReply   DateTime? @map("actual_reply")
-
-  // Status
-  status SubPackageStatus @default(DRAFT)
-  sentAt DateTime?        @map("sent_at")
-
-  // Audit
-  createdAt DateTime @default(now()) @map("created_at")
-  createdBy String   @map("created_by")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  updatedBy String?  @map("updated_by")
-
-  // Relations
-  package Package @relation(fields: [packageId], references: [id], onDelete: Cascade)
-  creator User    @relation("SubPackageCreator", fields: [createdBy], references: [id])
-
-  documents PackageDocument[]
-  responses SubPackageResponse[]
-
-  @@index([packageId])
-  @@index([status])
-  @@index([expectedReply])
-  @@map("sub_packages")
-}
-
-model Document {
-  id           String  @id @default(uuid())
-  filename     String  @db.VarChar(255)
-  originalName String  @map("original_name") @db.VarChar(255)
-  mimeType     String  @map("mime_type") @db.VarChar(100)
-  sizeBytes    Int     @map("size_bytes")
-  storagePath  String  @map("storage_path") @db.VarChar(500)
-  checksum     String? @db.VarChar(64)
-
-  description String?           @db.Text
-  category    DocumentCategory? @default(OTHER)
-
-  createdAt DateTime @default(now()) @map("created_at")
-  createdBy String   @map("created_by")
-
-  // Relations
-  creator     User              @relation("DocumentCreator", fields: [createdBy], references: [id])
-  attachments PackageDocument[]
-
-  @@index([createdBy])
-  @@index([category])
-  @@map("documents")
-}
-
-model PackageDocument {
-  id           String @id @default(uuid())
-  subPackageId String @map("sub_package_id")
-  documentId   String @map("document_id")
-
-  attachedAt  DateTime @default(now()) @map("attached_at")
-  attachedBy  String   @map("attached_by")
-  description String?  @db.Text
-
-  // Relations
-  subPackage SubPackage @relation(fields: [subPackageId], references: [id], onDelete: Cascade)
-  document   Document   @relation(fields: [documentId], references: [id], onDelete: Cascade)
-
-  @@unique([subPackageId, documentId])
-  @@index([subPackageId])
-  @@map("package_documents")
-}
-
-model PackageRecipient {
-  id           String @id @default(uuid())
-  packageId    String @map("package_id")
-  departmentId String @map("department_id")
-
-  // Delivery tracking
-  deliveryStatus DeliveryStatus @default(PENDING)
-  sentAt         DateTime?      @map("sent_at")
-  deliveredAt    DateTime?      @map("delivered_at")
-
-  // Recipient snapshot
-  recipientName  String? @map("recipient_name")
-  recipientEmail String? @map("recipient_email")
-
-  notes String? @db.Text
-
-  createdAt DateTime @default(now()) @map("created_at")
-  createdBy String   @map("created_by")
-
-  // Relations
-  package    Package    @relation(fields: [packageId], references: [id], onDelete: Cascade)
-  department Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
-
-  @@unique([packageId, departmentId])
-  @@index([packageId])
-  @@index([departmentId])
-  @@index([deliveryStatus])
-  @@map("package_recipients")
-}
-
-model SubPackageResponse {
-  id           String @id @default(uuid())
-  subPackageId String @map("sub_package_id")
-  departmentId String @map("department_id")
-
-  responseDate DateTime       @map("response_date")
-  status       ResponseStatus @default(RECEIVED)
-  notes        String?        @db.Text
-
-  documentIds String[] @map("document_ids")
-
-  createdAt DateTime @default(now()) @map("created_at")
-  createdBy String   @map("created_by")
-
-  // Relations
-  subPackage SubPackage @relation(fields: [subPackageId], references: [id], onDelete: Cascade)
-
-  @@index([subPackageId])
-  @@index([departmentId])
-  @@map("sub_package_responses")
-}
-
-// ============================================================================
 // RBAC TABLES
 // ============================================================================
 
@@ -553,11 +372,6 @@ model User {
   notesContact  ContactNote[]
   outreachLogs  OutreachLog[]
 
-  // Package relations (NEW)
-  createdPackages    Package[]    @relation("PackageCreator")
-  closedPackages     Package[]    @relation("PackageCloser")
-  createdSubPackages SubPackage[] @relation("SubPackageCreator")
-  uploadedDocuments  Document[]   @relation("DocumentCreator")
   createdCommunications    Communication[]         @relation("CommunicationCreator")
   uploadedCommunicationDocs CommunicationDocument[] @relation("CommunicationDocUploader")
 
@@ -700,7 +514,7 @@ model Communication {
   description         String?              @db.Text
   communicationType   CommunicationType
   status              CommunicationStatus  @default(SENT)
-  contactId           String               @map("contact_id")
+  contactId           String?              @map("contact_id")
   departmentId        String?              @map("department_id")
   organisationId      String?              @map("organisation_id")
   category            String?              @db.VarChar(100)
@@ -716,11 +530,12 @@ model Communication {
   createdAt           DateTime             @default(now()) @map("created_at")
   updatedAt           DateTime             @updatedAt @map("updated_at")
 
-  contact             Contact              @relation(fields: [contactId], references: [id])
+  contact             Contact?             @relation(fields: [contactId], references: [id])
   department          Department?          @relation(fields: [departmentId], references: [id])
   organisation        Organisation?        @relation(fields: [organisationId], references: [id])
   createdBy           User                 @relation("CommunicationCreator", fields: [createdById], references: [id])
   documents           CommunicationDocument[]
+  recipients          CommunicationRecipient[]
   members             CommunicationMember[]
   inboundEmails       InboundEmail[]
   issueCategory       IssueCategory?       @relation(fields: [categoryId], references: [id])
@@ -749,13 +564,52 @@ model CommunicationDocument {
   uploadedAt       DateTime                @default(now()) @map("uploaded_at")
   uploadedBy       String                  @map("uploaded_by")
 
+  recipientId      String?                 @map("recipient_id")
+
   communication    Communication           @relation(fields: [communicationId], references: [id], onDelete: Cascade)
+  recipient        CommunicationRecipient? @relation(fields: [recipientId], references: [id], onDelete: SetNull)
   uploader         User                    @relation("CommunicationDocUploader", fields: [uploadedBy], references: [id])
 
   @@index([communicationId])
   @@index([documentType])
   @@index([isPublic])
   @@map("communication_documents")
+}
+
+model CommunicationRecipient {
+  id              String   @id @default(uuid())
+  communicationId String   @map("communication_id")
+  departmentId    String   @map("department_id")
+  contactId       String?  @map("contact_id")
+
+  // Delivery tracking
+  deliveryStatus  String   @default("PENDING") @map("delivery_status") @db.VarChar(20)
+  sentAt          DateTime? @map("sent_at")
+  deliveredAt     DateTime? @map("delivered_at")
+
+  // Response tracking
+  responseStatus  String   @default("RECEIVED") @map("response_status") @db.VarChar(20)
+  responseDate    DateTime? @map("response_date")
+
+  notes String? @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at")
+  createdBy String?  @map("created_by")
+
+  // Relations
+  communication Communication @relation(fields: [communicationId], references: [id], onDelete: Cascade)
+  department    Department    @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  contact       Contact?      @relation(fields: [contactId], references: [id], onDelete: SetNull)
+
+  documents CommunicationDocument[]
+
+  @@unique([communicationId, departmentId])
+  @@index([communicationId])
+  @@index([departmentId])
+  @@index([contactId])
+  @@index([deliveryStatus])
+  @@index([responseStatus])
+  @@map("communication_recipients")
 }
 
 // ============================================================================

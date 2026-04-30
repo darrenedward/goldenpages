@@ -20,9 +20,10 @@ export interface DashboardState {
   selectedCommunicationId: string | null;
   setSelectedCommunicationId: (id: string | null) => void;
   communicationContext: {
-    contactId: string;
-    departmentId: string;
-    organisationId: string;
+    contactId?: string;
+    departmentId?: string;
+    organisationId?: string;
+    preselectedRecipients?: { departmentId: string; contactId?: string }[];
   } | null;
   setCommunicationContext: (ctx: DashboardState['communicationContext']) => void;
   orgs: Organization[];

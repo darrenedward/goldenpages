@@ -31,6 +31,7 @@ export default function CommunicationCard({ communication, onClick, isPublicView
   const sentCount = docs.filter(d => d.documentType === 'sent').length;
   const receivedCount = docs.filter(d => d.documentType === 'received').length;
   const status = statusConfig[communication.status] || statusConfig.SENT;
+  const recipients = communication.recipients || [];
 
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('en-US', {
@@ -39,6 +40,11 @@ export default function CommunicationCard({ communication, onClick, isPublicView
       day: 'numeric',
     });
   };
+
+  const recipientLabel = recipients.length > 0
+    ? recipients.slice(0, 2).map(r => r.department?.name || 'Unknown').join(', ') +
+      (recipients.length > 2 ? ` +${recipients.length - 2}` : '')
+    : communication.contact?.fullName || '';
 
   return (
     <button
@@ -63,17 +69,16 @@ export default function CommunicationCard({ communication, onClick, isPublicView
             <span className="capitalize">{communication.communicationType.replace('_', ' ')}</span>
             <span>·</span>
             <span>{formatDate(communication.createdAt)}</span>
-            {!isPublicView && communication.contact && (
+            {recipientLabel && (
               <>
                 <span>·</span>
-                <span>To: {communication.contact.fullName}</span>
+                <span>To: {recipientLabel}</span>
               </>
             )}
-            {isPublicView && communication.department && (
-              <>
-                <span>·</span>
-                <span>{communication.department.name}</span>
-              </>
+            {recipients.length > 1 && (
+              <span className="px-1.5 py-0.5 bg-gold-50 dark:bg-gold-900/20 text-gold-700 dark:text-gold-400 rounded text-xs font-bold">
+                {recipients.length} recipients
+              </span>
             )}
           </div>
 

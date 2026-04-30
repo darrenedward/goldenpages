@@ -1,17 +1,20 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Upload, CheckCircle2, XCircle, Clock, AlertCircle, FileText, Eye, EyeOff } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, AlertCircle, FileText, Eye, EyeOff, Calendar, AlertTriangle } from 'lucide-react';
 import { communicationService } from '@/services/communicationService';
 import { usePermissions } from '@/lib/hooks/usePermissions';
 import { useAuth } from '@/lib/authContext';
-import type { CommunicationWithDetails, CommunicationStatus, CommunicationDocumentType } from '@/types';
+import type { CommunicationWithDetails, CommunicationStatus, CommunicationDocumentType, CommunicationRecipient } from '@/types';
+import RecipientsPanel from './RecipientsPanel';
+import RecipientThread from './RecipientThread';
 import CommunicationTimeline from './CommunicationTimeline';
 import ActivityFeed from './ActivityFeed';
 import MemberManager from './MemberManager';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import StatusBadge from '@/components/shared/StatusBadge';
 import BreadcrumbNav from '@/components/shared/BreadcrumbNav';
+import { formatDateDisplay } from '@/lib/dateHelpers';
 import { toast } from 'react-hot-toast';
 
 interface CommunicationDetailProps {
@@ -23,11 +26,8 @@ interface CommunicationDetailProps {
 export default function CommunicationDetail({ communicationId, onBack, onChangeView }: CommunicationDetailProps) {
   const [communication, setCommunication] = useState<CommunicationWithDetails | null>(null);
   const [loading, setLoading] = useState(true);
-  const [uploadingFile, setUploadingFile] = useState(false);
-  const [uploadType, setUploadType] = useState<CommunicationDocumentType>('received');
-  const [uploadPublic, setUploadPublic] = useState(true);
-  const [activeTab, setActiveTab] = useState<'documents' | 'activity' | 'team'>('documents');
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [activeTab, setActiveTab] = useState<'recipients' | 'documents' | 'activity' | 'team'>('recipients');
+  const [selectedRecipientId, setSelectedRecipientId] = useState<string | null>(null);
   const { canWriteCommunications } = usePermissions();
   const { user } = useAuth();
 
@@ -40,6 +40,10 @@ export default function CommunicationDetail({ communicationId, onBack, onChangeV
     try {
       const data = await communicationService.getCommunication(communicationId);
       setCommunication(data);
+      // Auto-select first recipient if none selected
+      if (data?.recipients?.length && !selectedRecipientId) {
+        setSelectedRecipientId(data.recipients[0].id);
+      }
     } catch (err) {
       console.error('Failed to fetch communication:', err);
       toast.error('Failed to load communication');
@@ -63,26 +67,12 @@ export default function CommunicationDetail({ communicationId, onBack, onChangeV
     }
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !communication) return;
-
-    setUploadingFile(true);
+  const handleDownload = async (doc: { storagePath: string; originalName: string }) => {
     try {
-      await communicationService.uploadDocument(
-        communicationId,
-        file,
-        uploadType,
-        uploadPublic,
-        user?.id || communication.createdById
-      );
-      toast.success(`${uploadType === 'sent' ? 'Sent' : 'Received'} document uploaded`);
-      void fetchCommunication();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to upload document');
-    } finally {
-      setUploadingFile(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
+      const url = await communicationService.getDocumentUrl(doc.storagePath);
+      if (url) window.open(url, '_blank');
+    } catch {
+      toast.error('Failed to get download link');
     }
   };
 
@@ -97,17 +87,6 @@ export default function CommunicationDetail({ communicationId, onBack, onChangeV
     }
   };
 
-  const handleDownload = async (doc: { storagePath: string; originalName: string }) => {
-    try {
-      const url = await communicationService.getDocumentUrl(doc.storagePath);
-      if (url) {
-        window.open(url, '_blank');
-      }
-    } catch {
-      toast.error('Failed to get download link');
-    }
-  };
-
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -118,6 +97,16 @@ export default function CommunicationDetail({ communicationId, onBack, onChangeV
 
   if (loading) return <LoadingSpinner message="Loading communication..." />;
   if (!communication) return <div className="p-6 text-center text-stone-400">Communication not found</div>;
+
+  const recipients = communication.recipients || [];
+  const selectedRecipient = recipients.find(r => r.id === selectedRecipientId) || null;
+
+  // Check if expected response date is overdue
+  const isOverdue = communication.expectedResponseDate &&
+    communication.status !== 'CLOSED' &&
+    communication.status !== 'CANCELLED' &&
+    communication.status !== 'RESPONDED' &&
+    new Date(communication.expectedResponseDate) < new Date();
 
   const statusActions: { status: CommunicationStatus; label: string; icon: React.ReactNode; className: string }[] = [];
   if (communication.status === 'SENT') {
@@ -156,21 +145,39 @@ export default function CommunicationDetail({ communicationId, onBack, onChangeV
                   Approved
                 </span>
               )}
+              {isOverdue && (
+                <span className="flex items-center gap-1 text-xs text-red-600 font-bold">
+                  <AlertTriangle className="w-3 h-3" />
+                  Overdue
+                </span>
+              )}
             </div>
             <h1 className="font-serif text-3xl text-slate-800 dark:text-white mb-2">
               {communication.title}
             </h1>
             <div className="flex items-center gap-4 text-sm text-stone-500">
-              {communication.contact && <span>To: {communication.contact.fullName}</span>}
-              {communication.department && <span>· {communication.department.name}</span>}
-              {communication.organisation && <span>· {communication.organisation.name}</span>}
-              <span>· {formatDate(communication.createdAt)}</span>
+              {recipients.length > 0 ? (
+                <span>
+                  To: {recipients.slice(0, 2).map(r => r.department?.name || 'Unknown').join(', ')}
+                  {recipients.length > 2 && ` +${recipients.length - 2} others`}
+                </span>
+              ) : communication.contact ? (
+                <span>To: {communication.contact.fullName}</span>
+              ) : null}
+              <span>{formatDate(communication.createdAt)}</span>
             </div>
             {communication.description && (
               <p className="text-stone-600 dark:text-stone-400 mt-3 max-w-2xl">{communication.description}</p>
             )}
             {communication.senderOrganisation && (
               <p className="text-xs text-stone-400 mt-2">Sent by: {communication.senderOrganisation}</p>
+            )}
+            {communication.expectedResponseDate && (
+              <div className={`flex items-center gap-2 mt-2 text-xs ${isOverdue ? 'text-red-600 font-bold' : 'text-stone-400'}`}>
+                <Calendar className="w-3 h-3" />
+                Expected response by {formatDate(new Date(communication.expectedResponseDate).toISOString())}
+                {isOverdue && ' (OVERDUE)'}
+              </div>
             )}
           </div>
         </div>
@@ -196,42 +203,6 @@ export default function CommunicationDetail({ communicationId, onBack, onChangeV
       {canWriteCommunications && (
         <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-stone-200 dark:border-white/5 p-6 mb-6">
           <div className="flex items-center gap-3 flex-wrap">
-            {/* Upload document */}
-            <div className="flex items-center gap-2 mr-4">
-              <select
-                value={uploadType}
-                onChange={(e) => setUploadType(e.target.value as CommunicationDocumentType)}
-                className="px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 rounded-xl text-sm"
-              >
-                <option value="sent">Sent document</option>
-                <option value="received">Received document</option>
-              </select>
-              <button
-                onClick={() => setUploadPublic(!uploadPublic)}
-                className={`p-2 rounded-lg text-sm ${uploadPublic ? 'bg-emerald-50 text-emerald-600' : 'bg-stone-100 text-stone-400'}`}
-                title={uploadPublic ? 'Public' : 'Private'}
-              >
-                {uploadPublic ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-              </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                disabled={uploadingFile}
-                className="flex items-center gap-2 px-4 py-2 bg-gold-600 text-white rounded-xl font-bold hover:bg-gold-700 transition-all disabled:opacity-50"
-              >
-                <Upload className="w-4 h-4" />
-                {uploadingFile ? 'Uploading...' : 'Upload'}
-              </button>
-            </div>
-
-            {/* Status actions */}
-            <div className="h-8 w-px bg-stone-200" />
             {statusActions.map(action => (
               <button
                 key={action.status}
@@ -246,11 +217,12 @@ export default function CommunicationDetail({ communicationId, onBack, onChangeV
         </div>
       )}
 
-      {/* Tabs: Documents / Activity / Team */}
+      {/* Tabs */}
       <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-stone-200 dark:border-white/5 overflow-hidden">
         <div className="flex border-b border-stone-100 dark:border-stone-800">
           {[
-            { key: 'documents' as const, label: 'Documents', icon: <FileText className="w-4 h-4" /> },
+            { key: 'recipients' as const, label: `Recipients (${recipients.length})`, icon: <AlertCircle className="w-4 h-4" /> },
+            { key: 'documents' as const, label: 'All Documents', icon: <FileText className="w-4 h-4" /> },
             { key: 'activity' as const, label: 'Activity', icon: <Clock className="w-4 h-4" /> },
             { key: 'team' as const, label: 'Team', icon: <AlertCircle className="w-4 h-4" /> },
           ].map(tab => (
@@ -271,11 +243,39 @@ export default function CommunicationDetail({ communicationId, onBack, onChangeV
         </div>
 
         <div className="p-8">
+          {activeTab === 'recipients' && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Left: Recipient list */}
+              <div className="lg:col-span-1">
+                <RecipientsPanel
+                  recipients={recipients}
+                  selectedRecipientId={selectedRecipientId}
+                  onSelectRecipient={setSelectedRecipientId}
+                />
+              </div>
+              {/* Right: Selected recipient thread */}
+              <div className="lg:col-span-2">
+                {selectedRecipient ? (
+                  <RecipientThread
+                    communication={communication}
+                    recipient={selectedRecipient}
+                    onRefresh={() => void fetchCommunication()}
+                    canWrite={canWriteCommunications}
+                  />
+                ) : (
+                  <div className="text-center py-12 text-stone-400">
+                    <AlertCircle className="w-8 h-8 mx-auto mb-2 opacity-30" />
+                    <p className="text-sm">Select a recipient to view their correspondence thread</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
           {activeTab === 'documents' && (
             <>
               <h2 className="font-serif text-xl font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-2">
                 <FileText className="w-5 h-5 text-gold-600" />
-                Correspondence Timeline
+                All Documents
               </h2>
               <CommunicationTimeline
                 communication={communication}
