@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Phone, Mail, Globe, MapPin, Search, User, Plus, MessageSquare } from 'lucide-react';
+import { Phone, Mail, Globe, MapPin, Search, User, Plus, MessageSquare, ChevronDown, ChevronRight } from 'lucide-react';
 import { hierarchyService } from '@/services/hierarchyService';
 import { usePermissions } from '@/lib/hooks/usePermissions';
 import type { ContactWithChannels, Department, Organization } from '@/types';
@@ -22,6 +22,7 @@ export default function DepartmentContacts({ orgId, deptId, onChangeView }: Depa
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showFormer, setShowFormer] = useState(false);
   const { canReadContacts, canWriteContacts, canWriteCommunications } = usePermissions();
 
   useEffect(() => {
@@ -49,7 +50,14 @@ export default function DepartmentContacts({ orgId, deptId, onChangeView }: Depa
     }
   };
 
-  const filteredContacts = contacts.filter(contact =>
+  const activeContacts = contacts.filter(c => c.isActive !== false);
+  const formerContacts = contacts.filter(c => c.isActive === false);
+
+  const filteredActive = activeContacts.filter(contact =>
+    contact.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (contact.roleTitle && contact.roleTitle.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+  const filteredFormer = formerContacts.filter(contact =>
     contact.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (contact.roleTitle && contact.roleTitle.toLowerCase().includes(searchQuery.toLowerCase()))
   );
@@ -71,7 +79,7 @@ export default function DepartmentContacts({ orgId, deptId, onChangeView }: Depa
     }
   };
 
-  const getChannelValue = (channel: any) => {
+  const getChannelValue = (channel: Record<string, unknown>): string => {
     if (channel.channelType === 'office_address') {
       const parts = [
         channel.addressLine1,
@@ -79,11 +87,87 @@ export default function DepartmentContacts({ orgId, deptId, onChangeView }: Depa
         channel.state,
         channel.postalCode,
         channel.country,
-      ].filter(Boolean);
+      ].filter(Boolean) as string[];
       return parts.join(', ');
     }
-    return channel.displayValue || channel.value;
+    return String(channel.displayValue || channel.value || '');
   };
+
+  const renderContactCard = (contact: ContactWithChannels, isActive: boolean) => (
+    <div
+      key={contact.id}
+      className={`bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border p-6 ${isActive ? 'border-stone-200 dark:border-white/5' : 'border-stone-200/60 dark:border-white/5 opacity-75'}`}
+    >
+      <div className="flex items-start gap-4">
+        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 ${isActive ? 'bg-gradient-to-br from-gold-400 to-gold-600' : 'bg-stone-300 dark:bg-stone-700'}`}>
+          <User className="w-7 h-7 text-white" />
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <h3 className="font-serif text-lg font-bold text-slate-800 dark:text-white">
+              {contact.fullName}
+            </h3>
+            {isActive && (
+              <span className="px-2 py-0.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-xs font-bold rounded-lg">
+                Current
+              </span>
+            )}
+            {!isActive && (
+              <span className="px-2 py-0.5 bg-stone-100 dark:bg-stone-800 text-stone-500 text-xs font-bold rounded-lg">
+                Former
+              </span>
+            )}
+          </div>
+          {contact.roleTitle && (
+            <p className={`font-medium ${isActive ? 'text-gold-600' : 'text-stone-500'}`}>{contact.roleTitle}</p>
+          )}
+
+          {contact.contactChannels && contact.contactChannels.length > 0 && (
+            <div className="mt-3 space-y-2">
+              {contact.contactChannels.map((channel) => (
+                <div key={channel.id} className="flex items-center gap-2 text-sm text-stone-600 dark:text-stone-400">
+                  <div className="w-8 h-8 bg-stone-100 dark:bg-stone-800 rounded-lg flex items-center justify-center text-gold-600">
+                    {getChannelIcon(channel.channelType)}
+                  </div>
+                  <span className="break-all">{getChannelValue(channel as unknown as Record<string, unknown>)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {isActive && (
+          <div className="flex flex-col gap-2 flex-shrink-0">
+            {canWriteCommunications && (
+              <button
+                onClick={() => onChangeView('create-communication', {
+                  contactId: contact.id,
+                  departmentId: deptId || '',
+                  organisationId: orgId || '',
+                })}
+                className="flex items-center gap-2 px-3 py-2 bg-gold-600 text-white rounded-xl text-xs font-bold hover:bg-gold-700 transition-all"
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+                Start Communication
+              </button>
+            )}
+            <button
+              onClick={() => onChangeView('communication-list', {
+                contactId: contact.id,
+                departmentId: deptId || '',
+                organisationId: orgId || '',
+              })}
+              className="flex items-center gap-2 px-3 py-2 bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 rounded-xl text-xs font-bold hover:bg-stone-200 dark:hover:bg-stone-700 transition-all"
+            >
+              <MessageSquare className="w-3.5 h-3.5" />
+              View Communications
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 
   if (loading) {
     return <LoadingSpinner message="Loading contacts..." />;
@@ -144,84 +228,44 @@ export default function DepartmentContacts({ orgId, deptId, onChangeView }: Depa
           )}
         </div>
         <p className="text-sm text-stone-500 mt-4">
-          Showing {filteredContacts.length} of {contacts.length} contacts
+          {activeContacts.length} current{formerContacts.length > 0 ? `, ${formerContacts.length} former` : ''} contacts
         </p>
       </div>
 
-      {/* Contacts */}
-      {filteredContacts.length === 0 ? (
+      {/* Current Contacts */}
+      {filteredActive.length === 0 && filteredFormer.length === 0 ? (
         <EmptyState
           title={searchQuery ? 'No contacts found' : 'No contacts'}
           description={searchQuery ? 'Try a different search term' : 'This department has no contacts yet'}
         />
       ) : (
-        <div className="space-y-4">
-          {filteredContacts.map((contact) => (
-            <div
-              key={contact.id}
-              className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-stone-200 dark:border-white/5 p-6"
-            >
-              <div className="flex items-start gap-4">
-                {/* Avatar */}
-                <div className="w-14 h-14 bg-gradient-to-br from-gold-400 to-gold-600 rounded-2xl flex items-center justify-center flex-shrink-0">
-                  <User className="w-7 h-7 text-white" />
-                </div>
-
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-serif text-lg font-bold text-slate-800 dark:text-white">
-                    {contact.fullName}
-                  </h3>
-                  {contact.roleTitle && (
-                    <p className="text-gold-600 font-medium">{contact.roleTitle}</p>
-                  )}
-
-                  {/* Contact Channels */}
-                  {contact.contactChannels && contact.contactChannels.length > 0 && (
-                    <div className="mt-3 space-y-2">
-                      {contact.contactChannels.map((channel) => (
-                        <div key={channel.id} className="flex items-center gap-2 text-sm text-stone-600 dark:text-stone-400">
-                          <div className="w-8 h-8 bg-stone-100 dark:bg-stone-800 rounded-lg flex items-center justify-center text-gold-600">
-                            {getChannelIcon(channel.channelType)}
-                          </div>
-                          <span className="break-all">{getChannelValue(channel)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Actions */}
-                <div className="flex flex-col gap-2 flex-shrink-0">
-                  {canWriteCommunications && (
-                    <button
-                      onClick={() => onChangeView('create-communication', {
-                        contactId: contact.id,
-                        departmentId: deptId || '',
-                        organisationId: orgId || '',
-                      })}
-                      className="flex items-center gap-2 px-3 py-2 bg-gold-600 text-white rounded-xl text-xs font-bold hover:bg-gold-700 transition-all"
-                    >
-                      <MessageSquare className="w-3.5 h-3.5" />
-                      Start Communication
-                    </button>
-                  )}
-                  <button
-                    onClick={() => onChangeView('communication-list', {
-                      contactId: contact.id,
-                      departmentId: deptId || '',
-                      organisationId: orgId || '',
-                    })}
-                    className="flex items-center gap-2 px-3 py-2 bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 rounded-xl text-xs font-bold hover:bg-stone-200 dark:hover:bg-stone-700 transition-all"
-                  >
-                    <MessageSquare className="w-3.5 h-3.5" />
-                    View Communications
-                  </button>
-                </div>
-              </div>
+        <>
+          {filteredActive.length > 0 && (
+            <div className="space-y-4 mb-6">
+              {filteredActive.map(c => renderContactCard(c, true))}
             </div>
-          ))}
-        </div>
+          )}
+
+          {/* Former Contacts (collapsible) */}
+          {filteredFormer.length > 0 && (
+            <div className="mt-8">
+              <button
+                onClick={() => setShowFormer(!showFormer)}
+                className="flex items-center gap-2 text-stone-500 hover:text-stone-700 transition-colors mb-4"
+              >
+                {showFormer ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                <span className="text-sm font-semibold uppercase tracking-wider">
+                  Former Officeholders ({filteredFormer.length})
+                </span>
+              </button>
+              {showFormer && (
+                <div className="space-y-4">
+                  {filteredFormer.map(c => renderContactCard(c, false))}
+                </div>
+              )}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

@@ -209,6 +209,7 @@ export default function ViewRenderer({ state }: ViewRendererProps) {
             fullName: '',
             organisationId: communicationContext.organisationId,
             isHeadOfficeBased: false,
+            isActive: true,
             createdAt: '',
             updatedAt: '',
           }}

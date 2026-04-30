@@ -1,12 +1,12 @@
 import { PrismaClient } from '@prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import pg from 'pg'
-import { RegionType, OrganisationType, ContactChannelType } from '@prisma/client'
+import { RegionType, OrganisationType, HeadOfficeType, ContactChannelType, Portfolio } from '@prisma/client'
 import regionsData from './seeds/regions.json'
-import organisationsData from './seeds/organisations.json'
-import departmentsData from './seeds/departments.json'
-import contactsData from './seeds/contacts.json'
-import contactChannelsData from './seeds/contact_channels.json'
+import organisationsData from './seeds/v2/organisations.json'
+import departmentsData from './seeds/v2/departments.json'
+import contactsData from './seeds/v2/contacts.json'
+import contactChannelsData from './seeds/v2/contact_channels.json'
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL })
 const adapter = new PrismaPg(pool)
@@ -27,6 +27,7 @@ interface Organisation {
   id: string
   name: string
   type: OrganisationType
+  headOfficeType: string
   headOfficeCountryId: string
   headOfficeCity: string | null
   headOfficeAddress: string | null
@@ -46,6 +47,7 @@ interface Department {
   description: string | null
   organisationId: string
   parentId: string | null
+  portfolio: string
   isActive: boolean
   createdAt: string
   updatedAt: string
@@ -63,6 +65,7 @@ interface Contact {
   primaryLocationId: string | null
   ownerId: string | null
   isHeadOfficeBased: boolean
+  isActive: boolean
   createdAt: string
   updatedAt: string
 }
@@ -81,6 +84,23 @@ interface ContactChannel {
   country: string | null
   createdAt: string
   updatedAt: string
+}
+
+async function wipeData() {
+  console.log('Wiping existing data (keeping regions)...')
+
+  // Delete in reverse dependency order
+  const tables = [
+    'contact_channels',
+    'contacts',
+    'departments',
+    'organisations',
+  ]
+
+  for (const table of tables) {
+    const result = await prisma.$executeRawUnsafe(`DELETE FROM ${table}`)
+    console.log(`  ✓ Wiped ${table}`)
+  }
 }
 
 async function seedRegions() {
@@ -116,6 +136,7 @@ async function seedOrganisations() {
         id: org.id,
         name: org.name,
         type: org.type,
+        headOfficeType: (org.headOfficeType as HeadOfficeType) || 'CORPORATE',
         headOfficeCountry: { connect: { id: org.headOfficeCountryId } },
         headOfficeCity: org.headOfficeCity,
         headOfficeAddress: org.headOfficeAddress,
@@ -144,6 +165,7 @@ async function seedDepartments() {
         name: dept.name,
         code: dept.code,
         description: dept.description,
+        portfolio: (dept.portfolio as Portfolio) || 'unspecified',
         organisation: { connect: { id: dept.organisationId } },
         parent: dept.parentId ? { connect: { id: dept.parentId } } : undefined,
         isActive: dept.isActive,
@@ -174,6 +196,7 @@ async function seedContacts() {
           primaryLocation: contact.primaryLocationId ? { connect: { id: contact.primaryLocationId } } : undefined,
           owner: contact.ownerId ? { connect: { id: contact.ownerId } } : undefined,
           isHeadOfficeBased: contact.isHeadOfficeBased,
+          isActive: contact.isActive,
         },
       })
       count++
@@ -219,9 +242,12 @@ async function seedContactChannels() {
 }
 
 async function main() {
-  console.log('🌱 Starting database seed...\n')
+  console.log('🌱 Starting database seed (v2 - uniform structure)...\n')
 
   const startTime = Date.now()
+
+  // Wipe old data first (keep regions)
+  await wipeData()
 
   // Seed in order of dependencies
   await seedRegions()

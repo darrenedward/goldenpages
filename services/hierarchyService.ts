@@ -182,6 +182,7 @@ class HierarchyService {
         departmentId,
         organisationId,
         isHeadOfficeBased,
+        isActive,
         createdAt,
         updatedAt,
         contactChannels:contact_channels(*),
@@ -189,6 +190,7 @@ class HierarchyService {
         organisation:organisations(id,name)
       `)
       .eq('departmentId', departmentId)
+      .order('isActive', { ascending: false })
       .order('fullName', { ascending: true });
 
     if (error) throw error;
@@ -208,12 +210,14 @@ class HierarchyService {
         departmentId,
         organisationId,
         isHeadOfficeBased,
+        isActive,
         createdAt,
         updatedAt,
         contactChannels:contact_channels(*),
         department:departments!inner(id,name,code,portfolio,organisationId,parentId,isActive,createdAt,updatedAt)
       `)
       .eq('organisationId', organisationId)
+      .order('isActive', { ascending: false })
       .order('fullName', { ascending: true });
 
     if (error) throw error;

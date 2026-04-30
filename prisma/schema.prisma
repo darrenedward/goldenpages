@@ -336,6 +336,7 @@ model Contact {
   owner   User?   @relation("ContactOwner", fields: [ownerId], references: [id])
 
   isHeadOfficeBased Boolean          @default(false)
+  isActive          Boolean          @default(true)
   contactChannels   ContactChannel[]
   notes             ContactNote[]
   outreachLogs      OutreachLog[]
@@ -345,6 +346,7 @@ model Contact {
 
   @@index([organisationId])
   @@index([departmentId])
+  @@index([isActive])
   @@map("contacts")
 }
 

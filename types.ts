@@ -112,6 +112,7 @@ export interface Contact {
   primaryLocationId?: string;
   ownerId?: string;
   isHeadOfficeBased: boolean;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }
