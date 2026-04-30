@@ -142,7 +142,7 @@ class AuthService {
    */
   async resetPassword(email: string): Promise<{ error: AuthError | null }> {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/reset-password`,
+      redirectTo: `${window.location.origin}/auth/callback`,
     });
     return { error };
   }

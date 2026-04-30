@@ -17,7 +17,7 @@ import CommunicationList from '@/components/communications/CommunicationList';
 import CommunicationDetail from '@/components/communications/CommunicationDetail';
 import CreateCommunicationForm from '@/components/communications/CreateCommunicationForm';
 import PublicCommunicationBrowser from '@/components/communications/PublicCommunicationBrowser';
-import AdminPanel from './AdminPanel';
+import UserManagementPanel from '@/components/admin/UserManagementPanel';
 import SettingsPanel from './SettingsPanel';
 import IssueCategoryManager from '@/components/admin/IssueCategoryManager';
 import NotificationList from '@/components/notifications/NotificationList';
@@ -227,12 +227,7 @@ export default function ViewRenderer({ state }: ViewRendererProps) {
       );
 
     case 'admin':
-      return (
-        <AdminPanel
-          onClear={() => { setProcessType('clear'); setShowStatusModal(true); }}
-          onRefresh={() => void fetchBaseData()}
-        />
-      );
+      return <UserManagementPanel />;
 
     case 'admin-categories':
       return <IssueCategoryManager />;

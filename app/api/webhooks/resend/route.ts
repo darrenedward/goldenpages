@@ -9,19 +9,13 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
+import { getAdminClient } from '@/services/adminClient';
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const WEBHOOK_SECRET = process.env.RESEND_WEBHOOK_SECRET || '';
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 
 const EMAIL_DOMAIN = 'mail.goldenpages.newworldalliances.nz';
-
-function getAdminClient() {
-  return createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
-}
 
 // ============================================================================
 // Svix Signature Verification
@@ -336,13 +330,13 @@ async function handleEnquiryEmail(
 
     const { data: admins } = await supabase
       .from('user_roles')
-      .select('user_id')
-      .eq('"roleId"', adminRoleId);
+      .select('userId')
+      .eq('roleId', adminRoleId);
 
     if (admins?.length) {
       for (const admin of admins) {
         await supabase.from('notifications').insert({
-          user_id: admin.user_id,
+          user_id: admin.userId,
           type: 'contact_submission_received',
           title: emailType === 'inbound_enquiry' ? 'New Email Enquiry' : 'New Contact Email',
           message: `${fromEmail}: ${subject}`,

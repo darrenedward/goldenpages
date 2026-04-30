@@ -38,7 +38,6 @@ export interface AuthContextValue {
 
   // Auth Methods
   signIn: (credentials: SignInCredentials) => Promise<{ error: AuthError | null }>;
-  signUp: (credentials: SignUpCredentials) => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<{ error: AuthError | null }>;
 
   // Permission Methods
@@ -155,13 +154,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return { error };
   }
 
-  async function signUp(credentials: SignUpCredentials) {
-    setLoading(true);
-    const { data, error } = await authService.signUp(credentials);
-    setLoading(false);
-    return { error };
-  }
-
   async function signOut() {
     setLoading(true);
     const { error } = await authService.signOut();
@@ -209,7 +201,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     // Auth Methods
     signIn,
-    signUp,
     signOut,
 
     // Permission Methods

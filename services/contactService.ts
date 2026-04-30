@@ -76,14 +76,14 @@ async function notifyAdmins(type: string, title: string, message: string, resour
 
   const { data: admins } = await supabase
     .from('user_roles')
-    .select('user_id')
-    .eq('"roleId"', adminRole.id);
+    .select('userId')
+    .eq('roleId', adminRole.id);
 
   if (!admins?.length) return;
 
   for (const admin of admins) {
     await supabase.from('notifications').insert({
-      user_id: admin.user_id,
+      user_id: admin.userId,
       type,
       title,
       message,

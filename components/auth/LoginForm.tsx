@@ -1,120 +1,53 @@
 'use client';
 
-/**
- * LoginForm Component
- *
- * Provides a user interface for email/password authentication.
- * Handles sign in, sign up, and password reset flows.
- * Styled with the Golden Theme.
- */
-
 import React, { useState } from 'react';
 import { useAuth } from '@/lib/authContext';
+import { authService } from '@/services/authService';
 
-// ============================================================================
-// TYPES
-// ============================================================================
-
-type AuthMode = 'login' | 'signup' | 'forgot';
-
-interface LoginFormData {
-  email: string;
-  password: string;
-  name?: string;
-  confirmPassword?: string;
-}
-
-// ============================================================================
-// COMPONENT
-// ============================================================================
+type AuthMode = 'login' | 'forgot';
 
 export function LoginForm() {
-  const { signIn, signUp, loading } = useAuth();
+  const { signIn, loading } = useAuth();
 
   const [mode, setMode] = useState<AuthMode>('login');
-  const [formData, setFormData] = useState<LoginFormData>({
-    email: '',
-    password: '',
-  });
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // ==========================================================================
-  // HANDLERS
-  // ==========================================================================
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    setError(null);
-    setSuccess(null);
-  };
-
-  const validateForm = (): boolean => {
-    if (!formData.email || !formData.email.includes('@')) {
-      setError('Please enter a valid email address');
-      return false;
-    }
-
-    if (mode === 'login' || mode === 'signup') {
-      if (!formData.password || formData.password.length < 6) {
-        setError('Password must be at least 6 characters');
-        return false;
-      }
-    }
-
-    if (mode === 'signup') {
-      if (!formData.name || formData.name.trim().length < 2) {
-        setError('Please enter your name');
-        return false;
-      }
-      if (formData.password !== formData.confirmPassword) {
-        setError('Passwords do not match');
-        return false;
-      }
-    }
-
-    return true;
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
 
-    if (!validateForm()) return;
+    if (!email || !email.includes('@')) {
+      setError('Please enter a valid email address');
+      return;
+    }
 
     setIsSubmitting(true);
 
     try {
       if (mode === 'login') {
-        const { error } = await signIn({
-          email: formData.email,
-          password: formData.password,
-        });
-
-        if (error) {
-          setError(error.message || 'Failed to sign in');
+        if (!password || password.length < 6) {
+          setError('Password must be at least 6 characters');
+          setIsSubmitting(false);
+          return;
         }
-      } else if (mode === 'signup') {
-        const { error } = await signUp({
-          email: formData.email,
-          password: formData.password,
-          metadata: {
-            name: formData.name,
-          },
-        });
 
-        if (error) {
-          setError(error.message || 'Failed to create account');
-        } else {
-          setSuccess('Account created! Please check your email to verify your account.');
-          setMode('login');
+        const { error: signInError } = await signIn({ email, password });
+        if (signInError) {
+          setError(signInError.message || 'Failed to sign in');
         }
       } else if (mode === 'forgot') {
-        setSuccess('Password reset link sent to your email if account exists.');
-        setMode('login');
+        const { error: resetError } = await authService.resetPassword(email);
+        if (resetError) {
+          setError(resetError.message || 'Failed to send reset email');
+        } else {
+          setSuccess('Password reset link sent to your email if an account exists.');
+          setMode('login');
+        }
       }
     } catch {
       setError('An unexpected error occurred');
@@ -122,10 +55,6 @@ export function LoginForm() {
       setIsSubmitting(false);
     }
   };
-
-  // ==========================================================================
-  // RENDER
-  // ==========================================================================
 
   if (loading) {
     return (
@@ -141,19 +70,17 @@ export function LoginForm() {
         {/* Header */}
         <div className="text-center mb-8">
           <h2 className="font-serif text-2xl font-bold text-slate-900 dark:text-white">
-            {mode === 'login' && 'Welcome Back'}
-            {mode === 'signup' && 'Create Account'}
-            {mode === 'forgot' && 'Reset Password'}
+            {mode === 'login' ? 'Welcome Back' : 'Reset Password'}
           </h2>
           <div className="h-1 bg-gradient-to-r from-gold-500 to-gold-600 rounded-full w-12 mx-auto mt-3" />
           <p className="mt-4 text-sm text-stone-500 dark:text-stone-400">
-            {mode === 'login' && 'Sign in to access the Golden Pages directory'}
-            {mode === 'signup' && 'Sign up to get started with Golden Pages'}
-            {mode === 'forgot' && 'Enter your email to reset your password'}
+            {mode === 'login'
+              ? 'Sign in to access the Golden Pages directory'
+              : 'Enter your email to receive a password reset link'}
           </p>
         </div>
 
-        {/* Error/Success Messages */}
+        {/* Error/Success */}
         {error && (
           <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 rounded-2xl mb-6">
             <p className="text-sm text-red-800 dark:text-red-300">{error}</p>
@@ -168,26 +95,7 @@ export function LoginForm() {
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Name field for signup */}
-          {mode === 'signup' && (
-            <div>
-              <label htmlFor="name" className="block text-sm font-bold text-slate-900 dark:text-white mb-2">
-                Full Name
-              </label>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                required
-                value={formData.name || ''}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm"
-                placeholder="John Doe"
-              />
-            </div>
-          )}
-
-          {/* Email field */}
+          {/* Email */}
           <div>
             <label htmlFor="email" className="block text-sm font-bold text-slate-900 dark:text-white mb-2">
               Email Address
@@ -198,15 +106,15 @@ export function LoginForm() {
               type="email"
               autoComplete="email"
               required
-              value={formData.email}
-              onChange={handleInputChange}
+              value={email}
+              onChange={(e) => { setEmail(e.target.value); setError(null); setSuccess(null); }}
               className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm"
               placeholder="you@example.com"
             />
           </div>
 
-          {/* Password field */}
-          {(mode === 'login' || mode === 'signup') && (
+          {/* Password (login only) */}
+          {mode === 'login' && (
             <div>
               <label htmlFor="password" className="block text-sm font-bold text-slate-900 dark:text-white mb-2">
                 Password
@@ -215,37 +123,17 @@ export function LoginForm() {
                 id="password"
                 name="password"
                 type="password"
-                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                autoComplete="current-password"
                 required
-                value={formData.password}
-                onChange={handleInputChange}
+                value={password}
+                onChange={(e) => { setPassword(e.target.value); setError(null); }}
                 className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm"
                 placeholder="••••••••"
               />
             </div>
           )}
 
-          {/* Confirm password for signup */}
-          {mode === 'signup' && (
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-bold text-slate-900 dark:text-white mb-2">
-                Confirm Password
-              </label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                autoComplete="new-password"
-                required
-                value={formData.confirmPassword || ''}
-                onChange={handleInputChange}
-                className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm"
-                placeholder="••••••••"
-              />
-            </div>
-          )}
-
-          {/* Submit button */}
+          {/* Submit */}
           <button
             type="submit"
             disabled={isSubmitting}
@@ -258,9 +146,7 @@ export function LoginForm() {
               </span>
             ) : (
               <span>
-                {mode === 'login' && 'Sign In'}
-                {mode === 'signup' && 'Create Account'}
-                {mode === 'forgot' && 'Send Reset Link'}
+                {mode === 'login' ? 'Sign In' : 'Send Reset Link'}
               </span>
             )}
           </button>
@@ -269,33 +155,12 @@ export function LoginForm() {
         {/* Mode switching */}
         <div className="text-center text-sm mt-6 space-y-2">
           {mode === 'login' && (
-            <>
-              <button
-                type="button"
-                onClick={() => setMode('signup')}
-                className="text-gold-600 dark:text-gold-400 hover:text-gold-700 dark:hover:text-gold-300 font-medium"
-              >
-                Don&apos;t have an account? Sign up
-              </button>
-              <div>
-                <button
-                  type="button"
-                  onClick={() => setMode('forgot')}
-                  className="text-stone-500 dark:text-stone-400 hover:text-stone-600 dark:hover:text-stone-300"
-                >
-                  Forgot your password?
-                </button>
-              </div>
-            </>
-          )}
-
-          {mode === 'signup' && (
             <button
               type="button"
-              onClick={() => setMode('login')}
-              className="text-gold-600 dark:text-gold-400 hover:text-gold-700 dark:hover:text-gold-300 font-medium"
+              onClick={() => setMode('forgot')}
+              className="text-stone-500 dark:text-stone-400 hover:text-stone-600 dark:hover:text-stone-300"
             >
-              Already have an account? Sign in
+              Forgot your password?
             </button>
           )}
 

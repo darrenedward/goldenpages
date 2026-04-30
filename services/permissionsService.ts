@@ -146,8 +146,8 @@ class PermissionsService {
     // Fetch from database
     const { data, error } = await supabase
       .from('user_roles')
-      .select('role_id, roles(name, role_permissions(permission))')
-      .eq('user_id', userId);
+      .select('roleId, roles(name, role_permissions(permission))')
+      .eq('userId', userId);
 
     if (error || !data) {
       console.error('Error fetching user permissions:', error);
@@ -267,9 +267,9 @@ class PermissionsService {
     const { error } = await supabase
       .from('user_roles')
       .insert({
-        user_id: userId,
-        role_id: roleData.id,
-        assigned_by: assignedBy,
+        userId: userId,
+        roleId: roleData.id,
+        assignedBy: assignedBy,
       });
 
     // Clear cache for this user
@@ -295,8 +295,8 @@ class PermissionsService {
     const { error } = await supabase
       .from('user_roles')
       .delete()
-      .eq('user_id', userId)
-      .eq('role_id', roleData.id);
+      .eq('userId', userId)
+      .eq('roleId', roleData.id);
 
     // Clear cache for this user
     this.clearCache(userId);

@@ -363,3 +363,12 @@ export interface InboundEmail {
   processedAt: string | null;
   createdAt: string;
 }
+
+// User Management
+export interface ManagedUser {
+  id: string;
+  email: string;
+  displayName: string | null;
+  roles: string[];
+  createdAt: string;
+}

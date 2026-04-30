@@ -26,7 +26,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, onChangeView, isAdmin, on
   ];
 
   const adminItems = [
-    { id: 'admin', label: 'Admin & RBAC', icon: ShieldCheck },
+    { id: 'admin', label: 'User Management', icon: ShieldCheck },
     { id: 'admin-categories', label: 'Issue Categories', icon: Tags },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
