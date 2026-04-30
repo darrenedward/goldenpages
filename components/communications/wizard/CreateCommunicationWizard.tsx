@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { ArrowLeft, ArrowRight, Check, Loader2 } from 'lucide-react';
+import * as z from 'zod';
 import { communicationService } from '@/services/communicationService';
 import { useAuth } from '@/lib/authContext';
 import BreadcrumbNav from '@/components/shared/BreadcrumbNav';
@@ -11,6 +12,18 @@ import WizardStepDetails from './WizardStepDetails';
 import WizardStepRecipients from './WizardStepRecipients';
 import WizardStepDocuments from './WizardStepDocuments';
 import WizardStepReview from './WizardStepReview';
+
+// Per-step Zod schemas for validation
+const detailsSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  communicationType: z.enum(['letter', 'email', 'physical_mail', 'meeting']),
+});
+const recipientsSchema = z.object({
+  recipients: z.array(z.object({ departmentId: z.string() })).min(1, 'At least one recipient is required'),
+});
+const reviewSchema = z.object({
+  isApproved: z.literal(true, { message: 'You must confirm before submitting' }),
+});
 
 interface CreateCommunicationWizardProps {
   onCancel: () => void;
@@ -78,16 +91,24 @@ export default function CreateCommunicationWizard({
 
   const canGoNext = (): boolean => {
     switch (step) {
-      case 0: return state.title.trim().length > 0;
-      case 1: return state.recipients.length > 0;
+      case 0: return detailsSchema.safeParse({ title: state.title, communicationType: state.communicationType }).success;
+      case 1: return recipientsSchema.safeParse({ recipients: state.recipients }).success;
       case 2: return true; // Documents are optional
-      case 3: return state.isApproved;
+      case 3: return reviewSchema.safeParse({ isApproved: state.isApproved }).success;
       default: return false;
     }
   };
 
   const handleSubmit = async () => {
     if (!user?.id) return;
+    // Final validation before submission
+    const detailsValid = detailsSchema.safeParse({ title: state.title, communicationType: state.communicationType });
+    const recipientsValid = recipientsSchema.safeParse({ recipients: state.recipients });
+    const reviewValid = reviewSchema.safeParse({ isApproved: state.isApproved });
+    if (!detailsValid.success || !recipientsValid.success || !reviewValid.success) {
+      toast.error('Please complete all required steps');
+      return;
+    }
     setSubmitting(true);
     try {
       const communication = await communicationService.createCommunication(

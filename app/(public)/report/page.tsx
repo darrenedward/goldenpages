@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { AlertTriangle, Wheat, Droplets, Heart, Globe2, Users, ShieldCheck, Gavel, Eye, CheckCircle2, Upload, FileText, type LucideIcon } from 'lucide-react';
 import { issueCategoryService, type IssueCategory } from '@/services/issueCategoryService';
 import { reportService } from '@/services/reportService';
@@ -11,6 +14,20 @@ import toast from 'react-hot-toast';
 const ICON_MAP: Record<string, LucideIcon> = {
   AlertTriangle, Wheat, Droplets, Heart, Globe2, Users, ShieldCheck, Gavel, Eye,
 };
+
+const reportSchema = z.object({
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
+  email: z.string().email('Please enter a valid email'),
+  category: z.string().min(1, 'Please select a category'),
+  urgency: z.string().min(1, 'Please select an urgency level'),
+  organizationName: z.string(),
+  country: z.string(),
+  subject: z.string().min(1, 'Subject is required'),
+  description: z.string().min(10, 'Please provide at least 10 characters'),
+  anonymous: z.boolean(),
+});
+type ReportFormValues = z.infer<typeof reportSchema>;
 
 interface DisplayCategory {
   value: string;
@@ -38,35 +55,28 @@ const URGENCY_LEVELS = [
   { value: 'critical', label: 'Critical', desc: 'Immediate threat to life or safety' },
 ];
 
-interface FormData {
-  firstName: string;
-  lastName: string;
-  email: string;
-  category: string;
-  urgency: string;
-  organizationName: string;
-  country: string;
-  subject: string;
-  description: string;
-  anonymous: boolean;
-}
+const DEFAULT_VALUES: ReportFormValues = {
+  firstName: '',
+  lastName: '',
+  email: '',
+  category: '',
+  urgency: '',
+  organizationName: '',
+  country: '',
+  subject: '',
+  description: '',
+  anonymous: false,
+};
 
 export default function ReportPage() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [categories, setCategories] = useState<DisplayCategory[]>(FALLBACK_CATEGORIES);
-  const [formData, setFormData] = useState<FormData>({
-    firstName: '',
-    lastName: '',
-    email: '',
-    category: '',
-    urgency: '',
-    organizationName: '',
-    country: '',
-    subject: '',
-    description: '',
-    anonymous: false,
+  const { register, handleSubmit, setValue, watch, formState: { errors }, reset } = useForm<ReportFormValues>({
+    resolver: zodResolver(reportSchema),
+    defaultValues: DEFAULT_VALUES,
   });
+  const formData = watch();
 
   useEffect(() => {
     void (async () => {
@@ -88,16 +98,11 @@ export default function ReportPage() {
 
   const selectedCategory = categories.find(c => c.value === formData.category);
 
-  const handleChange = (field: keyof FormData, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: ReportFormValues) => {
     if (submitting) return;
     setSubmitting(true);
     try {
-      await reportService.submitReport(formData);
+      await reportService.submitReport(data);
       setSubmitted(true);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to submit report. Please try again.');
@@ -126,7 +131,7 @@ export default function ReportPage() {
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <button
-              onClick={() => { setSubmitted(false); setSubmitting(false); setFormData({ firstName: '', lastName: '', email: '', category: '', urgency: '', organizationName: '', country: '', subject: '', description: '', anonymous: false }); }}
+              onClick={() => { setSubmitted(false); setSubmitting(false); reset(DEFAULT_VALUES); }}
               className="px-6 py-3 bg-gold-600 text-white rounded-2xl font-bold hover:bg-gold-700 transition-all"
             >
               Submit Another Report
@@ -158,7 +163,7 @@ export default function ReportPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-8">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
         {/* Reporter Information */}
         <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-stone-200 dark:border-white/5 p-8">
           <h2 className="font-serif text-xl font-bold text-slate-900 dark:text-white mb-2">Your Information</h2>
@@ -174,12 +179,11 @@ export default function ReportPage() {
               <input
                 id="firstName"
                 type="text"
-                required
-                value={formData.firstName}
-                onChange={(e) => handleChange('firstName', e.target.value)}
+                {...register('firstName')}
                 className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm text-slate-800 dark:text-white"
                 placeholder="First name"
               />
+              {errors.firstName && <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.firstName.message}</p>}
             </div>
             <div>
               <label htmlFor="lastName" className="block text-sm font-bold text-slate-900 dark:text-white mb-2">
@@ -188,12 +192,11 @@ export default function ReportPage() {
               <input
                 id="lastName"
                 type="text"
-                required
-                value={formData.lastName}
-                onChange={(e) => handleChange('lastName', e.target.value)}
+                {...register('lastName')}
                 className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm text-slate-800 dark:text-white"
                 placeholder="Last name"
               />
+              {errors.lastName && <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.lastName.message}</p>}
             </div>
           </div>
 
@@ -204,20 +207,18 @@ export default function ReportPage() {
             <input
               id="email"
               type="email"
-              required
-              value={formData.email}
-              onChange={(e) => handleChange('email', e.target.value)}
+              {...register('email')}
               className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm text-slate-800 dark:text-white"
               placeholder="you@example.com"
             />
+            {errors.email && <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.email.message}</p>}
           </div>
 
           <div className="mt-5 flex items-start gap-3">
             <input
               id="anonymous"
               type="checkbox"
-              checked={formData.anonymous}
-              onChange={(e) => handleChange('anonymous', e.target.checked)}
+              {...register('anonymous')}
               className="mt-1 w-4 h-4 text-gold-600 border-stone-300 rounded focus:ring-gold-500"
             />
             <label htmlFor="anonymous" className="text-sm text-stone-600 dark:text-stone-400">
@@ -239,7 +240,7 @@ export default function ReportPage() {
               <button
                 key={cat.value}
                 type="button"
-                onClick={() => handleChange('category', cat.value)}
+                onClick={() => setValue('category', cat.value, { shouldValidate: true })}
                 className={`text-left p-4 rounded-2xl border transition-all ${
                   formData.category === cat.value
                     ? 'border-gold-500 border-l-4 border-l-gold-500 bg-gold-50 dark:bg-gold-900/20 shadow-sm'
@@ -262,6 +263,7 @@ export default function ReportPage() {
               </button>
             ))}
           </div>
+          {errors.category && <p className="text-red-500 text-[10px] font-bold mt-2 ml-1">{errors.category.message}</p>}
         </div>
 
         {/* Urgency */}
@@ -276,7 +278,7 @@ export default function ReportPage() {
               <button
                 key={level.value}
                 type="button"
-                onClick={() => handleChange('urgency', level.value)}
+                onClick={() => setValue('urgency', level.value, { shouldValidate: true })}
                 className={`text-left p-4 rounded-2xl border transition-all ${
                   formData.urgency === level.value
                     ? level.value === 'critical'
@@ -292,6 +294,7 @@ export default function ReportPage() {
               </button>
             ))}
           </div>
+          {errors.urgency && <p className="text-red-500 text-[10px] font-bold mt-2 ml-1">{errors.urgency.message}</p>}
         </div>
 
         {/* Who Is Involved */}
@@ -309,8 +312,7 @@ export default function ReportPage() {
               <input
                 id="organizationName"
                 type="text"
-                value={formData.organizationName}
-                onChange={(e) => handleChange('organizationName', e.target.value)}
+                {...register('organizationName')}
                 className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm text-slate-800 dark:text-white"
                 placeholder="e.g., Ministry of Health, Monsanto/Bayer"
               />
@@ -322,8 +324,7 @@ export default function ReportPage() {
               <input
                 id="country"
                 type="text"
-                value={formData.country}
-                onChange={(e) => handleChange('country', e.target.value)}
+                {...register('country')}
                 className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm text-slate-800 dark:text-white"
                 placeholder="e.g., New Zealand, United States"
               />
@@ -346,12 +347,11 @@ export default function ReportPage() {
               <input
                 id="subject"
                 type="text"
-                required
-                value={formData.subject}
-                onChange={(e) => handleChange('subject', e.target.value)}
+                {...register('subject')}
                 className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm text-slate-800 dark:text-white"
                 placeholder="Brief summary of the issue"
               />
+              {errors.subject && <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.subject.message}</p>}
             </div>
 
             <div>
@@ -360,13 +360,12 @@ export default function ReportPage() {
               </label>
               <textarea
                 id="description"
-                required
                 rows={8}
-                value={formData.description}
-                onChange={(e) => handleChange('description', e.target.value)}
+                {...register('description')}
                 className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm resize-none"
                 placeholder="Describe the issue in detail. Include: what happened, who is affected, when it occurred, any evidence you are aware of, and how it relates to human rights..."
               />
+              {errors.description && <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.description.message}</p>}
             </div>
 
             {/* Evidence upload placeholder */}

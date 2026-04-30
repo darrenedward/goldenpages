@@ -2,9 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { Share2, Plus, Trash2, Save, Loader2, GripVertical } from 'lucide-react';
+import * as z from 'zod';
 import { settingsService } from '@/services/settingsService';
 import toast from 'react-hot-toast';
 import type { SocialLink } from '@/types';
+
+const socialLinkSchema = z.object({
+  platform: z.string(),
+  url: z.string().url('Please enter a valid URL').or(z.literal('')),
+  label: z.string(),
+});
+const socialLinksArraySchema = z.array(socialLinkSchema);
 
 const PLATFORMS = [
   { value: 'github', label: 'GitHub' },
@@ -62,8 +70,13 @@ export default function SocialLinksSection() {
   };
 
   const handleSave = async () => {
-    // Filter out empty links
     const validLinks = links.filter(l => l.url.trim() && l.label.trim());
+    const result = socialLinksArraySchema.safeParse(validLinks);
+    if (!result.success) {
+      const firstError = result.error.issues[0];
+      toast.error(firstError?.message || 'Validation failed');
+      return;
+    }
     setSaving(true);
     try {
       await settingsService.upsert('social_links', JSON.stringify(validLinks));

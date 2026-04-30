@@ -1,23 +1,36 @@
 'use client';
 
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { Mail, MapPin, Globe2, Send, CheckCircle2 } from 'lucide-react';
 import { ScrollReveal } from '@/components/shared/ScrollReveal';
-import { GlowCard } from '@/components/shared/GlowCard';
 import { contactService } from '@/services/contactService';
 import toast from 'react-hot-toast';
+
+const contactSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  email: z.string().email('Please enter a valid email'),
+  subject: z.string().min(1, 'Subject is required'),
+  message: z.string().min(10, 'Message must be at least 10 characters'),
+});
+type ContactFormValues = z.infer<typeof contactSchema>;
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<ContactFormValues>({
+    resolver: zodResolver(contactSchema),
+    defaultValues: { name: '', email: '', subject: '', message: '' },
+  });
+
+  const onSubmit = async (data: ContactFormValues) => {
     if (submitting) return;
     setSubmitting(true);
     try {
-      await contactService.submit(formData);
+      await contactService.submit(data);
       setSubmitted(true);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to send message. Please try again.');
@@ -97,14 +110,14 @@ export default function ContactPage() {
                   Thank you for reaching out. We&apos;ll get back to you as soon as possible.
                 </p>
                 <button
-                  onClick={() => { setSubmitted(false); setFormData({ name: '', email: '', subject: '', message: '' }); }}
+                  onClick={() => { setSubmitted(false); reset(); }}
                   className="px-6 py-3 bg-gold-600 text-white rounded-2xl font-bold hover:bg-gold-700 transition-all hover:scale-[1.02] active:scale-[0.98]"
                 >
                   Send Another Message
                 </button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
                     <label htmlFor="name" className="block text-sm font-bold text-slate-900 dark:text-white mb-2">
@@ -113,12 +126,11 @@ export default function ContactPage() {
                     <input
                       id="name"
                       type="text"
-                      required
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      {...register('name')}
                       className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold-500 focus:shadow-[0_0_15px_hsl(45_93%_47%/0.1)] text-sm text-slate-800 dark:text-white"
                       placeholder="Your name"
                     />
+                    {errors.name && <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.name.message}</p>}
                   </div>
                   <div>
                     <label htmlFor="email" className="block text-sm font-bold text-slate-900 dark:text-white mb-2">
@@ -127,12 +139,11 @@ export default function ContactPage() {
                     <input
                       id="email"
                       type="email"
-                      required
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      {...register('email')}
                       className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold-500 focus:shadow-[0_0_15px_hsl(45_93%_47%/0.1)] text-sm text-slate-800 dark:text-white"
                       placeholder="you@example.com"
                     />
+                    {errors.email && <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.email.message}</p>}
                   </div>
                 </div>
 
@@ -143,12 +154,11 @@ export default function ContactPage() {
                   <input
                     id="subject"
                     type="text"
-                    required
-                    value={formData.subject}
-                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                    {...register('subject')}
                     className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold-500 focus:shadow-[0_0_15px_hsl(45_93%_47%/0.1)] text-sm text-slate-800 dark:text-white"
                     placeholder="What's this about?"
                   />
+                  {errors.subject && <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.subject.message}</p>}
                 </div>
 
                 <div>
@@ -157,13 +167,12 @@ export default function ContactPage() {
                   </label>
                   <textarea
                     id="message"
-                    required
                     rows={6}
-                    value={formData.message}
-                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    {...register('message')}
                     className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold-500 focus:shadow-[0_0_15px_hsl(45_93%_47%/0.1)] text-sm resize-none"
                     placeholder="Your message..."
                   />
+                  {errors.message && <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.message.message}</p>}
                 </div>
 
                 <button

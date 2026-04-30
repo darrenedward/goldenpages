@@ -2,11 +2,19 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { DotGrid } from '@/components/shared/DotGrid';
 import { contactService } from '@/services/contactService';
 import { settingsService } from '@/services/settingsService';
 import toast from 'react-hot-toast';
 import type { SocialLink } from '@/types';
+
+const newsletterSchema = z.object({
+  email: z.string().email('Please enter a valid email address'),
+});
+type NewsletterValues = z.infer<typeof newsletterSchema>;
 
 const FALLBACK_LINKS: SocialLink[] = [
   { platform: 'github', url: 'https://github.com/darrenedward', label: 'GitHub' },
@@ -47,10 +55,12 @@ const SOCIAL_ICONS: Record<string, React.ReactNode> = {
 };
 
 export default function PublicFooter() {
-  const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>(FALLBACK_LINKS);
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<NewsletterValues>({
+    resolver: zodResolver(newsletterSchema),
+  });
 
   useEffect(() => {
     settingsService.getSocialLinks().then(links => {
@@ -58,15 +68,10 @@ export default function PublicFooter() {
     }).catch(() => {});
   }, []);
 
-  const handleSubscribe = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim() || !email.includes('@')) {
-      toast.error('Please enter a valid email address');
-      return;
-    }
+  const onSubscribe = async (data: NewsletterValues) => {
     setSubscribing(true);
     try {
-      await contactService.subscribeNewsletter(email);
+      await contactService.subscribeNewsletter(data.email);
       setSubscribed(true);
       toast.success('Subscribed! You\'ll receive updates on human rights accountability.');
     } catch {
@@ -157,22 +162,23 @@ export default function PublicFooter() {
               {subscribed ? (
                 <p className="text-emerald-400 text-xs font-bold">Subscribed!</p>
               ) : (
-                <form onSubmit={handleSubscribe} className="flex gap-2">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="your@email.com"
-                    required
-                    className="flex-1 min-w-0 px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-xs text-white placeholder:text-stone-600 focus:outline-none focus:ring-1 focus:ring-gold-500"
-                  />
-                  <button
-                    type="submit"
-                    disabled={subscribing}
-                    className="px-3 py-2 bg-gold-600 text-white rounded-xl text-xs font-bold hover:bg-gold-700 transition-all whitespace-nowrap disabled:opacity-50"
-                  >
-                    {subscribing ? '...' : 'Subscribe'}
-                  </button>
+                <form onSubmit={handleSubmit(onSubscribe)} className="flex flex-col gap-1">
+                  <div className="flex gap-2">
+                    <input
+                      type="email"
+                      {...register('email')}
+                      placeholder="your@email.com"
+                      className="flex-1 min-w-0 px-3 py-2 bg-white/5 border border-white/10 rounded-xl text-xs text-white placeholder:text-stone-600 focus:outline-none focus:ring-1 focus:ring-gold-500"
+                    />
+                    <button
+                      type="submit"
+                      disabled={subscribing}
+                      className="px-3 py-2 bg-gold-600 text-white rounded-xl text-xs font-bold hover:bg-gold-700 transition-all whitespace-nowrap disabled:opacity-50"
+                    >
+                      {subscribing ? '...' : 'Subscribe'}
+                    </button>
+                  </div>
+                  {errors.email && <p className="text-red-400 text-[10px] font-bold ml-1">{errors.email.message}</p>}
                 </form>
               )}
             </div>

@@ -1,6 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 import { X, Mail, Shield, Loader2 } from 'lucide-react';
 
 interface InviteUserModalProps {
@@ -15,16 +18,24 @@ const ROLES = [
   { name: 'user', label: 'User', description: 'Read-only access to organizations, contacts, and channels' },
 ];
 
+const inviteSchema = z.object({
+  email: z.string().email('Please enter a valid email'),
+  roleName: z.enum(['admin', 'editor', 'user']),
+});
+type InviteFormValues = z.infer<typeof inviteSchema>;
+
 export default function InviteUserModal({ open, onClose, onInvited }: InviteUserModalProps) {
-  const [email, setEmail] = useState('');
-  const [roleName, setRoleName] = useState('user');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const { register, handleSubmit, control, formState: { errors }, reset } = useForm<InviteFormValues>({
+    resolver: zodResolver(inviteSchema),
+    defaultValues: { email: '', roleName: 'user' },
+  });
+
   if (!open) return null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: InviteFormValues) => {
     setError('');
     setLoading(true);
 
@@ -32,13 +43,12 @@ export default function InviteUserModal({ open, onClose, onInvited }: InviteUser
       const res = await fetch('/api/admin/invite', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim().toLowerCase(), roleName }),
+        body: JSON.stringify({ email: data.email.trim().toLowerCase(), roleName: data.roleName }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to invite');
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Failed to invite');
 
-      setEmail('');
-      setRoleName('user');
+      reset();
       onInvited();
       onClose();
     } catch (err) {
@@ -62,7 +72,7 @@ export default function InviteUserModal({ open, onClose, onInvited }: InviteUser
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-5">
           {/* Email */}
           <div>
             <label className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-1.5">
@@ -70,12 +80,11 @@ export default function InviteUserModal({ open, onClose, onInvited }: InviteUser
             </label>
             <input
               type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              {...register('email')}
               placeholder="colleague@example.com"
               className="w-full px-3 py-2.5 border border-stone-200 dark:border-stone-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gold-400 bg-white dark:bg-slate-800 dark:text-white"
             />
+            {errors.email && <p className="text-red-500 text-[10px] font-bold mt-1 ml-1">{errors.email.message}</p>}
             <p className="text-xs text-stone-400 mt-1">
               An invite link will be sent to this email. The link is one-time use.
             </p>
@@ -86,37 +95,43 @@ export default function InviteUserModal({ open, onClose, onInvited }: InviteUser
             <label className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-2">
               Assign Role
             </label>
-            <div className="space-y-2">
-              {ROLES.map((role) => (
-                <label
-                  key={role.name}
-                  className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                    roleName === role.name
-                      ? 'border-gold-400 bg-gold-50/50 dark:bg-gold-900/10'
-                      : 'border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800/50'
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name="role"
-                    value={role.name}
-                    checked={roleName === role.name}
-                    onChange={(e) => setRoleName(e.target.value)}
-                    className="mt-0.5"
-                  />
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <Shield className={`w-3.5 h-3.5 ${
-                        role.name === 'admin' ? 'text-red-500' :
-                        role.name === 'editor' ? 'text-blue-500' : 'text-stone-500'
-                      }`} />
-                      <span className="text-sm font-medium text-slate-800 dark:text-white">{role.label}</span>
-                    </div>
-                    <p className="text-xs text-stone-500 mt-0.5">{role.description}</p>
-                  </div>
-                </label>
-              ))}
-            </div>
+            <Controller
+              control={control}
+              name="roleName"
+              render={({ field }) => (
+                <div className="space-y-2">
+                  {ROLES.map((role) => (
+                    <label
+                      key={role.name}
+                      className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                        field.value === role.name
+                          ? 'border-gold-400 bg-gold-50/50 dark:bg-gold-900/10'
+                          : 'border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800/50'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="role"
+                        value={role.name}
+                        checked={field.value === role.name}
+                        onChange={() => field.onChange(role.name)}
+                        className="mt-0.5"
+                      />
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <Shield className={`w-3.5 h-3.5 ${
+                            role.name === 'admin' ? 'text-red-500' :
+                            role.name === 'editor' ? 'text-blue-500' : 'text-stone-500'
+                          }`} />
+                          <span className="text-sm font-medium text-slate-800 dark:text-white">{role.label}</span>
+                        </div>
+                        <p className="text-xs text-stone-500 mt-0.5">{role.description}</p>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              )}
+            />
           </div>
 
           {/* Error */}
@@ -135,7 +150,7 @@ export default function InviteUserModal({ open, onClose, onInvited }: InviteUser
             </button>
             <button
               type="submit"
-              disabled={loading || !email}
+              disabled={loading}
               className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-gold-600 to-gold-500 rounded-lg hover:from-gold-700 hover:to-gold-600 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}

@@ -2,17 +2,19 @@
 
 import { useState, useEffect } from 'react';
 import { Plus, Pencil, Trash2, Check, X, GripVertical, ToggleLeft, ToggleRight } from 'lucide-react';
+import * as z from 'zod';
 import { issueCategoryService, type IssueCategory } from '@/services/issueCategoryService';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import toast from 'react-hot-toast';
 
-interface CategoryFormData {
-  name: string;
-  slug: string;
-  description: string;
-  icon: string;
-  sortOrder: number;
-}
+const categorySchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  slug: z.string().min(1, 'Slug is required'),
+  description: z.string(),
+  icon: z.string(),
+  sortOrder: z.number().min(0),
+});
+type CategoryFormData = z.infer<typeof categorySchema>;
 
 const EMPTY_FORM: CategoryFormData = {
   name: '',
@@ -54,7 +56,12 @@ export default function IssueCategoryManager() {
   };
 
   const handleSaveNew = async () => {
-    if (!form.name.trim()) { toast.error('Name is required'); return; }
+    const result = categorySchema.safeParse(form);
+    if (!result.success) {
+      const firstError = result.error.issues[0];
+      toast.error(firstError?.message || 'Validation failed');
+      return;
+    }
     try {
       await issueCategoryService.create({
         name: form.name,
@@ -73,6 +80,12 @@ export default function IssueCategoryManager() {
   };
 
   const handleSaveEdit = async (id: string) => {
+    const result = categorySchema.safeParse(form);
+    if (!result.success) {
+      const firstError = result.error.issues[0];
+      toast.error(firstError?.message || 'Validation failed');
+      return;
+    }
     try {
       await issueCategoryService.update(id, {
         name: form.name,
