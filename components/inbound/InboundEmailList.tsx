@@ -11,10 +11,10 @@ interface InboundEmailListProps {
 }
 
 const STATUS_CONFIG: Record<InboundEmailStatus, { label: string; color: string; icon: React.ElementType }> = {
-  received: { label: 'Received', color: 'bg-blue-100 text-blue-700', icon: Mail },
-  linked: { label: 'Linked', color: 'bg-green-100 text-green-700', icon: Link2 },
-  unlinked: { label: 'Unlinked', color: 'bg-amber-100 text-amber-700', icon: AlertCircle },
-  error: { label: 'Error', color: 'bg-red-100 text-red-700', icon: AlertCircle },
+  received: { label: 'Received', color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400', icon: Mail },
+  linked: { label: 'Linked', color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400', icon: Link2 },
+  unlinked: { label: 'Unlinked', color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400', icon: AlertCircle },
+  error: { label: 'Error', color: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400', icon: AlertCircle },
 };
 
 type FilterOption = 'all' | InboundEmailStatus;
@@ -81,10 +81,10 @@ export default function InboundEmailList({ onSelectEmail, onChangeView }: Inboun
   return (
     <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="px-6 py-4 border-b border-stone-200 bg-white">
+      <div className="px-6 py-4 border-b border-stone-200 dark:border-white/5 bg-white dark:bg-slate-900">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h2 className="text-xl font-serif font-bold text-slate-800">Inbound Emails</h2>
+            <h2 className="text-xl font-serif font-bold text-slate-800 dark:text-white">Inbound Emails</h2>
             <p className="text-sm text-stone-500 mt-1">{totalCount} emails received</p>
           </div>
           <button
@@ -128,7 +128,7 @@ export default function InboundEmailList({ onSelectEmail, onChangeView }: Inboun
       {/* Content */}
       <div className="flex-1 flex overflow-hidden">
         {/* Email list */}
-        <div className="w-80 border-r border-stone-200 overflow-y-auto">
+        <div className="w-80 border-r border-stone-200 dark:border-white/5 overflow-y-auto">
           {loading ? (
             <div className="flex items-center justify-center py-12 text-stone-400">
               <div className="w-6 h-6 border-2 border-gold-200 border-t-gold-600 rounded-full animate-spin mr-2" />
@@ -147,16 +147,16 @@ export default function InboundEmailList({ onSelectEmail, onChangeView }: Inboun
                 <button
                   key={email.id}
                   onClick={() => handleSelect(email.id)}
-                  className={`w-full text-left px-4 py-3 border-b border-stone-100 hover:bg-gold-50/50 transition-colors ${
-                    selectedId === email.id ? 'bg-gold-50' : ''
+                  className={`w-full text-left px-4 py-3 border-b border-stone-100 dark:border-white/5 hover:bg-gold-50/50 dark:hover:bg-white/5 transition-colors ${
+                    selectedId === email.id ? 'bg-gold-50 dark:bg-white/10' : ''
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-slate-800 truncate">
+                      <p className="text-sm font-medium text-slate-800 dark:text-white truncate">
                         {email.fromName || email.fromEmail}
                       </p>
-                      <p className="text-sm text-slate-700 truncate mt-0.5">
+                      <p className="text-sm text-slate-700 dark:text-stone-300 truncate mt-0.5">
                         {email.subject}
                       </p>
                       <p className="text-xs text-stone-400 mt-1">{formatDate(email.createdAt)}</p>
@@ -187,7 +187,7 @@ export default function InboundEmailList({ onSelectEmail, onChangeView }: Inboun
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="px-6 py-3 border-t border-stone-200 bg-white flex items-center justify-between">
+        <div className="px-6 py-3 border-t border-stone-200 dark:border-white/5 bg-white dark:bg-slate-900 flex items-center justify-between">
           <button
             onClick={() => setPage((p) => Math.max(0, p - 1))}
             disabled={page === 0}

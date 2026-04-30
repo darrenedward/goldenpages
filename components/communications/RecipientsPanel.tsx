@@ -13,8 +13,8 @@ interface RecipientsPanelProps {
 
 const deliveryStatusConfig: Record<string, { color: string; icon: React.ReactNode; label: string }> = {
   PENDING: { color: 'text-stone-400 bg-stone-100', icon: <Clock className="w-3 h-3" />, label: 'Pending' },
-  SENDING: { color: 'text-blue-500 bg-blue-50', icon: <Truck className="w-3 h-3" />, label: 'Sending' },
-  SENT: { color: 'text-blue-600 bg-blue-50', icon: <CheckCircle2 className="w-3 h-3" />, label: 'Sent' },
+  SENDING: { color: 'text-blue-500 bg-blue-50 dark:bg-blue-900/30', icon: <Truck className="w-3 h-3" />, label: 'Sending' },
+  SENT: { color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/30', icon: <CheckCircle2 className="w-3 h-3" />, label: 'Sent' },
   DELIVERED: { color: 'text-emerald-600 bg-emerald-50', icon: <CheckCircle2 className="w-3 h-3" />, label: 'Delivered' },
   FAILED: { color: 'text-red-500 bg-red-50', icon: <XCircle className="w-3 h-3" />, label: 'Failed' },
   BOUNCED: { color: 'text-red-500 bg-red-50', icon: <XCircle className="w-3 h-3" />, label: 'Bounced' },

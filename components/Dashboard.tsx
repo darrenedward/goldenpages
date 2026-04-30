@@ -51,7 +51,7 @@ export default function Dashboard({ orgs, contacts, onNavigate }: DashboardProps
   const kpiCards = stats ? [
     { label: 'Total Organizations', value: stats.orgCount.toLocaleString(), icon: Building2, color: 'text-gold-600', bg: 'bg-gold-50' },
     { label: 'Total Contacts', value: stats.contactCount.toLocaleString(), icon: Users, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-    { label: 'Active Communications', value: stats.activeCommunications.toLocaleString(), icon: FileText, color: 'text-blue-600', bg: 'bg-blue-50' },
+    { label: 'Active Communications', value: stats.activeCommunications.toLocaleString(), icon: FileText, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-900/20' },
     { label: 'Data Integrity', value: `${stats.dataIntegrityPct}%`, icon: ShieldCheck, color: 'text-amber-600', bg: 'bg-amber-50' },
     { label: 'Overdue Responses', value: stats.overdueCommunications.toLocaleString(), icon: AlertTriangle, color: 'text-red-600', bg: 'bg-red-50' },
   ] : [];

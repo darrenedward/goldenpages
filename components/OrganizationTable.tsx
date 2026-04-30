@@ -35,17 +35,17 @@ const OrganizationTable: React.FC<OrganizationTableProps> = ({ data, onSelectOrg
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'government': return 'bg-blue-100 text-blue-700 border-blue-200';
-      case 'corporate': return 'bg-emerald-100 text-emerald-700 border-emerald-200';
-      case 'diplomatic_mission': return 'bg-purple-100 text-purple-700 border-purple-200';
-      case 'international_organization': return 'bg-amber-100 text-amber-700 border-amber-200';
-      default: return 'bg-slate-100 text-slate-700 border-slate-200';
+      case 'government': return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 border-blue-200 dark:border-blue-800';
+      case 'corporate': return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800';
+      case 'diplomatic_mission': return 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 border-purple-200 dark:border-purple-800';
+      case 'international_organization': return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 border-amber-200 dark:border-amber-800';
+      default: return 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400 border-slate-200 dark:border-slate-700';
     }
   };
 
   return (
     <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-sm border border-stone-200 dark:border-white/5 overflow-hidden flex flex-col h-full animate-fade-in">
-      <div className="p-8 border-b border-stone-100 bg-stone-50/30 flex flex-col sm:flex-row justify-between gap-6 items-center">
+      <div className="p-8 border-b border-stone-100 dark:border-white/5 bg-stone-50/30 dark:bg-white/5 flex flex-col sm:flex-row justify-between gap-6 items-center">
         <div className="relative w-full sm:w-96">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" size={18} />
           <input
@@ -53,7 +53,7 @@ const OrganizationTable: React.FC<OrganizationTableProps> = ({ data, onSelectOrg
             placeholder="Search the Golden Directory..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-12 pr-4 py-3 bg-white border border-stone-200 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-gold-400/30 focus:border-gold-400 transition-all shadow-sm"
+            className="w-full pl-12 pr-4 py-3 bg-white dark:bg-slate-800 border border-stone-200 dark:border-white/10 rounded-2xl text-sm font-medium text-slate-800 dark:text-white placeholder:text-stone-400 dark:placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-gold-400/30 focus:border-gold-400 transition-all shadow-sm"
           />
         </div>
 
@@ -62,7 +62,7 @@ const OrganizationTable: React.FC<OrganizationTableProps> = ({ data, onSelectOrg
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="appearance-none pl-6 pr-12 py-3 bg-white border border-stone-200 rounded-2xl text-sm font-black uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-gold-400/30 cursor-pointer shadow-sm"
+              className="appearance-none pl-6 pr-12 py-3 bg-white dark:bg-slate-800 border border-stone-200 dark:border-white/10 rounded-2xl text-sm font-black uppercase tracking-widest text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-gold-400/30 cursor-pointer shadow-sm"
             >
               <option value="all">Global Scope</option>
               <option value="government">Governments</option>
@@ -80,25 +80,25 @@ const OrganizationTable: React.FC<OrganizationTableProps> = ({ data, onSelectOrg
 
       <div className="overflow-auto flex-1 custom-scrollbar">
         <table className="w-full text-left border-collapse">
-          <thead className="bg-stone-50/50 sticky top-0 z-10 backdrop-blur-md text-[10px] font-black text-stone-400 uppercase tracking-[0.2em]">
+          <thead className="bg-stone-50/50 dark:bg-white/5 sticky top-0 z-10 backdrop-blur-md text-[10px] font-black text-stone-400 uppercase tracking-[0.2em]">
             <tr>
-              <th className="px-8 py-6 border-b border-stone-100">Organization</th>
-              <th className="px-8 py-6 border-b border-stone-100">Type</th>
-              <th className="px-8 py-6 border-b border-stone-100">Location</th>
-              <th className="px-8 py-6 border-b border-stone-100">Team Size</th>
-              <th className="px-8 py-6 border-b border-stone-100 text-right">Action</th>
+              <th className="px-8 py-6 border-b border-stone-100 dark:border-white/5">Organization</th>
+              <th className="px-8 py-6 border-b border-stone-100 dark:border-white/5">Type</th>
+              <th className="px-8 py-6 border-b border-stone-100 dark:border-white/5">Location</th>
+              <th className="px-8 py-6 border-b border-stone-100 dark:border-white/5">Team Size</th>
+              <th className="px-8 py-6 border-b border-stone-100 dark:border-white/5 text-right">Action</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-stone-50">
+          <tbody className="divide-y divide-stone-50 dark:divide-white/5">
             {filteredData.map((org) => (
               <tr
                 key={org.id}
                 onClick={() => onSelectOrg(org)}
-                className="hover:bg-gold-50/30 cursor-pointer transition-all duration-300 group"
+                className="hover:bg-gold-50/30 dark:hover:bg-white/5 cursor-pointer transition-all duration-300 group"
               >
                 <td className="px-8 py-6">
                   <div className="flex items-center gap-5">
-                    <div className="w-14 h-14 rounded-2xl bg-white border border-stone-100 shadow-sm flex items-center justify-center text-stone-300 group-hover:text-gold-600 group-hover:bg-slate-900 group-hover:border-gold-500 transition-all duration-500 transform group-hover:rotate-3">
+                    <div className="w-14 h-14 rounded-2xl bg-white dark:bg-slate-800 border border-stone-100 dark:border-white/10 shadow-sm flex items-center justify-center text-stone-300 group-hover:text-gold-600 group-hover:bg-slate-900 group-hover:border-gold-500 transition-all duration-500 transform group-hover:rotate-3">
                       {org.type === 'government' ? <Landmark size={24} /> :
                        org.type === 'corporate' ? <Building size={24} /> :
                        org.type === 'diplomatic_mission' ? <Globe size={24} /> :
@@ -106,7 +106,7 @@ const OrganizationTable: React.FC<OrganizationTableProps> = ({ data, onSelectOrg
                        <Building size={24} />}
                     </div>
                     <div>
-                      <p className="font-serif font-black text-xl text-slate-900 group-hover:text-gold-800 transition-colors leading-tight">{org.name}</p>
+                      <p className="font-serif font-black text-xl text-slate-900 dark:text-white group-hover:text-gold-800 dark:group-hover:text-gold-400 transition-colors leading-tight">{org.name}</p>
                       {org.headOfficeWebsite && (
                         <span className="text-[10px] text-stone-400 font-bold flex items-center gap-1 mt-1 group-hover:text-gold-500">
                           <Globe size={10} />
@@ -123,11 +123,11 @@ const OrganizationTable: React.FC<OrganizationTableProps> = ({ data, onSelectOrg
                 </td>
                 <td className="px-8 py-6">
                   <div className="flex flex-col gap-1">
-                    <div className="flex items-center gap-2 text-sm text-slate-700 font-black tracking-tight">
+                    <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-stone-300 font-black tracking-tight">
                       <MapPin size={14} className="text-gold-500" />
                       {org.headOfficeCity || 'N/A'}
                     </div>
-                    <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider ml-6">
+                    <span className="text-[10px] text-stone-400 dark:text-stone-500 font-bold uppercase tracking-wider ml-6">
                       {org.headOfficeCountryId ? countryNames[org.headOfficeCountryId] || org.headOfficeCountryId : 'Global'}
                     </span>
                   </div>
@@ -137,7 +137,7 @@ const OrganizationTable: React.FC<OrganizationTableProps> = ({ data, onSelectOrg
                       <div className="flex items-center gap-2 text-xs text-stone-500">
                           <Users size={14} className="text-stone-300" />
                           {org.contactCount && org.contactCount > 0 ? (
-                            <span className="font-black text-slate-800 tracking-tight">{org.contactCount} {org.contactCount === 1 ? 'Contact' : 'Contacts'}</span>
+                            <span className="font-black text-slate-800 dark:text-stone-300 tracking-tight">{org.contactCount} {org.contactCount === 1 ? 'Contact' : 'Contacts'}</span>
                           ) : (
                             <span className="italic text-stone-300 font-medium">No contacts</span>
                           )}

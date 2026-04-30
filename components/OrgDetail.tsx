@@ -67,15 +67,15 @@ const OrgDetail: React.FC<OrgDetailProps> = ({
                   {contacts.map(contact => {
                     const cChannels = getContactChannels(contact.id);
                     return (
-                      <div key={contact.id} className="bg-white border-2 border-stone-50 rounded-[3rem] p-8 shadow-sm hover:shadow-xl hover:border-gold-200 transition-all group flex flex-col md:flex-row gap-8 items-start relative overflow-hidden">
-                        <div className="w-24 h-24 rounded-2xl bg-stone-50 flex items-center justify-center text-4xl font-serif font-black text-stone-300 border border-stone-100 group-hover:bg-slate-900 group-hover:text-gold-400 transition-colors">
+                      <div key={contact.id} className="bg-white dark:bg-slate-900 border-2 border-stone-50 dark:border-white/5 rounded-[3rem] p-8 shadow-sm hover:shadow-xl hover:border-gold-200 dark:hover:border-gold-500/20 transition-all group flex flex-col md:flex-row gap-8 items-start relative overflow-hidden">
+                        <div className="w-24 h-24 rounded-2xl bg-stone-50 dark:bg-slate-800 flex items-center justify-center text-4xl font-serif font-black text-stone-300 border border-stone-100 dark:border-white/10 group-hover:bg-slate-900 group-hover:text-gold-400 transition-colors">
                           {contact.fullName.charAt(0)}
                         </div>
 
                         <div className="flex-1">
                           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
                             <div>
-                              <h4 className="font-serif font-black text-slate-900 text-3xl mb-1 tracking-tight">{contact.fullName}</h4>
+                              <h4 className="font-serif font-black text-slate-900 dark:text-white text-3xl mb-1 tracking-tight">{contact.fullName}</h4>
                               <div className="flex items-center gap-3">
                                 <span className="text-[10px] font-bold uppercase tracking-widest text-gold-600 bg-gold-50 px-3 py-1 rounded-lg border border-gold-100">
                                   {contact.roleTitle || 'Team Member'}
@@ -90,13 +90,13 @@ const OrgDetail: React.FC<OrgDetailProps> = ({
                           {/* Contact Channels */}
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {cChannels.map(ch => (
-                              <div key={ch.id} className="flex items-center gap-4 p-4 bg-stone-50/50 rounded-2xl border border-stone-100 hover:bg-white hover:border-gold-300 transition-all">
-                                <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-gold-600 shadow-sm">
+                              <div key={ch.id} className="flex items-center gap-4 p-4 bg-stone-50/50 dark:bg-white/5 rounded-2xl border border-stone-100 dark:border-white/5 hover:bg-white dark:hover:bg-white/10 hover:border-gold-300 dark:hover:border-gold-500/20 transition-all">
+                                <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center text-gold-600 shadow-sm">
                                   {ch.channelType === 'email' ? <Mail size={16} /> : <Phone size={16} />}
                                 </div>
                                 <div>
                                   <span className="block text-[9px] font-black text-stone-400 uppercase tracking-widest">{ch.channelType}</span>
-                                  <span className="block text-sm font-black text-slate-800 tracking-tight">{ch.value}</span>
+                                  <span className="block text-sm font-black text-slate-800 dark:text-stone-300 tracking-tight">{ch.value}</span>
                                 </div>
                               </div>
                             ))}
