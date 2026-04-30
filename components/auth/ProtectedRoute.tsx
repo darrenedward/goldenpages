@@ -22,9 +22,11 @@
  * </ProtectedRoute>
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/authContext';
 import type { Permission, UserRole } from '@/services/permissionsService';
+import LoadingSpinner from '@/components/shared/LoadingSpinner';
 
 // ============================================================================
 // TYPES
@@ -54,54 +56,28 @@ export function ProtectedRoute({
   redirectTo = '/login',
 }: ProtectedRouteProps) {
   const { isAuthenticated, loading, permissions, roles, isAdmin, hasPermission, hasRole } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // Redirect to login if not authenticated, preserving the return URL
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      router.replace(`${redirectTo}?redirect=${encodeURIComponent(pathname)}`);
+    }
+  }, [loading, isAuthenticated, router, redirectTo, pathname]);
 
   // Show loading spinner while checking auth
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          <p className="mt-2 text-sm text-gray-600">Loading...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-slate-950">
+        <LoadingSpinner message="Checking authentication..." />
       </div>
     );
   }
 
-  // Redirect to login if not authenticated
+  // Don't render anything while redirecting
   if (!isAuthenticated) {
-    if (fallback) {
-      return <>{fallback}</>;
-    }
-
-    // Redirect logic would go here if using a router
-    // For now, show a message
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center p-8 bg-white rounded-lg shadow-md">
-          <svg
-            className="mx-auto h-12 w-12 text-gray-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-            />
-          </svg>
-          <h2 className="mt-4 text-xl font-semibold text-gray-900">Authentication Required</h2>
-          <p className="mt-2 text-sm text-gray-600">Please sign in to access this page.</p>
-          <a
-            href={redirectTo}
-            className="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
-          >
-            Go to Login
-          </a>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   // Check role requirement
@@ -144,8 +120,8 @@ export function ProtectedRoute({
 
 function AccessDenied({ message }: { message?: string }) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="text-center p-8 bg-white rounded-lg shadow-md">
+    <div className="min-h-screen flex items-center justify-center bg-slate-950">
+      <div className="text-center p-8 bg-slate-900 border border-white/10 rounded-2xl">
         <svg
           className="mx-auto h-12 w-12 text-red-400"
           fill="none"
@@ -159,8 +135,8 @@ function AccessDenied({ message }: { message?: string }) {
             d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
           />
         </svg>
-        <h2 className="mt-4 text-xl font-semibold text-gray-900">Access Denied</h2>
-        <p className="mt-2 text-sm text-gray-600">{message || "You don't have permission to access this page."}</p>
+        <h2 className="mt-4 text-xl font-semibold text-white">Access Denied</h2>
+        <p className="mt-2 text-sm text-stone-400">{message || "You don't have permission to access this page."}</p>
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { Suspense, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/authContext';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -9,15 +9,17 @@ import LoadingSpinner from '@/components/shared/LoadingSpinner';
 import { GradientMesh } from '@/components/shared/GradientMesh';
 import { DotGrid } from '@/components/shared/DotGrid';
 
-export default function LoginPage() {
+function LoginContent() {
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectUrl = searchParams.get('redirect') || '/dashboard';
 
   useEffect(() => {
     if (!loading && isAuthenticated) {
-      router.push('/dashboard');
+      router.push(redirectUrl);
     }
-  }, [isAuthenticated, loading, router]);
+  }, [isAuthenticated, loading, router, redirectUrl]);
 
   if (loading) {
     return (
@@ -104,5 +106,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-slate-950 flex items-center justify-center"><LoadingSpinner message="Loading..." /></div>}>
+      <LoginContent />
+    </Suspense>
   );
 }

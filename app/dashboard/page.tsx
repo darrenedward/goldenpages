@@ -1,23 +1,46 @@
 'use client';
 
-import React from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useEffect } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/authContext';
 import Sidebar from '@/components/Sidebar';
 import { Toaster } from 'react-hot-toast';
 import { useDashboardState } from '@/components/dashboard/useDashboardState';
 import ViewRenderer from '@/components/dashboard/ViewRenderer';
 import StatusModal from '@/components/dashboard/StatusModal';
+import LoadingSpinner from '@/components/shared/LoadingSpinner';
 
 export default function DashboardPage() {
   const state = useDashboardState();
-  const { isAdmin, signOut } = useAuth();
+  const { isAdmin, signOut, isAuthenticated, loading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+
+  // Redirect to login if not authenticated, preserving the return URL
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      router.replace(`/login?redirect=${encodeURIComponent(pathname)}`);
+    }
+  }, [loading, isAuthenticated, router, pathname]);
 
   const handleSignOut = async () => {
     await signOut();
     router.push('/');
   };
+
+  // Show loading spinner while checking auth
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950">
+        <LoadingSpinner message="Checking authentication..." />
+      </div>
+    );
+  }
+
+  // Don't render dashboard content if not authenticated
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <>
