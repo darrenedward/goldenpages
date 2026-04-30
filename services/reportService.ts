@@ -74,19 +74,23 @@ export const reportService = {
 
     // Fire-and-forget confirmation email to reporter
     if (!submission.isAnonymous) {
-      const senderName = await settingsService.getSenderName();
-      notificationService.sendEmail({
-        to: submission.email,
-        subject: `Your report has been received [${shortRef}]`,
-        html: notificationService.buildReportConfirmationHtml(
-          `${submission.firstName} ${submission.lastName}`,
-          shortRef,
-          submission.subject
-        ),
-        fromName: senderName,
-      }).catch(() => {
-        // Email failure is non-blocking
-      });
+      (async () => {
+        try {
+          const senderName = await settingsService.getSenderName();
+          await notificationService.sendEmail({
+            to: submission.email,
+            subject: `Your report has been received [${shortRef}]`,
+            html: notificationService.buildReportConfirmationHtml(
+              `${submission.firstName} ${submission.lastName}`,
+              shortRef,
+              submission.subject
+            ),
+            fromName: senderName,
+          });
+        } catch {
+          // Email failure is non-blocking
+        }
+      })();
     }
 
     // Fire-and-forget notification to admin users
