@@ -22,7 +22,7 @@ export default function NotificationList() {
   const filtered = filter === 'unread' ? notifications.filter(n => !n.isRead) : notifications;
 
   return (
-    <div className="p-6 bg-stone-50 min-h-screen">
+    <div className="space-y-6 animate-fade-in pb-12">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="font-serif text-3xl font-bold text-slate-800 dark:text-white mb-2">

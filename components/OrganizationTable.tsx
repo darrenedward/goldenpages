@@ -44,7 +44,7 @@ const OrganizationTable: React.FC<OrganizationTableProps> = ({ data, onSelectOrg
   };
 
   return (
-    <div className="bg-white rounded-[2.5rem] shadow-sm border border-stone-200 overflow-hidden flex flex-col h-full animate-fade-in">
+    <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-sm border border-stone-200 dark:border-white/5 overflow-hidden flex flex-col h-full animate-fade-in">
       <div className="p-8 border-b border-stone-100 bg-stone-50/30 flex flex-col sm:flex-row justify-between gap-6 items-center">
         <div className="relative w-full sm:w-96">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" size={18} />

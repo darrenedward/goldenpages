@@ -121,7 +121,7 @@ export default function CommunicationDetail({ communicationId, onBack, onChangeV
   }
 
   return (
-    <div className="p-6 bg-stone-50 min-h-screen">
+    <div className="space-y-6 animate-fade-in pb-12">
       {/* Breadcrumb */}
       <BreadcrumbNav
         items={[

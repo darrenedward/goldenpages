@@ -20,7 +20,7 @@ const OrgDetail: React.FC<OrgDetailProps> = ({
   const getContactChannels = (contactId: string) => channels.filter(c => c.contactId === contactId);
 
   return (
-    <div className="h-full flex flex-col gap-8 animate-fade-in relative pb-24 max-w-7xl mx-auto px-6">
+    <div className="space-y-6 animate-fade-in pb-12">
       {/* Header */}
       <div className="flex items-center justify-between mt-6">
         <button onClick={onBack} className="flex items-center gap-3 text-[10px] text-stone-500 hover:text-gold-600 transition-all font-black uppercase tracking-[0.25em] group">
