@@ -9,7 +9,7 @@ export async function GET() {
     .select(`
       id,
       email,
-      displayName,
+      display_name,
       createdAt,
       user_roles (
         roleId,
@@ -27,7 +27,7 @@ export async function GET() {
   const users = (data || []).map((user: Record<string, unknown>) => ({
     id: user.id,
     email: user.email,
-    displayName: user.displayName || null,
+    displayName: user.display_name || null,
     roles: Array.isArray(user.user_roles)
       ? (user.user_roles as Array<Record<string, unknown>>).map(
           (ur: Record<string, unknown>) => (ur.roles as Record<string, unknown>)?.name
