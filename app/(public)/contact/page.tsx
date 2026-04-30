@@ -116,7 +116,7 @@ export default function ContactPage() {
                       required
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold-500 focus:shadow-[0_0_15px_hsl(45_93%_47%/0.1)] text-sm"
+                      className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold-500 focus:shadow-[0_0_15px_hsl(45_93%_47%/0.1)] text-sm text-slate-800 dark:text-white"
                       placeholder="Your name"
                     />
                   </div>
@@ -130,7 +130,7 @@ export default function ContactPage() {
                       required
                       value={formData.email}
                       onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold-500 focus:shadow-[0_0_15px_hsl(45_93%_47%/0.1)] text-sm"
+                      className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold-500 focus:shadow-[0_0_15px_hsl(45_93%_47%/0.1)] text-sm text-slate-800 dark:text-white"
                       placeholder="you@example.com"
                     />
                   </div>
@@ -146,7 +146,7 @@ export default function ContactPage() {
                     required
                     value={formData.subject}
                     onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                    className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold-500 focus:shadow-[0_0_15px_hsl(45_93%_47%/0.1)] text-sm"
+                    className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold-500 focus:shadow-[0_0_15px_hsl(45_93%_47%/0.1)] text-sm text-slate-800 dark:text-white"
                     placeholder="What's this about?"
                   />
                 </div>

@@ -244,7 +244,7 @@ export default function LandingPage() {
                   href="/about"
                   className="flex items-center gap-2 px-6 py-3 bg-white/20 text-white rounded-2xl font-bold hover:bg-white/30 hover:scale-[1.02] active:scale-[0.98] transition-all border border-white/20"
                 >
-                  Learn More
+                  Learn More About Us
                 </Link>
               </div>
             </div>

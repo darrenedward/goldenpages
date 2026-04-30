@@ -177,7 +177,7 @@ export default function ReportPage() {
                 required
                 value={formData.firstName}
                 onChange={(e) => handleChange('firstName', e.target.value)}
-                className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm"
+                className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm text-slate-800 dark:text-white"
                 placeholder="First name"
               />
             </div>
@@ -191,7 +191,7 @@ export default function ReportPage() {
                 required
                 value={formData.lastName}
                 onChange={(e) => handleChange('lastName', e.target.value)}
-                className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm"
+                className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm text-slate-800 dark:text-white"
                 placeholder="Last name"
               />
             </div>
@@ -207,7 +207,7 @@ export default function ReportPage() {
               required
               value={formData.email}
               onChange={(e) => handleChange('email', e.target.value)}
-              className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm"
+              className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm text-slate-800 dark:text-white"
               placeholder="you@example.com"
             />
           </div>
@@ -311,7 +311,7 @@ export default function ReportPage() {
                 type="text"
                 value={formData.organizationName}
                 onChange={(e) => handleChange('organizationName', e.target.value)}
-                className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm"
+                className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm text-slate-800 dark:text-white"
                 placeholder="e.g., Ministry of Health, Monsanto/Bayer"
               />
             </div>
@@ -324,7 +324,7 @@ export default function ReportPage() {
                 type="text"
                 value={formData.country}
                 onChange={(e) => handleChange('country', e.target.value)}
-                className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm"
+                className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm text-slate-800 dark:text-white"
                 placeholder="e.g., New Zealand, United States"
               />
             </div>
@@ -349,7 +349,7 @@ export default function ReportPage() {
                 required
                 value={formData.subject}
                 onChange={(e) => handleChange('subject', e.target.value)}
-                className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm"
+                className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm text-slate-800 dark:text-white"
                 placeholder="Brief summary of the issue"
               />
             </div>
