@@ -62,6 +62,7 @@ export default function NotificationBell({ onNavigate }: NotificationBellProps) 
       <button
         type="button"
         onClick={() => setOpen(!open)}
+        aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
         className="relative p-2 rounded-xl hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
       >
         <Bell className="w-5 h-5 text-stone-500 dark:text-stone-400" />
@@ -90,7 +91,7 @@ export default function NotificationBell({ onNavigate }: NotificationBellProps) 
 
           <div className="max-h-80 overflow-y-auto">
             {latest.length === 0 ? (
-              <div className="py-8 text-center text-sm text-stone-400">No notifications</div>
+              <div className="py-8 text-center text-sm text-stone-500 dark:text-stone-400">No notifications</div>
             ) : (
               latest.map(n => (
                 <button
@@ -109,9 +110,9 @@ export default function NotificationBell({ onNavigate }: NotificationBellProps) 
                       <p className={`text-sm ${!n.isRead ? 'font-semibold text-slate-800 dark:text-white' : 'text-stone-600 dark:text-stone-400'}`}>
                         {n.title}
                       </p>
-                      <p className="text-xs text-stone-400 mt-0.5 truncate">{n.message}</p>
+                      <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5 truncate">{n.message}</p>
                     </div>
-                    <span className="text-[10px] text-stone-300 flex-shrink-0 whitespace-nowrap">
+                    <span className="text-[10px] text-stone-400 dark:text-stone-500 flex-shrink-0 whitespace-nowrap">
                       {formatRelativeTime(n.createdAt)}
                     </span>
                   </div>

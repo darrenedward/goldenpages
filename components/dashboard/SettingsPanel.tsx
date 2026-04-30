@@ -54,17 +54,17 @@ export default function SettingsPanel() {
           </h2>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-bold text-stone-600 dark:text-stone-400 mb-1">Email</label>
+              <label className="block text-sm font-bold text-stone-600 dark:text-stone-300 mb-1">Email</label>
               <div className="flex items-center gap-2">
                 <input
                   type="text"
                   value={user?.email || ''}
                   disabled
-                  className="flex-1 px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl text-sm text-stone-500"
+                  className="flex-1 px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl text-sm text-stone-500 dark:text-stone-400"
                 />
-                <Shield className="w-4 h-4 text-stone-400" />
+                <Shield className="w-4 h-4 text-stone-400 dark:text-stone-500" />
               </div>
-              <p className="text-xs text-stone-400 mt-1">Email is managed by your authentication provider and cannot be changed here.</p>
+              <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">Email is managed by your authentication provider and cannot be changed here.</p>
             </div>
           </div>
         </div>
@@ -77,7 +77,7 @@ export default function SettingsPanel() {
           </h2>
           <form onSubmit={handleChangePassword} className="space-y-4">
             <div>
-              <label htmlFor="newPassword" className="block text-sm font-bold text-stone-600 dark:text-stone-400 mb-1">
+              <label htmlFor="newPassword" className="block text-sm font-bold text-stone-600 dark:text-stone-300 mb-1">
                 New Password
               </label>
               <input
@@ -86,12 +86,12 @@ export default function SettingsPanel() {
                 required
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm"
+                className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm text-slate-800 dark:text-white"
                 placeholder="Minimum 8 characters"
               />
             </div>
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-bold text-stone-600 dark:text-stone-400 mb-1">
+              <label htmlFor="confirmPassword" className="block text-sm font-bold text-stone-600 dark:text-stone-300 mb-1">
                 Confirm New Password
               </label>
               <input
@@ -100,7 +100,7 @@ export default function SettingsPanel() {
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm"
+                className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm text-slate-800 dark:text-white"
                 placeholder="Repeat new password"
               />
             </div>
@@ -124,7 +124,7 @@ export default function SettingsPanel() {
           <div className="flex items-center justify-between py-2">
             <div>
               <p className="text-sm font-bold text-slate-800 dark:text-white">Email Notifications</p>
-              <p className="text-xs text-stone-400">Receive updates about communications and packages</p>
+              <p className="text-xs text-stone-500 dark:text-stone-400">Receive updates about communications and packages</p>
             </div>
             <button
               type="button"

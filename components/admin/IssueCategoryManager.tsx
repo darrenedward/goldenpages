@@ -136,7 +136,7 @@ export default function IssueCategoryManager() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-serif font-bold text-slate-800 dark:text-white">Issue Categories</h2>
-          <p className="text-sm text-stone-500 mt-1">Manage the human rights categories shown on the Report page</p>
+          <p className="text-sm text-stone-500 dark:text-stone-400 mt-1">Manage the human rights categories shown on the Report page</p>
         </div>
         {!showAdd && (
           <button
@@ -155,24 +155,24 @@ export default function IssueCategoryManager() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-stone-300 mb-1">Name *</label>
-              <input value={form.name} onChange={(e) => handleNameChange(e.target.value)} className="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm" placeholder="Food Security & Safety" />
+              <input value={form.name} onChange={(e) => handleNameChange(e.target.value)} className="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm text-slate-800 dark:text-white" placeholder="Food Security & Safety" />
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-stone-300 mb-1">Slug</label>
-              <input value={form.slug} onChange={(e) => setForm(prev => ({ ...prev, slug: e.target.value }))} className="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm" placeholder="food_safety" />
+              <input value={form.slug} onChange={(e) => setForm(prev => ({ ...prev, slug: e.target.value }))} className="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm text-slate-800 dark:text-white" placeholder="food_safety" />
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-stone-300 mb-1">Icon (lucide-react)</label>
-              <input value={form.icon} onChange={(e) => setForm(prev => ({ ...prev, icon: e.target.value }))} className="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm" placeholder="Wheat" />
+              <input value={form.icon} onChange={(e) => setForm(prev => ({ ...prev, icon: e.target.value }))} className="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm text-slate-800 dark:text-white" placeholder="Wheat" />
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-700 dark:text-stone-300 mb-1">Sort Order</label>
-              <input type="number" value={form.sortOrder} onChange={(e) => setForm(prev => ({ ...prev, sortOrder: parseInt(e.target.value) || 0 }))} className="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm" />
+              <input type="number" value={form.sortOrder} onChange={(e) => setForm(prev => ({ ...prev, sortOrder: parseInt(e.target.value) || 0 }))} className="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm text-slate-800 dark:text-white" />
             </div>
           </div>
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-stone-300 mb-1">Description</label>
-            <input value={form.description} onChange={(e) => setForm(prev => ({ ...prev, description: e.target.value }))} className="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm" placeholder="Brief description shown on report form" />
+            <input value={form.description} onChange={(e) => setForm(prev => ({ ...prev, description: e.target.value }))} className="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm text-slate-800 dark:text-white" placeholder="Brief description shown on report form" />
           </div>
           <div className="flex gap-3">
             <button onClick={() => void handleSaveNew()} className="flex items-center gap-2 px-4 py-2 bg-gold-600 text-white rounded-xl text-sm font-bold hover:bg-gold-700 transition-all"><Check size={14} /> Save</button>
@@ -184,7 +184,7 @@ export default function IssueCategoryManager() {
       {/* Category list */}
       <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-stone-200 dark:border-white/5 overflow-hidden">
         <div className="px-6 py-4 border-b border-stone-200 dark:border-white/5">
-          <div className="grid grid-cols-12 gap-4 text-xs font-black uppercase tracking-widest text-stone-400">
+          <div className="grid grid-cols-12 gap-4 text-xs font-black uppercase tracking-widest text-stone-500 dark:text-stone-400">
             <div className="col-span-1">#</div>
             <div className="col-span-3">Name</div>
             <div className="col-span-2">Slug</div>
@@ -204,12 +204,12 @@ export default function IssueCategoryManager() {
                   /* Edit mode */
                   <div className="p-4 bg-gold-50/50 dark:bg-gold-900/10 space-y-3">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <input value={form.name} onChange={(e) => handleNameChange(e.target.value)} className="px-3 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm" />
-                      <input value={form.slug} onChange={(e) => setForm(prev => ({ ...prev, slug: e.target.value }))} className="px-3 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm" />
-                      <input value={form.description} onChange={(e) => setForm(prev => ({ ...prev, description: e.target.value }))} className="px-3 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm" placeholder="Description" />
+                      <input value={form.name} onChange={(e) => handleNameChange(e.target.value)} className="px-3 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm text-slate-800 dark:text-white" />
+                      <input value={form.slug} onChange={(e) => setForm(prev => ({ ...prev, slug: e.target.value }))} className="px-3 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm text-slate-800 dark:text-white" />
+                      <input value={form.description} onChange={(e) => setForm(prev => ({ ...prev, description: e.target.value }))} className="px-3 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm text-slate-800 dark:text-white" placeholder="Description" />
                       <div className="flex gap-2">
-                        <input value={form.icon} onChange={(e) => setForm(prev => ({ ...prev, icon: e.target.value }))} className="flex-1 px-3 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm" placeholder="Icon" />
-                        <input type="number" value={form.sortOrder} onChange={(e) => setForm(prev => ({ ...prev, sortOrder: parseInt(e.target.value) || 0 }))} className="w-20 px-3 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm" />
+                        <input value={form.icon} onChange={(e) => setForm(prev => ({ ...prev, icon: e.target.value }))} className="flex-1 px-3 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm text-slate-800 dark:text-white" placeholder="Icon" />
+                        <input type="number" value={form.sortOrder} onChange={(e) => setForm(prev => ({ ...prev, sortOrder: parseInt(e.target.value) || 0 }))} className="w-20 px-3 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl focus:outline-none focus:ring-2 focus:ring-gold-500 text-sm text-slate-800 dark:text-white" />
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -228,8 +228,8 @@ export default function IssueCategoryManager() {
                       <p className={`text-sm font-bold ${cat.isActive ? 'text-slate-900 dark:text-white' : 'text-stone-400 line-through'}`}>{cat.name}</p>
                       {cat.icon && <span className="text-[10px] text-stone-400 font-mono">{cat.icon}</span>}
                     </div>
-                    <div className="col-span-2 text-xs text-stone-500 font-mono">{cat.slug}</div>
-                    <div className="col-span-3 text-xs text-stone-500 truncate">{cat.description || '—'}</div>
+                    <div className="col-span-2 text-xs text-stone-500 dark:text-stone-400 font-mono">{cat.slug}</div>
+                    <div className="col-span-3 text-xs text-stone-500 dark:text-stone-400 truncate">{cat.description || '—'}</div>
                     <div className="col-span-1">
                       <button onClick={() => void handleToggleActive(cat)} className="text-stone-400 hover:text-gold-600 transition-colors">
                         {cat.isActive ? <ToggleRight size={20} className="text-emerald-500" /> : <ToggleLeft size={20} />}
