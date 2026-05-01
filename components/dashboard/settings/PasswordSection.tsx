@@ -43,7 +43,7 @@ export default function PasswordSection() {
         <Lock className="w-5 h-5 text-gold-600" />
         Change Password
       </h2>
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
         <div>
           <label htmlFor="newPassword" className="block text-sm font-bold text-stone-600 dark:text-stone-300 mb-1">
             New Password

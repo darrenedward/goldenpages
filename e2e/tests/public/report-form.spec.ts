@@ -52,18 +52,34 @@ test.describe('Report Form', () => {
     await expect(page.getByText('Thank you, Test')).toBeVisible();
   });
 
-  test('submit without required fields shows validation', async ({ page }) => {
-    // Try submitting empty form
+  test('submit without required fields shows validation errors', async ({ page }) => {
+    // Submit empty form — Zod validation should show inline errors
     await reportPage.submit();
 
-    // Browser HTML5 validation should prevent submission
-    // The form should still be visible (no success state)
-    await expect(page.getByText('Report Submitted')).not.toBeVisible({ timeout: 3000 }).catch(() => {
-      // If it somehow submits, that's also acceptable for this test
-    });
+    // Zod error messages should appear for required fields
+    await expect(page.getByText('First name is required')).toBeVisible();
+    await expect(page.getByText('Last name is required')).toBeVisible();
+    await expect(page.getByText('Please enter a valid email')).toBeVisible();
+    await expect(page.getByText('Please select a category')).toBeVisible();
+    await expect(page.getByText('Please select an urgency level')).toBeVisible();
+    await expect(page.getByText('Subject is required')).toBeVisible();
 
-    // Form fields should still be visible
+    // Form should still be visible (no success state)
+    await expect(page.getByText('Report Submitted')).not.toBeVisible();
     await expect(reportPage.firstNameInput).toBeVisible();
+  });
+
+  test('short description shows validation error', async ({ page }) => {
+    await reportPage.fillForm({
+      firstName: 'Test',
+      lastName: 'User',
+      email: 'test@example.com',
+      subject: 'Test subject',
+      description: 'short',
+    });
+    await reportPage.submit();
+
+    await expect(page.getByText('Please provide at least 10 characters')).toBeVisible();
   });
 
   test('category and urgency selection works', async ({ page }) => {

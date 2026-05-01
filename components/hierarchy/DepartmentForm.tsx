@@ -61,7 +61,7 @@ export default function DepartmentForm({
     };
 
     return (
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+        <form onSubmit={handleSubmit(handleFormSubmit)} noValidate className="space-y-6">
             {error && (
                 <div className="p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 text-red-600 text-sm">
                     <AlertCircle className="w-5 h-5" />

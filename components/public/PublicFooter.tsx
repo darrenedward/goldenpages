@@ -162,7 +162,7 @@ export default function PublicFooter() {
               {subscribed ? (
                 <p className="text-emerald-400 text-xs font-bold">Subscribed!</p>
               ) : (
-                <form onSubmit={handleSubmit(onSubscribe)} className="flex flex-col gap-1">
+                <form onSubmit={handleSubmit(onSubscribe)} noValidate className="flex flex-col gap-1">
                   <div className="flex gap-2">
                     <input
                       type="email"

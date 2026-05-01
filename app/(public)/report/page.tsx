@@ -163,7 +163,7 @@ export default function ReportPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-8">
         {/* Reporter Information */}
         <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-stone-200 dark:border-white/5 p-8">
           <h2 className="font-serif text-xl font-bold text-slate-900 dark:text-white mb-2">Your Information</h2>

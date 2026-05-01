@@ -72,7 +72,7 @@ export default function InviteUserModal({ open, onClose, onInvited }: InviteUser
           </button>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit(onSubmit)} noValidate className="p-6 space-y-5">
           {/* Email */}
           <div>
             <label className="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-1.5">
