@@ -57,7 +57,7 @@ class CommunicationService {
       .insert({
         title: input.title,
         description: input.description || null,
-        communication_type: input.communicationType,
+        communicationType: input.communicationType,
         status: 'SENT',
         contact_id: input.contactId || null,
         department_id: input.departmentId || null,
