@@ -12,7 +12,7 @@ import LoadingSpinner from '@/components/shared/LoadingSpinner';
 
 export default function DashboardPage() {
   const state = useDashboardState();
-  const { isAdmin, signOut, isAuthenticated, loading } = useAuth();
+  const { isAdmin, signOut, isAuthenticated, loading, userEmail } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -59,6 +59,7 @@ export default function DashboardPage() {
         }}
         isAdmin={isAdmin}
         onSignOut={handleSignOut}
+        userEmail={userEmail}
       />
       <main className="flex-1 ml-64 p-8 h-screen overflow-hidden flex flex-col">
         <div className="flex-1 min-h-0 relative overflow-y-auto pr-2 custom-scrollbar">

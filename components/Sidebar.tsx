@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, Settings, ShieldCheck, LogOut, Briefcase, MessageSquare, Eye, Tags, Bell, Users, Inbox, Plus, Bug, HelpCircle } from 'lucide-react';
+import { LayoutDashboard, Settings, ShieldCheck, LogOut, Briefcase, MessageSquare, Eye, Tags, Bell, Users, Inbox, Plus, Bug, HelpCircle, UserCircle } from 'lucide-react';
 import NotificationBell from '@/components/notifications/NotificationBell';
 
 interface SidebarProps {
@@ -7,9 +7,10 @@ interface SidebarProps {
   onChangeView: (view: string, data?: Record<string, string>) => void;
   isAdmin: boolean;
   onSignOut: () => void;
+  userEmail?: string | null;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activeView, onChangeView, isAdmin, onSignOut }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activeView, onChangeView, isAdmin, onSignOut, userEmail }) => {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'organizations', label: 'Organizations', icon: Briefcase },
@@ -100,6 +101,12 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, onChangeView, isAdmin, on
       </nav>
 
       <div className="p-4 border-t border-white/10">
+        {userEmail && (
+          <div className="flex items-center gap-2.5 px-3 py-2 mb-1">
+            <UserCircle size={18} className="text-gold-500 shrink-0" />
+            <span className="text-xs text-slate-400 truncate">{userEmail}</span>
+          </div>
+        )}
         <button
           onClick={onSignOut}
           className="flex items-center gap-3 w-full px-3 py-2 text-sm font-medium text-slate-400 hover:text-white transition-colors"
