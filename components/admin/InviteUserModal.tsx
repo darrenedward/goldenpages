@@ -28,7 +28,7 @@ export default function InviteUserModal({ open, onClose, onInvited }: InviteUser
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [remaining, setRemaining] = useState<number | null>(null);
-  const [limit, setLimit] = useState(25);
+  const [limit, setLimit] = useState(2);
 
   const { register, handleSubmit, control, formState: { errors }, reset } = useForm<InviteFormValues>({
     resolver: zodResolver(inviteSchema),
