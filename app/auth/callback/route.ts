@@ -22,9 +22,9 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Invite → set password first, recovery → dashboard, default → dashboard
+  // Invite/magiclink → set password, recovery → dashboard, default → dashboard
   let next = '/dashboard';
-  if (type === 'invite') {
+  if (type === 'invite' || type === 'magiclink') {
     next = '/set-password';
   }
 

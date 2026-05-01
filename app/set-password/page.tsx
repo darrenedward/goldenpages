@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/authContext';
 import { authService } from '@/services/authService';
 import { GradientMesh } from '@/components/shared/GradientMesh';
@@ -9,12 +10,22 @@ import { Check, Loader2, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 
 export default function SetPasswordPage() {
-  const { user } = useAuth();
+  const { user, loading, isAuthenticated } = useAuth();
+  const router = useRouter();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState('');
+
+  // Redirect to login if not authenticated (e.g. navigated here directly)
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      router.replace('/login');
+    }
+  }, [loading, isAuthenticated, router]);
+
+  if (loading) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,10 +133,10 @@ export default function SetPasswordPage() {
               <div className="text-center mb-8">
                 <div className="h-1 bg-gradient-to-r from-gold-500 to-gold-600 rounded-full w-12 mx-auto mb-4" />
                 <h2 className="font-serif text-2xl font-bold text-slate-900 dark:text-white">
-                  Set Your Password
+                  Welcome{user?.email ? `, ${user.email}` : ''}
                 </h2>
                 <p className="mt-3 text-sm text-stone-500">
-                  Welcome{user?.email ? `, ${user.email}` : ''}! Choose a password to secure your account.
+                  You&apos;ve been signed in via a secure link. Set a password below so you can sign in anytime without needing a new link.
                 </p>
               </div>
 
