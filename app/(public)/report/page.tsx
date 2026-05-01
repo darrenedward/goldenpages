@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { AlertTriangle, Wheat, Droplets, Heart, Globe2, Users, ShieldCheck, Gavel, Eye, CheckCircle2, Upload, FileText, type LucideIcon } from 'lucide-react';
 import { issueCategoryService, type IssueCategory } from '@/services/issueCategoryService';
+import HoneypotField, { isBot } from '@/components/shared/HoneypotField';
 import { reportService } from '@/services/reportService';
 import toast from 'react-hot-toast';
 
@@ -72,6 +73,7 @@ export default function ReportPage() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [categories, setCategories] = useState<DisplayCategory[]>(FALLBACK_CATEGORIES);
+  const honeypotRef = useRef<HTMLInputElement>(null);
   const { register, handleSubmit, setValue, watch, formState: { errors }, reset } = useForm<ReportFormValues>({
     resolver: zodResolver(reportSchema),
     defaultValues: DEFAULT_VALUES,
@@ -99,6 +101,7 @@ export default function ReportPage() {
   const selectedCategory = categories.find(c => c.value === formData.category);
 
   const onSubmit = async (data: ReportFormValues) => {
+    if (isBot(honeypotRef)) { setSubmitted(true); return; }
     if (submitting) return;
     setSubmitting(true);
     try {
@@ -163,7 +166,8 @@ export default function ReportPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-8">
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="relative space-y-8">
+        <HoneypotField ref={honeypotRef} />
         {/* Reporter Information */}
         <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-stone-200 dark:border-white/5 p-8">
           <h2 className="font-serif text-xl font-bold text-slate-900 dark:text-white mb-2">Your Information</h2>

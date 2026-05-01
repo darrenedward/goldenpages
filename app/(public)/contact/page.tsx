@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Mail, MapPin, Globe2, Send, CheckCircle2 } from 'lucide-react';
 import { ScrollReveal } from '@/components/shared/ScrollReveal';
+import HoneypotField, { isBot } from '@/components/shared/HoneypotField';
 import { contactService } from '@/services/contactService';
 import toast from 'react-hot-toast';
 
@@ -20,6 +21,7 @@ type ContactFormValues = z.infer<typeof contactSchema>;
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const honeypotRef = useRef<HTMLInputElement>(null);
 
   const { register, handleSubmit, formState: { errors }, reset } = useForm<ContactFormValues>({
     resolver: zodResolver(contactSchema),
@@ -27,6 +29,7 @@ export default function ContactPage() {
   });
 
   const onSubmit = async (data: ContactFormValues) => {
+    if (isBot(honeypotRef)) { setSubmitted(true); return; }
     if (submitting) return;
     setSubmitting(true);
     try {
@@ -117,7 +120,8 @@ export default function ContactPage() {
                 </button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-6">
+              <form onSubmit={handleSubmit(onSubmit)} noValidate className="relative space-y-6">
+                <HoneypotField ref={honeypotRef} />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div>
                     <label htmlFor="name" className="block text-sm font-bold text-slate-900 dark:text-white mb-2">

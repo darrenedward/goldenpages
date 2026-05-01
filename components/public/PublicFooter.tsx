@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { DotGrid } from '@/components/shared/DotGrid';
+import HoneypotField, { isBot } from '@/components/shared/HoneypotField';
 import { contactService } from '@/services/contactService';
 import { settingsService } from '@/services/settingsService';
 import toast from 'react-hot-toast';
@@ -58,6 +59,7 @@ export default function PublicFooter() {
   const [subscribed, setSubscribed] = useState(false);
   const [subscribing, setSubscribing] = useState(false);
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>(FALLBACK_LINKS);
+  const honeypotRef = useRef<HTMLInputElement>(null);
   const { register, handleSubmit, formState: { errors }, reset } = useForm<NewsletterValues>({
     resolver: zodResolver(newsletterSchema),
   });
@@ -69,6 +71,7 @@ export default function PublicFooter() {
   }, []);
 
   const onSubscribe = async (data: NewsletterValues) => {
+    if (isBot(honeypotRef)) { setSubscribed(true); return; }
     setSubscribing(true);
     try {
       await contactService.subscribeNewsletter(data.email);
@@ -162,7 +165,8 @@ export default function PublicFooter() {
               {subscribed ? (
                 <p className="text-emerald-400 text-xs font-bold">Subscribed!</p>
               ) : (
-                <form onSubmit={handleSubmit(onSubscribe)} noValidate className="flex flex-col gap-1">
+                <form onSubmit={handleSubmit(onSubscribe)} noValidate className="relative flex flex-col gap-1">
+                  <HoneypotField ref={honeypotRef} />
                   <div className="flex gap-2">
                     <input
                       type="email"
