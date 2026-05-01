@@ -2,9 +2,21 @@
 
 import { useState } from 'react';
 import PublicCommunicationBrowser from '@/components/communications/PublicCommunicationBrowser';
+import PublicCommunicationDetail from '@/components/communications/PublicCommunicationDetail';
 
 export default function CommunicationsPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  if (selectedId) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-fade-in">
+        <PublicCommunicationDetail
+          communicationId={selectedId}
+          onBack={() => setSelectedId(null)}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-fade-in">
