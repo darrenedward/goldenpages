@@ -18,6 +18,7 @@ import type {
   Contact,
   ContactWithChannels,
   ContactChannel,
+  ContactSearchResult,
 } from '@/types';
 
 class HierarchyService {
@@ -247,6 +248,99 @@ class HierarchyService {
 
     if (error) throw error;
     return data || [];
+  }
+
+  /**
+   * Search contacts across all organizations for recipient selection.
+   * Searches contact name, role title, department name, and organization name.
+   * Returns results with full org/dept context.
+   */
+  async searchRecipients(query: string): Promise<ContactSearchResult[]> {
+    if (!query || query.length < 2) return [];
+
+    const like = `%${query}%`;
+
+    // Search contacts with their department and org info
+    const { data, error } = await supabase
+      .from('contacts')
+      .select(`
+        id,
+        fullName,
+        roleTitle,
+        departmentId,
+        isActive,
+        department:departments(
+          id,
+          name,
+          code,
+          organisationId,
+          organisation:organisations(
+            id,
+            name,
+            shortName
+          )
+        )
+      `)
+      .eq('isActive', true)
+      .or(`fullName.ilike.${like},roleTitle.ilike.${like}`)
+      .order('fullName')
+      .limit(50);
+
+    if (error) {
+      console.error('searchRecipients error:', error);
+      return [];
+    }
+
+    const results: ContactSearchResult[] = (data || []).map((c: any) => ({
+      contactId: c.id,
+      contactName: c.fullName,
+      roleTitle: c.roleTitle || '',
+      departmentId: c.department?.id || c.departmentId,
+      departmentName: c.department?.name || '',
+      departmentCode: c.department?.code || '',
+      organizationId: c.department?.organisationId || '',
+      organizationName: c.department?.organisation?.name || '',
+      organizationShortName: c.department?.organisation?.shortName || '',
+    }));
+
+    // Also search by department name — find departments matching the query
+    // and include their active contacts
+    const { data: deptData } = await supabase
+      .from('departments')
+      .select(`
+        id,
+        name,
+        code,
+        organisationId,
+        organisation:organisations(id, name, shortName),
+        contacts!inner(id, fullName, roleTitle, isActive)
+      `)
+      .ilike('name', like)
+      .eq('contacts.isActive', true)
+      .limit(30);
+
+    if (deptData) {
+      for (const dept of deptData) {
+        const org = dept.organisation as any;
+        for (const contact of (dept.contacts as any[] || [])) {
+          // Skip if already in results
+          if (results.some(r => r.contactId === contact.id)) continue;
+          results.push({
+            contactId: contact.id,
+            contactName: contact.fullName,
+            roleTitle: contact.roleTitle || '',
+            departmentId: dept.id,
+            departmentName: dept.name,
+            departmentCode: dept.code || '',
+            organizationId: dept.organisationId,
+            organizationName: org?.name || '',
+            organizationShortName: org?.shortName || '',
+          });
+        }
+      }
+    }
+
+    return results;
   }
 
   // ==========================================================================

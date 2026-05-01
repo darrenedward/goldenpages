@@ -123,6 +123,18 @@ export interface ContactWithChannels extends Contact {
   organisation?: Organization;
 }
 
+export interface ContactSearchResult {
+  contactId: string;
+  contactName: string;
+  roleTitle: string;
+  departmentId: string;
+  departmentName: string;
+  departmentCode: string;
+  organizationId: string;
+  organizationName: string;
+  organizationShortName: string;
+}
+
 export type ChannelType = 'phone' | 'email' | 'website' | 'office_address' | 'mobile' | 'fax';
 
 export interface ContactChannel {
