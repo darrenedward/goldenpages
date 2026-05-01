@@ -322,12 +322,12 @@ class CommunicationService {
 
     if (uploadError) throw uploadError;
 
-    // Insert metadata
+    // Insert metadata (use actual DB column names — documentType is camelCase in production)
     const { data, error } = await supabase
       .from('communication_documents')
       .insert({
         communication_id: communicationId,
-        document_type: documentType,
+        documentType,
         filename,
         original_name: file.name,
         mime_type: file.type,
@@ -450,18 +450,18 @@ class CommunicationService {
   private mapDocument(row: Record<string, unknown>): CommunicationDocument {
     return {
       id: row.id as string,
-      communicationId: row.communication_id as string,
-      documentType: row.document_type as CommunicationDocumentType,
+      communicationId: (row.communication_id ?? row.communicationId) as string,
+      documentType: (row.document_type ?? row.documentType) as CommunicationDocumentType,
       filename: row.filename as string,
-      originalName: row.original_name as string,
-      mimeType: row.mime_type as string,
-      sizeBytes: row.size_bytes as number,
-      storagePath: row.storage_path as string,
-      isPublic: row.is_public as boolean,
+      originalName: (row.original_name ?? row.originalName) as string,
+      mimeType: (row.mime_type ?? row.mimeType) as string,
+      sizeBytes: (row.size_bytes ?? row.sizeBytes) as number,
+      storagePath: (row.storage_path ?? row.storagePath) as string,
+      isPublic: (row.is_public ?? row.isPublic) as boolean,
       description: row.description as string | undefined,
-      uploadedAt: row.uploaded_at as string,
-      uploadedBy: row.uploaded_by as string,
-      recipientId: row.recipient_id as string | undefined,
+      uploadedAt: (row.uploaded_at ?? row.uploadedAt) as string,
+      uploadedBy: (row.uploaded_by ?? row.uploadedBy) as string,
+      recipientId: (row.recipient_id ?? row.recipientId) as string | undefined,
     };
   }
 
