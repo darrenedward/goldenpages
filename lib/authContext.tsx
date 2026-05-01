@@ -100,7 +100,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
           setUser(session?.user || null);
 
           if (session?.user) {
-            await loadUserPermissions(session.user.id);
+            // Fire-and-forget — don't block initial load on permissions
+            loadUserPermissions(session.user.id).catch((err) => {
+              console.error('Initial permissions load failed:', err);
+            });
           }
         }
       } catch (error) {
@@ -120,7 +123,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
           setUser(session?.user || null);
 
           if (session?.user) {
-            await loadUserPermissions(session.user.id);
+            // Fire-and-forget — don't block auth state updates on permissions
+            loadUserPermissions(session.user.id).catch((err) => {
+              console.error('onAuthStateChange permissions load failed:', err);
+            });
           } else {
             setRoles([]);
             setPermissions([]);
@@ -165,25 +171,40 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   async function signIn(credentials: SignInCredentials) {
     setLoading(true);
-    const { data, error } = await authService.signIn(credentials);
-    if (data?.session && data?.user) {
-      setSession(data.session);
-      setUser(data.user);
-      await loadUserPermissions(data.user.id);
+    try {
+      const { data, error } = await authService.signIn(credentials);
+      if (error) {
+        return { error };
+      }
+      if (data?.session && data?.user) {
+        setSession(data.session);
+        setUser(data.user);
+        // Fire-and-forget permissions — don't block login on this
+        loadUserPermissions(data.user.id).catch((err) => {
+          console.error('Background permissions load failed:', err);
+        });
+      }
+      return { error: null };
+    } catch (err) {
+      console.error('signIn unexpected error:', err);
+      return { error: err as AuthError };
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-    return { error };
   }
 
   async function signOut() {
     setLoading(true);
-    const { error } = await authService.signOut();
-    if (!error) {
-      setRoles([]);
-      setPermissions([]);
+    try {
+      const { error } = await authService.signOut();
+      if (!error) {
+        setRoles([]);
+        setPermissions([]);
+      }
+      return { error };
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-    return { error };
   }
 
   // ==========================================================================

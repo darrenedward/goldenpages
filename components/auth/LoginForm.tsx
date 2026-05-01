@@ -7,7 +7,7 @@ import { authService } from '@/services/authService';
 type AuthMode = 'login' | 'forgot';
 
 export function LoginForm() {
-  const { signIn, loading } = useAuth();
+  const { signIn } = useAuth();
 
   const [mode, setMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState('');
@@ -39,7 +39,9 @@ export function LoginForm() {
         const { error: signInError } = await signIn({ email, password });
         if (signInError) {
           setError(signInError.message || 'Failed to sign in');
+          setIsSubmitting(false);
         }
+        // If no error, the login page's useEffect will handle redirect
       } else if (mode === 'forgot') {
         const { error: resetError } = await authService.resetPassword(email);
         if (resetError) {
@@ -48,21 +50,13 @@ export function LoginForm() {
           setSuccess('Password reset link sent to your email if an account exists.');
           setMode('login');
         }
+        setIsSubmitting(false);
       }
     } catch {
       setError('An unexpected error occurred');
-    } finally {
       setIsSubmitting(false);
     }
   };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <div className="w-8 h-8 border-4 border-gold-200 border-t-gold-600 rounded-full animate-spin" />
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-md w-full">
