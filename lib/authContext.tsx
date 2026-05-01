@@ -150,6 +150,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   async function signIn(credentials: SignInCredentials) {
     setLoading(true);
     const { data, error } = await authService.signIn(credentials);
+    if (data?.session && data?.user) {
+      setSession(data.session);
+      setUser(data.user);
+      await loadUserPermissions(data.user.id);
+    }
     setLoading(false);
     return { error };
   }
