@@ -6,6 +6,9 @@ export async function GET(request: NextRequest) {
   const code = requestUrl.searchParams.get('code');
   const type = requestUrl.searchParams.get('type');
 
+  console.log('[Auth Callback] Full URL:', request.url);
+  console.log('[Auth Callback] code:', code ? 'present' : 'missing', 'type:', type);
+
   let needsPassword = false;
 
   if (code) {
@@ -17,7 +20,7 @@ export async function GET(request: NextRequest) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (error) {
-      console.error('[Auth Callback] Error:', error.message);
+      console.error('[Auth Callback] Exchange error:', error.message);
       return NextResponse.redirect(
         new URL(`/login?error=${encodeURIComponent(error.message)}`, requestUrl.origin)
       );
@@ -25,6 +28,7 @@ export async function GET(request: NextRequest) {
 
     // Check if this user was invited and needs to set a password
     needsPassword = !!data?.user?.user_metadata?.needs_password;
+    console.log('[Auth Callback] User:', data?.user?.email, 'needs_password:', data?.user?.user_metadata?.needs_password, '→ redirect to:', needsPassword ? '/set-password' : '/dashboard');
   }
 
   // Invited user needing password → set-password page
