@@ -90,7 +90,7 @@ export default function WizardStepRecipients({ state, updateState }: WizardStepR
     <div className="space-y-6">
       {/* Selected recipients */}
       {state.recipients.length > 0 && (
-        <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-stone-200 dark:border-white/5 p-6">
+        <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-stone-200 dark:border-white/5 p-8">
           <h2 className="font-serif text-lg font-bold text-slate-800 dark:text-white mb-4">
             Selected Recipients ({state.recipients.length})
           </h2>
@@ -222,7 +222,7 @@ export default function WizardStepRecipients({ state, updateState }: WizardStepR
 
       {/* Contact picker for a selected department */}
       {contacts.length > 0 && (
-        <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-stone-200 dark:border-white/5 p-6">
+        <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-stone-200 dark:border-white/5 p-8">
           <h3 className="text-sm font-bold text-stone-600 dark:text-stone-400 mb-3">
             Optional: Assign a specific contact
           </h3>

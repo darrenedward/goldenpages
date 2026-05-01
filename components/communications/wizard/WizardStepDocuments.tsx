@@ -43,11 +43,11 @@ export default function WizardStepDocuments({ state, updateState }: WizardStepDo
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-stone-200 dark:border-white/5 p-6">
+    <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-stone-200 dark:border-white/5 p-8">
       <h2 className="font-serif text-lg font-bold text-slate-800 dark:text-white mb-2">
         Attach Documents
       </h2>
-      <p className="text-sm text-stone-500 dark:text-stone-400 mb-4">
+      <p className="text-sm text-stone-500 dark:text-stone-400 mb-6">
         Upload scanned copies of what you are sending. These become the initial shared documents for all recipients.
         You can add recipient-specific documents (replies, follow-ups) later from the communication detail view.
       </p>

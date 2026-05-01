@@ -21,10 +21,10 @@ export default function WizardStepDetails({ state, updateState }: WizardStepDeta
   const [tagsInput, setTagsInput] = React.useState(state.tags.join(', '));
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-stone-200 dark:border-white/5 p-6">
-      <h2 className="font-serif text-lg font-bold text-slate-800 dark:text-white mb-4">Communication Details</h2>
+    <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-stone-200 dark:border-white/5 p-8">
+      <h2 className="font-serif text-lg font-bold text-slate-800 dark:text-white mb-6">Communication Details</h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* Title */}
         <div className="md:col-span-2">
           <label className="block text-sm font-bold text-stone-600 dark:text-stone-400 mb-1">

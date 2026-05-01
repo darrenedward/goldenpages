@@ -195,7 +195,7 @@ export default function CreateCommunicationWizard({
       </div>
 
       {/* Step content */}
-      <div className="max-w-3xl">
+      <div className="max-w-4xl">
         {step === 0 && (
           <WizardStepDetails state={state} updateState={updateState} />
         )}
@@ -211,7 +211,7 @@ export default function CreateCommunicationWizard({
       </div>
 
       {/* Navigation */}
-      <div className="flex items-center gap-3 mt-8 max-w-3xl">
+      <div className="flex items-center gap-3 mt-8 max-w-4xl">
         <button
           type="button"
           onClick={onCancel}

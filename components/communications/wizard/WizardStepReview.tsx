@@ -16,7 +16,7 @@ export default function WizardStepReview({ state, updateState }: WizardStepRevie
   return (
     <div className="space-y-6">
       {/* Summary */}
-      <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-stone-200 dark:border-white/5 p-6">
+      <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-stone-200 dark:border-white/5 p-8">
         <h2 className="font-serif text-lg font-bold text-slate-800 dark:text-white mb-4">
           Review Communication
         </h2>
@@ -59,7 +59,7 @@ export default function WizardStepReview({ state, updateState }: WizardStepRevie
       </div>
 
       {/* Recipients */}
-      <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-stone-200 dark:border-white/5 p-6">
+      <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-stone-200 dark:border-white/5 p-8">
         <h3 className="text-sm font-bold text-stone-400 uppercase tracking-wider mb-3">
           Recipients ({state.recipients.length})
         </h3>
@@ -84,7 +84,7 @@ export default function WizardStepReview({ state, updateState }: WizardStepRevie
       </div>
 
       {/* Documents */}
-      <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-stone-200 dark:border-white/5 p-6">
+      <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-stone-200 dark:border-white/5 p-8">
         <h3 className="text-sm font-bold text-stone-400 uppercase tracking-wider mb-3">
           Documents ({state.files.length})
         </h3>
@@ -105,7 +105,7 @@ export default function WizardStepReview({ state, updateState }: WizardStepRevie
       </div>
 
       {/* Expected response */}
-      <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-stone-200 dark:border-white/5 p-6">
+      <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-stone-200 dark:border-white/5 p-8">
         <h3 className="text-sm font-bold text-stone-400 uppercase tracking-wider mb-3 flex items-center gap-2">
           <Calendar className="w-4 h-4" />
           Expected Response Time
@@ -134,7 +134,7 @@ export default function WizardStepReview({ state, updateState }: WizardStepRevie
       </div>
 
       {/* Approval & visibility */}
-      <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-stone-200 dark:border-white/5 p-6">
+      <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-stone-200 dark:border-white/5 p-8">
         <h3 className="text-sm font-bold text-stone-400 uppercase tracking-wider mb-4">
           Approval & Visibility
         </h3>
