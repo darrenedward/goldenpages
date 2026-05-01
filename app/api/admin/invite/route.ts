@@ -67,6 +67,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'No user ID returned' }, { status: 500 });
   }
 
+  // Mark user as needing to set a password
+  await supabase.auth.admin.updateUserById(userId, {
+    user_metadata: { needs_password: true },
+  });
+
   // 3. Get role ID and assign
   const { data: roleData } = await supabase
     .from('roles')

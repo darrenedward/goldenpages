@@ -44,6 +44,8 @@ export default function SetPasswordPage() {
     try {
       const { error: updateError } = await authService.updatePassword(password);
       if (updateError) throw updateError;
+      // Clear the needs_password flag so callback won't redirect here again
+      await authService.clearNeedsPasswordFlag();
       setDone(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to set password');

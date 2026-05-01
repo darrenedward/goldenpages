@@ -6,13 +6,15 @@ export async function GET(request: NextRequest) {
   const code = requestUrl.searchParams.get('code');
   const type = requestUrl.searchParams.get('type');
 
+  let needsPassword = false;
+
   if (code) {
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
 
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (error) {
       console.error('[Auth Callback] Error:', error.message);
@@ -20,13 +22,16 @@ export async function GET(request: NextRequest) {
         new URL(`/login?error=${encodeURIComponent(error.message)}`, requestUrl.origin)
       );
     }
+
+    // Check if this user was invited and needs to set a password
+    needsPassword = !!data?.user?.user_metadata?.needs_password;
   }
 
-  // Invite/magiclink → set password, recovery → dashboard, default → dashboard
-  let next = '/dashboard';
-  if (type === 'invite' || type === 'magiclink') {
-    next = '/set-password';
+  // Invited user needing password → set-password page
+  // Type fallback for flows that include it in the URL
+  if (needsPassword || type === 'invite' || type === 'magiclink') {
+    return NextResponse.redirect(new URL('/set-password', requestUrl.origin));
   }
 
-  return NextResponse.redirect(new URL(next, requestUrl.origin));
+  return NextResponse.redirect(new URL('/dashboard', requestUrl.origin));
 }

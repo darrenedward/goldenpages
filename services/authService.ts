@@ -212,6 +212,15 @@ class AuthService {
     const user = await this.getCurrentUser();
     return user?.user_metadata || null;
   }
+
+  /**
+   * Clear the needs_password flag after user sets their password
+   */
+  async clearNeedsPasswordFlag(): Promise<void> {
+    await supabase.auth.updateUser({
+      data: { needs_password: false },
+    });
+  }
 }
 
 // ============================================================================
