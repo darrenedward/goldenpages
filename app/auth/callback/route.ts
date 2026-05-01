@@ -22,8 +22,11 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Redirect to dashboard after successful auth
-  // For password recovery, could redirect to settings
-  const next = type === 'recovery' ? '/dashboard' : '/dashboard';
+  // Invite → set password first, recovery → dashboard, default → dashboard
+  let next = '/dashboard';
+  if (type === 'invite') {
+    next = '/set-password';
+  }
+
   return NextResponse.redirect(new URL(next, requestUrl.origin));
 }

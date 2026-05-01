@@ -31,8 +31,11 @@ export async function POST(request: NextRequest) {
   }
 
   // 2. Send invite via Supabase Auth
+  const redirectTo = `${new URL(request.url).origin}/auth/callback`;
   const { data: inviteData, error: inviteError } =
-    await supabase.auth.admin.inviteUserByEmail(email.trim().toLowerCase());
+    await supabase.auth.admin.inviteUserByEmail(email.trim().toLowerCase(), {
+      redirectTo,
+    });
 
   if (inviteError) {
     // Detect Supabase rate limit errors
