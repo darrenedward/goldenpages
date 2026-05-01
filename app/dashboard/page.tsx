@@ -12,7 +12,7 @@ import LoadingSpinner from '@/components/shared/LoadingSpinner';
 
 export default function DashboardPage() {
   const state = useDashboardState();
-  const { isAdmin, signOut, isAuthenticated, loading, userEmail } = useAuth();
+  const { isAdmin, signOut, isAuthenticated, loading, userEmail, user } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -22,6 +22,13 @@ export default function DashboardPage() {
       router.replace(`/login?redirect=${encodeURIComponent(pathname)}`);
     }
   }, [loading, isAuthenticated, router, pathname]);
+
+  // Force invited users to set a password before accessing dashboard
+  useEffect(() => {
+    if (!loading && isAuthenticated && user?.user_metadata?.needs_password) {
+      router.replace('/set-password');
+    }
+  }, [loading, isAuthenticated, user, router]);
 
   const handleSignOut = async () => {
     await signOut();

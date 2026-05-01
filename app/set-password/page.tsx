@@ -10,22 +10,22 @@ import { Check, Loader2, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 
 export default function SetPasswordPage() {
-  const { user, loading, isAuthenticated } = useAuth();
+  const { user, loading: authLoading, isAuthenticated } = useAuth();
   const router = useRouter();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState('');
 
   // Redirect to login if not authenticated (e.g. navigated here directly)
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
+    if (!authLoading && !isAuthenticated) {
       router.replace('/login');
     }
-  }, [loading, isAuthenticated, router]);
+  }, [authLoading, isAuthenticated, router]);
 
-  if (loading) return null;
+  if (authLoading) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +40,7 @@ export default function SetPasswordPage() {
       return;
     }
 
-    setLoading(true);
+    setSaving(true);
     try {
       const { error: updateError } = await authService.updatePassword(password);
       if (updateError) throw updateError;
@@ -50,7 +50,7 @@ export default function SetPasswordPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to set password');
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
@@ -182,11 +182,11 @@ export default function SetPasswordPage() {
 
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={saving}
                   className="w-full py-3 bg-gold-600 text-white rounded-2xl font-bold hover:bg-gold-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                  {loading ? 'Saving...' : 'Set Password'}
+                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                  {saving ? 'Saving...' : 'Set Password'}
                 </button>
               </form>
             </div>

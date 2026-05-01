@@ -121,6 +121,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
           if (session?.user) {
             await loadUserPermissions(session.user.id);
+            // Force invited users to set a password before doing anything else
+            if (session.user.user_metadata?.needs_password && typeof window !== 'undefined') {
+              if (!window.location.pathname.startsWith('/set-password')) {
+                window.location.href = '/set-password';
+                return;
+              }
+            }
           } else {
             setRoles([]);
             setPermissions([]);
