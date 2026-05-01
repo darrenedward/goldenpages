@@ -42,4 +42,15 @@ export const userManagementService = {
       throw new Error(data.error || 'Failed to remove user');
     }
   },
+
+  async generateLink(email: string): Promise<string> {
+    const res = await fetch(`${API_BASE}/generate-link`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to generate link');
+    return data.link;
+  },
 };

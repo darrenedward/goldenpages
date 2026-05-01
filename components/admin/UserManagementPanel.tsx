@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { UserPlus, Shield, ShieldCheck, Edit3, Trash2, Search, RefreshCw, Loader2, Users, AlertTriangle } from 'lucide-react';
+import { UserPlus, Shield, ShieldCheck, Edit3, Trash2, Search, RefreshCw, Loader2, Users, AlertTriangle, Link as LinkIcon, Copy, Check } from 'lucide-react';
 import { userManagementService } from '@/services/userManagementService';
 import { useAuth } from '@/lib/authContext';
 import InviteUserModal from './InviteUserModal';
@@ -23,6 +23,9 @@ export default function UserManagementPanel() {
   const [editingUser, setEditingUser] = useState<ManagedUser | null>(null);
   const [removingUser, setRemovingUser] = useState<ManagedUser | null>(null);
   const [removing, setRemoving] = useState(false);
+  const [generatedLink, setGeneratedLink] = useState<{ email: string; link: string } | null>(null);
+  const [generatingFor, setGeneratingFor] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -59,6 +62,25 @@ export default function UserManagementPanel() {
     } finally {
       setRemoving(false);
     }
+  };
+
+  const handleGenerateLink = async (email: string) => {
+    setGeneratingFor(email);
+    try {
+      const link = await userManagementService.generateLink(email);
+      setGeneratedLink({ email, link });
+    } catch (err) {
+      console.error('Failed to generate link:', err);
+    } finally {
+      setGeneratingFor(null);
+    }
+  };
+
+  const handleCopyLink = async () => {
+    if (!generatedLink) return;
+    await navigator.clipboard.writeText(generatedLink.link);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const formatDate = (dateStr: string) => {
@@ -180,6 +202,15 @@ export default function UserManagementPanel() {
                     <div className="flex items-center gap-1 ml-4">
                       <button
                         type="button"
+                        onClick={() => void handleGenerateLink(u.email)}
+                        disabled={generatingFor === u.email}
+                        className="p-2 text-stone-400 hover:text-gold-600 hover:bg-gold-50 dark:hover:bg-gold-900/20 rounded-lg transition-colors disabled:opacity-50"
+                        title="Generate login link"
+                      >
+                        {generatingFor === u.email ? <Loader2 className="w-4 h-4 animate-spin" /> : <LinkIcon className="w-4 h-4" />}
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => setEditingUser(u)}
                         className="p-2 text-stone-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
                         title="Edit roles"
@@ -247,6 +278,59 @@ export default function UserManagementPanel() {
                 className="flex-1 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors border-l border-stone-200 dark:border-stone-800"
               >
                 {removing ? 'Removing...' : 'Remove'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Generated link modal */}
+      {generatedLink && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-lg mx-4 overflow-hidden">
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-gold-100 to-gold-200 dark:from-gold-900/30 dark:to-gold-800/20 flex items-center justify-center">
+                  <LinkIcon className="w-5 h-5 text-gold-600" />
+                </div>
+                <div>
+                  <h3 className="font-serif font-bold text-lg text-slate-800 dark:text-white">Login Link Generated</h3>
+                  <p className="text-xs text-stone-500">for {generatedLink.email}</p>
+                </div>
+              </div>
+              <p className="text-sm text-stone-600 dark:text-stone-400 mb-4">
+                Send this link to the user. They&apos;ll be prompted to set a password after clicking it.
+                The link expires in 1 hour.
+              </p>
+              <div className="relative">
+                <div className="flex items-center gap-2 p-3 bg-stone-50 dark:bg-slate-800 rounded-xl border border-stone-200 dark:border-stone-700">
+                  <input
+                    type="text"
+                    readOnly
+                    value={generatedLink.link}
+                    className="flex-1 bg-transparent text-xs text-stone-700 dark:text-stone-300 outline-none select-all font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => void handleCopyLink()}
+                    className={`shrink-0 p-2 rounded-lg transition-colors ${
+                      copied
+                        ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600'
+                        : 'bg-gold-100 dark:bg-gold-900/30 text-gold-600 hover:bg-gold-200 dark:hover:bg-gold-800/30'
+                    }`}
+                  >
+                    {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div className="border-t border-stone-200 dark:border-stone-800 px-6 py-3">
+              <button
+                type="button"
+                onClick={() => { setGeneratedLink(null); setCopied(false); }}
+                className="w-full py-2 text-sm font-medium text-stone-600 dark:text-stone-400 hover:text-stone-800 dark:hover:text-white transition-colors"
+              >
+                Done
               </button>
             </div>
           </div>
