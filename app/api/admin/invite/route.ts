@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminClient } from '@/services/adminClient';
 
-// Supabase free-tier allows ~3-4 invite emails per hour
+// Supabase allows 30 emails per hour on standard tier
 const INVITE_LIMIT_WINDOW_HOURS = 1;
-const INVITE_LIMIT_MAX = 3;
+const INVITE_LIMIT_MAX = 25; // slightly under Supabase's 30 to leave headroom for other emails
 
 export async function POST(request: NextRequest) {
   const { email, roleName } = await request.json();
