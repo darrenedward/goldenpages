@@ -51,7 +51,8 @@ export default function CommunicationList({
 
   useEffect(() => {
     void fetchCommunications();
-  }, [contactId, departmentId, organisationId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contactId, departmentId, organisationId, myOnly, user?.id]);
 
   const fetchCommunications = async () => {
     setLoading(true);
