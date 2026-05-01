@@ -5,10 +5,12 @@ import {
   ArrowLeft, FileText, Clock, CheckCircle2, AlertCircle, Calendar,
   Download, Users, Mail, ChevronRight,
 } from 'lucide-react';
+import { Crown, Shield, UserCircle } from 'lucide-react';
 import { communicationService } from '@/services/communicationService';
+import { communicationMemberService } from '@/services/communicationMemberService';
 import StatusBadge from '@/components/shared/StatusBadge';
 import LoadingSpinner from '@/components/shared/LoadingSpinner';
-import type { CommunicationWithDetails } from '@/types';
+import type { CommunicationWithDetails, CommunicationMember } from '@/types';
 
 interface PublicCommunicationDetailProps {
   communicationId: string;
@@ -17,17 +19,22 @@ interface PublicCommunicationDetailProps {
 
 export default function PublicCommunicationDetail({ communicationId, onBack }: PublicCommunicationDetailProps) {
   const [communication, setCommunication] = useState<CommunicationWithDetails | null>(null);
+  const [members, setMembers] = useState<CommunicationMember[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    void fetchCommunication();
+    void fetchData();
   }, [communicationId]);
 
-  const fetchCommunication = async () => {
+  const fetchData = async () => {
     setLoading(true);
     try {
-      const data = await communicationService.getCommunication(communicationId);
+      const [data, memberData] = await Promise.all([
+        communicationService.getCommunication(communicationId),
+        communicationMemberService.getMembers(communicationId),
+      ]);
       setCommunication(data);
+      setMembers(memberData);
     } catch (err) {
       console.error('Failed to fetch communication:', err);
     } finally {
@@ -245,6 +252,48 @@ export default function PublicCommunicationDetail({ communicationId, onBack }: P
             </div>
           )}
         </div>
+      </div>
+
+      {/* Team */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-stone-200 dark:border-white/5 p-6">
+        <h2 className="flex items-center gap-2 font-serif text-lg font-bold text-slate-800 dark:text-white mb-4">
+          <Users className="w-5 h-5 text-gold-600" />
+          Team ({members.length})
+        </h2>
+        {members.length === 0 ? (
+          <p className="text-sm text-stone-400 py-4 text-center">No team members listed</p>
+        ) : (
+          <div className="space-y-2">
+            {members.map(member => {
+              const name = member.user?.displayName || member.user?.email || 'Unknown';
+              const initials = name[0].toUpperCase();
+              const roleConfig: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
+                owner: { label: 'Author', icon: <Crown className="w-3.5 h-3.5" />, color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' },
+                assignee: { label: 'Assignee', icon: <Shield className="w-3.5 h-3.5" />, color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' },
+                collaborator: { label: 'Contributor', icon: <UserCircle className="w-3.5 h-3.5" />, color: 'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-400' },
+              };
+              const config = roleConfig[member.role] || roleConfig.collaborator;
+
+              return (
+                <div
+                  key={member.id}
+                  className="flex items-center gap-3 p-3 rounded-xl bg-stone-50 dark:bg-stone-800/50"
+                >
+                  <div className="w-8 h-8 bg-gold-100 dark:bg-gold-900/30 rounded-full flex items-center justify-center text-gold-700 dark:text-gold-400 text-sm font-bold">
+                    {initials}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-slate-800 dark:text-white truncate">{name}</p>
+                  </div>
+                  <span className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-semibold ${config.color}`}>
+                    {config.icon}
+                    {config.label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Sender info */}
