@@ -276,8 +276,7 @@ class HierarchyService {
           organisationId,
           organisation:organisations(
             id,
-            name,
-            shortName
+            name
           )
         )
       `)
@@ -300,7 +299,7 @@ class HierarchyService {
       departmentCode: c.department?.code || '',
       organizationId: c.department?.organisationId || '',
       organizationName: c.department?.organisation?.name || '',
-      organizationShortName: c.department?.organisation?.shortName || '',
+      organizationShortName: '',
     }));
 
     // Also search by department name — find departments matching the query
@@ -312,7 +311,7 @@ class HierarchyService {
         name,
         code,
         organisationId,
-        organisation:organisations(id, name, shortName),
+        organisation:organisations(id, name),
         contacts!inner(id, fullName, roleTitle, isActive)
       `)
       .ilike('name', like)
@@ -334,7 +333,7 @@ class HierarchyService {
             departmentCode: dept.code || '',
             organizationId: dept.organisationId,
             organizationName: org?.name || '',
-            organizationShortName: org?.shortName || '',
+            organizationShortName: '',
           });
         }
       }
