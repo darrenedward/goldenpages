@@ -29,7 +29,7 @@ export default function ContactPage() {
   });
 
   const onSubmit = async (data: ContactFormValues) => {
-    if (isBot(honeypotRef)) { setSubmitted(true); return; }
+    if (await isBot(honeypotRef, 'contact')) { setSubmitted(true); return; }
     if (submitting) return;
     setSubmitting(true);
     try {

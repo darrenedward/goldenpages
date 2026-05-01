@@ -14,6 +14,7 @@ import PublicCommunicationBrowser from '@/components/communications/PublicCommun
 import UserManagementPanel from '@/components/admin/UserManagementPanel';
 import SettingsPanel from './settings/SettingsPanel';
 import IssueCategoryManager from '@/components/admin/IssueCategoryManager';
+import HoneypotLogViewer from '@/components/admin/HoneypotLogViewer';
 import NotificationList from '@/components/notifications/NotificationList';
 import InboundEmailList from '@/components/inbound/InboundEmailList';
 import type { DashboardState } from './useDashboardState';
@@ -171,6 +172,9 @@ export default function ViewRenderer({ state }: ViewRendererProps) {
 
     case 'admin-categories':
       return <IssueCategoryManager />;
+
+    case 'admin-honeypot':
+      return <HoneypotLogViewer />;
 
     case 'settings':
       return <SettingsPanel />;

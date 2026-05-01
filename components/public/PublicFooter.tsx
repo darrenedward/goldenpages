@@ -71,7 +71,7 @@ export default function PublicFooter() {
   }, []);
 
   const onSubscribe = async (data: NewsletterValues) => {
-    if (isBot(honeypotRef)) { setSubscribed(true); return; }
+    if (await isBot(honeypotRef, 'newsletter')) { setSubscribed(true); return; }
     setSubscribing(true);
     try {
       await contactService.subscribeNewsletter(data.email);

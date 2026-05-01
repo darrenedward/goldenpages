@@ -101,7 +101,7 @@ export default function ReportPage() {
   const selectedCategory = categories.find(c => c.value === formData.category);
 
   const onSubmit = async (data: ReportFormValues) => {
-    if (isBot(honeypotRef)) { setSubmitted(true); return; }
+    if (await isBot(honeypotRef, 'report')) { setSubmitted(true); return; }
     if (submitting) return;
     setSubmitting(true);
     try {

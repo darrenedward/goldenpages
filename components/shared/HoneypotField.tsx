@@ -1,6 +1,7 @@
 'use client';
 
 import React, { forwardRef } from 'react';
+import { supabase } from '@/services/supabaseClient';
 
 interface HoneypotFieldProps {
   name?: string;
@@ -30,8 +31,22 @@ export default HoneypotField;
 
 /**
  * Check if a honeypot field was filled (indicating a bot).
- * If true, silently show success and return early from onSubmit.
+ * If true, logs the attempt and returns true so the caller can silently reject.
  */
-export function isBot(ref: React.RefObject<HTMLInputElement | null>): boolean {
-  return !!ref.current?.value;
+export async function isBot(ref: React.RefObject<HTMLInputElement | null>, formName: string): Promise<boolean> {
+  const value = ref.current?.value;
+  if (!value) return false;
+
+  // Log the bot attempt
+  try {
+    await supabase.from('honeypot_logs').insert({
+      form_name: formName,
+      honeypot_value: value.substring(0, 500),
+      user_agent: navigator.userAgent.substring(0, 500),
+    });
+  } catch {
+    // Logging failure is non-blocking
+  }
+
+  return true;
 }
