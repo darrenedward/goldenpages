@@ -78,8 +78,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     async function loadSession() {
       try {
-        const session = await authService.getSession();
+        // Race getSession against a timeout — if the Supabase token in
+        // localStorage is stale/malformed, getSession() can hang forever.
+        const SESSION_TIMEOUT_MS = 5000;
+        const session = await Promise.race([
+          authService.getSession(),
+          new Promise<null>((resolve) =>
+            setTimeout(() => { console.warn('Session load timed out — clearing stale token'); resolve(null); }, SESSION_TIMEOUT_MS)
+          ),
+        ]);
+
         if (mounted) {
+          if (!session) {
+            // Either timed out or no session — clear any stale localStorage token
+            try {
+              const key = `sb-${new URL(process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://vkdlkkedhbfhcookpius.supabase.co').hostname.split('.')[0]}-auth-token`;
+              localStorage.removeItem(key);
+            } catch { /* ignore */ }
+          }
           setSession(session);
           setUser(session?.user || null);
 
