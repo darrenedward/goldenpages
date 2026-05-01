@@ -20,10 +20,10 @@ import { toast } from 'react-hot-toast';
 interface CommunicationDetailProps {
   communicationId: string;
   onBack: () => void;
-  onChangeView: (view: string, data?: Record<string, string>) => void;
+  onChangeView?: (view: string, data?: Record<string, string>) => void;
 }
 
-export default function CommunicationDetail({ communicationId, onBack, onChangeView }: CommunicationDetailProps) {
+export default function CommunicationDetail({ communicationId, onBack }: CommunicationDetailProps) {
   const [communication, setCommunication] = useState<CommunicationWithDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'recipients' | 'documents' | 'activity' | 'team'>('recipients');

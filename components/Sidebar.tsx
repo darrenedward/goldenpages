@@ -1,36 +1,39 @@
 import React from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Settings, ShieldCheck, LogOut, Briefcase, MessageSquare, Eye, Tags, Bell, Users, Inbox, Plus, Bug, HelpCircle, UserCircle } from 'lucide-react';
+import { isPathActive } from '@/lib/dashboardNavigation';
 import NotificationBell from '@/components/notifications/NotificationBell';
 
 interface SidebarProps {
-  activeView: string;
-  onChangeView: (view: string, data?: Record<string, string>) => void;
   isAdmin: boolean;
   onSignOut: () => void;
   userEmail?: string | null;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activeView, onChangeView, isAdmin, onSignOut, userEmail }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isAdmin, onSignOut, userEmail }) => {
+  const pathname = usePathname();
+
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'organizations', label: 'Organizations', icon: Briefcase },
-    { id: 'communications', label: 'Communications', icon: MessageSquare },
-    { id: 'create-communication', label: 'New Communication', icon: Plus },
-    { id: 'my-communications', label: 'My Communications', icon: Users },
+    { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { path: '/dashboard/organizations', label: 'Organizations', icon: Briefcase },
+    { path: '/dashboard/communications', label: 'Communications', icon: MessageSquare },
+    { path: '/dashboard/communications/new', label: 'New Communication', icon: Plus },
+    { path: '/dashboard/my-communications', label: 'My Communications', icon: Users },
   ];
 
   const publicItems = [
-    { id: 'public-register', label: 'Public Register', icon: Eye },
-    { id: 'inbound-emails', label: 'Inbound Emails', icon: Inbox },
-    { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'help', label: 'Help & Support', icon: HelpCircle },
+    { path: '/dashboard/public-register', label: 'Public Register', icon: Eye },
+    { path: '/dashboard/inbound-emails', label: 'Inbound Emails', icon: Inbox },
+    { path: '/dashboard/notifications', label: 'Notifications', icon: Bell },
+    { path: '/dashboard/help', label: 'Help & Support', icon: HelpCircle },
   ];
 
   const adminItems = [
-    { id: 'admin', label: 'User Management', icon: ShieldCheck },
-    { id: 'admin-categories', label: 'Issue Categories', icon: Tags },
-    { id: 'admin-honeypot', label: 'Spam Log', icon: Bug },
-    { id: 'settings', label: 'Settings', icon: Settings },
+    { path: '/dashboard/admin/users', label: 'User Management', icon: ShieldCheck },
+    { path: '/dashboard/admin/categories', label: 'Issue Categories', icon: Tags },
+    { path: '/dashboard/admin/honeypot', label: 'Spam Log', icon: Bug },
+    { path: '/dashboard/settings', label: 'Settings', icon: Settings },
   ];
 
   return (
@@ -42,41 +45,39 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, onChangeView, isAdmin, on
             Golden<span className="text-gold-400">Pages</span>
           </h1>
         </div>
-        <NotificationBell onNavigate={(view, data) => {
-          onChangeView(view, data);
-        }} />
+        <NotificationBell />
       </div>
 
       <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
         <p className="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Main</p>
         {menuItems.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => onChangeView(item.id)}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeView === item.id
+          <Link
+            key={item.path}
+            href={item.path}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${isPathActive(item.path, pathname)
               ? 'bg-gradient-to-r from-gold-600 to-gold-500 text-white shadow-lg'
               : 'text-slate-400 hover:text-white hover:bg-white/5'
               }`}
           >
             <item.icon size={18} />
             {item.label}
-          </button>
+          </Link>
         ))}
 
         <div className="pt-6">
           <p className="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Transparency</p>
           {publicItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => onChangeView(item.id)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeView === item.id
+            <Link
+              key={item.path}
+              href={item.path}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${isPathActive(item.path, pathname)
                 ? 'bg-gradient-to-r from-gold-600 to-gold-500 text-white shadow-lg'
                 : 'text-slate-400 hover:text-white hover:bg-white/5'
               }`}
             >
               <item.icon size={18} />
               {item.label}
-            </button>
+            </Link>
           ))}
         </div>
 
@@ -84,17 +85,17 @@ const Sidebar: React.FC<SidebarProps> = ({ activeView, onChangeView, isAdmin, on
           <div className="pt-6">
             <p className="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">System</p>
             {adminItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => onChangeView(item.id)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeView === item.id
+              <Link
+                key={item.path}
+                href={item.path}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${isPathActive(item.path, pathname)
                   ? 'bg-gradient-to-r from-gold-600 to-gold-500 text-white shadow-lg'
                   : 'text-slate-400 hover:text-white hover:bg-white/5'
                 }`}
               >
                 <item.icon size={18} />
                 {item.label}
-              </button>
+              </Link>
             ))}
           </div>
         )}

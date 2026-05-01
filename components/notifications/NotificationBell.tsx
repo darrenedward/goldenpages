@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Bell, CheckCheck, FileUp, UserPlus, RefreshCw, Edit3, UserMinus, Mail, MessageSquare, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@/lib/authContext';
 import { useNotifications } from '@/lib/hooks/useNotifications';
@@ -27,12 +28,9 @@ function formatRelativeTime(dateStr: string): string {
   return `${Math.floor(diff / 86_400_000)}d ago`;
 }
 
-interface NotificationBellProps {
-  onNavigate?: (view: string, data?: Record<string, string>) => void;
-}
-
-export default function NotificationBell({ onNavigate }: NotificationBellProps) {
+export default function NotificationBell() {
   const { user } = useAuth();
+  const router = useRouter();
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications(user?.id);
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -50,8 +48,8 @@ export default function NotificationBell({ onNavigate }: NotificationBellProps) 
   const handleClick = async (notifId: string, resourceId: string | null) => {
     await markAsRead(notifId);
     setOpen(false);
-    if (resourceId && onNavigate) {
-      onNavigate('communication-detail', { communicationId: resourceId });
+    if (resourceId) {
+      router.push(`/dashboard/communications/${resourceId}`);
     }
   };
 

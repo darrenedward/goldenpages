@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { AlertTriangle, Trash2, CheckCircle2, Database, Loader2, X } from 'lucide-react';
-import type { LogEntry } from './useDashboardState';
+import type { LogEntry } from './StatusModalContext';
 
 interface StatusModalProps {
   show: boolean;

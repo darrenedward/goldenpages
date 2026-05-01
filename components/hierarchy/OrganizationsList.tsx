@@ -11,7 +11,7 @@ import StatusBadge from '@/components/shared/StatusBadge';
 
 interface OrganizationsListProps {
   onSelectOrg: (org: OrganizationWithCounts) => void;
-  onChangeView: (view: string) => void;
+  onChangeView?: (view: string) => void;
 }
 
 // Head office type labels for display
@@ -24,7 +24,7 @@ const HEAD_OFFICE_LABELS: Record<string, string> = {
   LOCAL_GOVT: 'Local Government',
 };
 
-export default function OrganizationsList({ onSelectOrg, onChangeView }: OrganizationsListProps) {
+export default function OrganizationsList({ onSelectOrg }: OrganizationsListProps) {
   const [organizations, setOrganizations] = useState<OrganizationWithCounts[]>([]);
   const [filtered, setFiltered] = useState<OrganizationWithCounts[]>([]);
   const [loading, setLoading] = useState(true);

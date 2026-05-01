@@ -1,23 +1,21 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Building2, Users, FileText, Activity,
   Download, PlusCircle, ShieldCheck, Clock, AlertTriangle,
 } from 'lucide-react';
 import { statsService } from '@/services/statsService';
 import { activityLogService } from '@/services/activityLogService';
-import type { Organization, Contact } from '@/types';
+import { hierarchyService } from '@/services/hierarchyService';
+import type { Organization } from '@/types';
 import type { DashboardStats } from '@/services/statsService';
 
-interface DashboardProps {
-  orgs: Organization[];
-  contacts: Contact[];
-  onNavigate: (view: string) => void;
-}
-
-export default function Dashboard({ orgs, contacts, onNavigate }: DashboardProps) {
+export default function Dashboard() {
+  const router = useRouter();
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [orgs, setOrgs] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -26,8 +24,12 @@ export default function Dashboard({ orgs, contacts, onNavigate }: DashboardProps
 
   const loadStats = async () => {
     try {
-      const data = await statsService.getDashboardStats();
+      const [data, orgData] = await Promise.all([
+        statsService.getDashboardStats(),
+        hierarchyService.getOrganizations(),
+      ]);
       setStats(data);
+      setOrgs(orgData);
     } catch (err) {
       console.error('Failed to load dashboard stats:', err);
     } finally {
@@ -81,7 +83,7 @@ export default function Dashboard({ orgs, contacts, onNavigate }: DashboardProps
           <button className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-stone-200 dark:border-slate-700 rounded-xl text-sm font-bold text-slate-700 dark:text-white shadow-sm hover:shadow-md transition-all">
             <Download size={16} className="text-gold-600" /> Export PDF
           </button>
-          <button onClick={() => onNavigate('directory')} className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-xl text-sm font-bold shadow-lg shadow-slate-900/20 hover:bg-slate-800 transition-all">
+          <button onClick={() => router.push('/dashboard/organizations')} className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-xl text-sm font-bold shadow-lg shadow-slate-900/20 hover:bg-slate-800 transition-all">
             <PlusCircle size={16} className="text-gold-400" /> New Entry
           </button>
         </div>
