@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { X, Mail, Shield, Loader2 } from 'lucide-react';
+import { X, Mail, Shield, Loader2, AlertTriangle, Clock } from 'lucide-react';
 
 interface InviteUserModalProps {
   open: boolean;
@@ -27,11 +27,26 @@ type InviteFormValues = z.infer<typeof inviteSchema>;
 export default function InviteUserModal({ open, onClose, onInvited }: InviteUserModalProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [remaining, setRemaining] = useState<number | null>(null);
+  const [limit, setLimit] = useState(3);
 
   const { register, handleSubmit, control, formState: { errors }, reset } = useForm<InviteFormValues>({
     resolver: zodResolver(inviteSchema),
     defaultValues: { email: '', roleName: 'user' },
   });
+
+  useEffect(() => {
+    if (open) {
+      setError('');
+      fetch('/api/admin/invite')
+        .then(r => r.json())
+        .then(data => {
+          setRemaining(data.remaining);
+          setLimit(data.limit || 3);
+        })
+        .catch(() => {});
+    }
+  }, [open]);
 
   if (!open) return null;
 
@@ -48,6 +63,7 @@ export default function InviteUserModal({ open, onClose, onInvited }: InviteUser
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || 'Failed to invite');
 
+      setRemaining(result.remaining ?? 0);
       reset();
       onInvited();
       onClose();
@@ -134,9 +150,33 @@ export default function InviteUserModal({ open, onClose, onInvited }: InviteUser
             />
           </div>
 
+          {/* Invite limit indicator */}
+          {remaining !== null && (
+            <div className={`flex items-center gap-2 text-xs px-3 py-2 rounded-lg ${
+              remaining === 0
+                ? 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400'
+                : 'bg-stone-50 dark:bg-stone-800 text-stone-500'
+            }`}>
+              {remaining === 0 ? (
+                <>
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>Invite limit reached ({limit}/{limit} this hour). Try again in an hour.</span>
+                </>
+              ) : (
+                <>
+                  <Mail className="w-3.5 h-3.5" />
+                  <span>{remaining} of {limit} invites remaining this hour</span>
+                </>
+              )}
+            </div>
+          )}
+
           {/* Error */}
           {error && (
-            <p className="text-sm text-red-600 bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2">{error}</p>
+            <div className="flex items-start gap-2 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 rounded-lg px-3 py-2">
+              <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+              <span>{error}</span>
+            </div>
           )}
 
           {/* Actions */}
@@ -150,7 +190,7 @@ export default function InviteUserModal({ open, onClose, onInvited }: InviteUser
             </button>
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || remaining === 0}
               className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-gold-600 to-gold-500 rounded-lg hover:from-gold-700 hover:to-gold-600 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
             >
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}

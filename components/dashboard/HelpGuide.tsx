@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import {
   HelpCircle, ChevronDown, ChevronRight, MessageSquare, Plus, Users, FileText,
   Send, Clock, Eye, ShieldCheck, Settings, Bell, Inbox, Briefcase,
-  BookOpen, ArrowRight, CheckCircle2, AlertCircle,
+  BookOpen, ArrowRight, CheckCircle2, AlertCircle, AlertTriangle, KeyRound, Mail,
 } from 'lucide-react';
 import BreadcrumbNav from '@/components/shared/BreadcrumbNav';
 
@@ -349,6 +349,66 @@ export default function HelpGuide() {
       ),
     },
     {
+      id: 'troubleshooting',
+      title: 'Troubleshooting & Limits',
+      icon: <AlertTriangle className="w-5 h-5 text-gold-600" />,
+      content: (
+        <div className="space-y-4">
+          <p className="text-stone-600 dark:text-stone-400">
+            Some operations have limits to prevent abuse or because of email provider restrictions. Here&rsquo;s what you need to know:
+          </p>
+
+          <div className="space-y-3">
+            <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800/30">
+              <div className="flex items-center gap-2 mb-2">
+                <Mail className="w-4 h-4 text-amber-600" />
+                <p className="text-sm font-bold text-amber-800 dark:text-amber-300">User Invite Limit</p>
+              </div>
+              <p className="text-xs text-amber-700 dark:text-amber-400">
+                You can send up to <strong>3 invite emails per hour</strong>. This is a Supabase (our auth provider) rate limit, not something we control.
+                If you see an error saying &ldquo;rate limit exceeded&rdquo;, wait an hour and try again.
+              </p>
+              <div className="mt-2 p-2 bg-amber-100/50 dark:bg-amber-900/30 rounded-lg">
+                <p className="text-xs text-amber-600 dark:text-amber-500">
+                  <strong>Workaround:</strong> If you need to add multiple users urgently, ask your system administrator to create the accounts directly and share the login credentials with each user.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800/30">
+              <div className="flex items-center gap-2 mb-2">
+                <KeyRound className="w-4 h-4 text-amber-600" />
+                <p className="text-sm font-bold text-amber-800 dark:text-amber-300">Password Reset Limit</p>
+              </div>
+              <p className="text-xs text-amber-700 dark:text-amber-400">
+                The &ldquo;Forgot Password&rdquo; feature on the login page shares the same email rate limit. If you don&rsquo;t receive the reset email within a few minutes, you may have hit the limit. Wait an hour and try again.
+              </p>
+            </div>
+
+            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800/30">
+              <div className="flex items-center gap-2 mb-2">
+                <AlertCircle className="w-4 h-4 text-blue-600" />
+                <p className="text-sm font-bold text-blue-800 dark:text-blue-300">Dashboard Stuck on &ldquo;Loading...&rdquo;</p>
+              </div>
+              <p className="text-xs text-blue-700 dark:text-blue-400">
+                If the dashboard page is stuck spinning and won&rsquo;t load, your browser session may be stale. Try clearing your browser cache and cookies for this site, then log in again. If the problem persists, try using an incognito/private browsing window.
+              </p>
+            </div>
+
+            <div className="p-4 bg-stone-100 dark:bg-stone-800 rounded-xl">
+              <div className="flex items-center gap-2 mb-2">
+                <FileText className="w-4 h-4 text-stone-600 dark:text-stone-400" />
+                <p className="text-sm font-bold text-slate-800 dark:text-white">Document Upload Fails</p>
+              </div>
+              <p className="text-xs text-stone-500 dark:text-stone-400">
+                Maximum file size is 50MB. Supported formats: PDF, Word (.docx), images (PNG, JPG). If uploads keep failing, check your internet connection — large files need a stable connection.
+              </p>
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
       id: 'sidebar-guide',
       title: 'Sidebar Menu Guide',
       icon: <MessageSquare className="w-5 h-5 text-gold-600" />,
@@ -367,7 +427,7 @@ export default function HelpGuide() {
               { label: 'Public Register', desc: 'Preview what the public sees on the website.' },
               { label: 'Inbound Emails', desc: 'Emails received from external sources linked to communications.' },
               { label: 'Notifications', desc: 'Your notification history.' },
-              { label: 'User Management (Admin)', desc: 'Invite users, assign roles (admin, editor, user).' },
+              { label: 'User Management (Admin)', desc: 'Invite users, assign roles (admin, editor, user). Note: Invites are rate-limited to 3 per hour.' },
               { label: 'Issue Categories (Admin)', desc: 'Manage the categories shown on the public site (Food Safety, Water, etc.).' },
               { label: 'Spam Log (Admin)', desc: 'See bot submissions caught by the honeypot on public forms.' },
               { label: 'Settings', desc: 'Update your password, social links, email settings, and notification preferences.' },
