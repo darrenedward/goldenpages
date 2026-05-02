@@ -22,7 +22,7 @@ export async function PATCH(
 
   const { error } = await supabase
     .from('users')
-    .update({ displayName })
+    .update({ display_name: displayName })
     .eq('id', userId);
 
   if (error) {
