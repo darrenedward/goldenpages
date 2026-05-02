@@ -39,6 +39,7 @@ export interface AuthContextValue {
   // User Department
   userDepartmentId: string | null;
   userDepartmentName: string | null;
+  userTitle: string | null;
 
   // Auth Methods
   signIn: (credentials: SignInCredentials) => Promise<{ error: AuthError | null }>;
@@ -68,6 +69,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [permissions, setPermissions] = useState<string[]>([]);
   const [userDepartmentId, setUserDepartmentId] = useState<string | null>(null);
   const [userDepartmentName, setUserDepartmentName] = useState<string | null>(null);
+  const [userTitle, setUserTitle] = useState<string | null>(null);
 
   // Derived state
   const userId = user?.id || null;
@@ -174,11 +176,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const { supabase } = await import('@/services/supabaseClient');
       const { data } = await supabase
         .from('users')
-        .select('department_id, departments(name)')
+        .select('department_id, title, departments(name)')
         .eq('id', userId)
         .single();
       if (data) {
         setUserDepartmentId(data.department_id || null);
+        setUserTitle(data.title || null);
         const dept = data.departments as unknown as { name: string } | null;
         setUserDepartmentName(dept?.name || null);
       }
@@ -231,6 +234,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setPermissions([]);
         setUserDepartmentId(null);
         setUserDepartmentName(null);
+        setUserTitle(null);
       }
       return { error };
     } finally {
@@ -275,6 +279,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // User Department
     userDepartmentId,
     userDepartmentName,
+    userTitle,
 
     // Auth Methods
     signIn,

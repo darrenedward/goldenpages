@@ -56,6 +56,12 @@ export default function WizardStepReview({ state, updateState }: WizardStepRevie
               {state.senderDepartmentName && (
                 <p className="text-xs text-stone-500 mt-0.5">{state.senderDepartmentName}</p>
               )}
+              {state.senderDisplayName && (
+                <p className="text-xs text-stone-500 mt-0.5">
+                  {state.senderDisplayName}
+                  {state.senderTitle && `, ${state.senderTitle}`}
+                </p>
+              )}
             </div>
           )}
         </div>

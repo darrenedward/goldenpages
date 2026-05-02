@@ -42,6 +42,8 @@ export interface WizardState {
   senderOrganisation: string;
   senderDepartmentId: string;
   senderDepartmentName?: string;
+  senderDisplayName?: string;
+  senderTitle?: string;
   // Step 2: Recipients
   recipients: { departmentId: string; contactId?: string; departmentName?: string; contactName?: string }[];
   // Step 3: Documents
@@ -62,6 +64,8 @@ const INITIAL_STATE: WizardState = {
   senderOrganisation: 'New World Alliances Foundation',
   senderDepartmentId: '',
   senderDepartmentName: '',
+  senderDisplayName: '',
+  senderTitle: '',
   recipients: [],
   files: [],
   expectedResponseDays: 20,
@@ -87,7 +91,7 @@ export default function CreateCommunicationWizard({
     recipients: preselectedRecipients || [],
   });
   const [submitting, setSubmitting] = useState(false);
-  const { user, userDepartmentId, userDepartmentName } = useAuth();
+  const { user, userDepartmentId, userDepartmentName, userTitle } = useAuth();
 
   // Auto-fill sender department from user profile
   useEffect(() => {
@@ -98,6 +102,17 @@ export default function CreateCommunicationWizard({
       });
     }
   }, [userDepartmentId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-fill sender display name and title
+  useEffect(() => {
+    const displayName = (user?.user_metadata as Record<string, string>)?.full_name || '';
+    if (displayName || userTitle) {
+      updateState({
+        senderDisplayName: displayName,
+        senderTitle: userTitle || '',
+      });
+    }
+  }, [user, userTitle]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fetch org name from the NWA Foundation record
   useEffect(() => {

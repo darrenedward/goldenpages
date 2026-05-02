@@ -12,10 +12,10 @@ export async function PATCH(
   }
 
   const body = await request.json();
-  const { displayName, departmentId } = body;
+  const { displayName, departmentId, title } = body;
 
-  if (displayName === undefined && departmentId === undefined) {
-    return NextResponse.json({ error: 'displayName or departmentId required' }, { status: 400 });
+  if (displayName === undefined && departmentId === undefined && title === undefined) {
+    return NextResponse.json({ error: 'displayName, departmentId, or title required' }, { status: 400 });
   }
 
   const supabase = getAdminClient();
@@ -23,6 +23,7 @@ export async function PATCH(
   const updates: Record<string, unknown> = {};
   if (displayName !== undefined) updates.display_name = displayName;
   if (departmentId !== undefined) updates.department_id = departmentId || null;
+  if (title !== undefined) updates.title = title || null;
 
   const { error } = await supabase
     .from('users')

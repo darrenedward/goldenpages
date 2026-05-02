@@ -1,9 +1,19 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Shield, Loader2, User, Building2 } from 'lucide-react';
+import { X, Shield, Loader2, User, Building2, Briefcase } from 'lucide-react';
 import { hierarchyService } from '@/services/hierarchyService';
 import type { ManagedUser } from '@/types';
+
+function toTitleCase(str: string): string {
+  const minors = new Set([
+    'a', 'an', 'and', 'as', 'at', 'but', 'by', 'for', 'in', 'nor', 'of', 'on', 'or', 'the', 'to', 'via',
+  ]);
+  return str.replace(/\w\S*/g, (word, index: number) => {
+    if (index !== 0 && minors.has(word.toLowerCase())) return word.toLowerCase();
+    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+  });
+}
 
 interface EditUserRolesModalProps {
   user: ManagedUser;
@@ -21,6 +31,7 @@ const ROLES = [
 export default function EditUserRolesModal({ user, open, onClose, onSaved }: EditUserRolesModalProps) {
   const [selectedRoles, setSelectedRoles] = useState<string[]>(user.roles || []);
   const [displayName, setDisplayName] = useState(user.displayName || '');
+  const [title, setTitle] = useState(user.title || '');
   const [departmentId, setDepartmentId] = useState(user.departmentId || '');
   const [nwaDepartments, setNwaDepartments] = useState<{ id: string; name: string; code?: string }[]>([]);
   const [loading, setLoading] = useState(false);
@@ -50,12 +61,14 @@ export default function EditUserRolesModal({ user, open, onClose, onSaved }: Edi
     setLoading(true);
 
     try {
-      // Update display name or department if changed
+      // Update display name, title, or department if changed
       const nameChanged = displayName !== (user.displayName || '');
+      const titleChanged = title !== (user.title || '');
       const deptChanged = departmentId !== (user.departmentId || '');
-      if (nameChanged || deptChanged) {
+      if (nameChanged || titleChanged || deptChanged) {
         const body: Record<string, unknown> = {};
         if (nameChanged) body.displayName = displayName || null;
+        if (titleChanged) body.title = title ? toTitleCase(title) : null;
         if (deptChanged) body.departmentId = departmentId || null;
         const nameRes = await fetch(`/api/admin/users/${user.id}`, {
           method: 'PATCH',
@@ -121,6 +134,22 @@ export default function EditUserRolesModal({ user, open, onClose, onSaved }: Edi
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder="e.g. Darren Edwards"
+              className="w-full px-4 py-2.5 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-gold-500"
+            />
+          </div>
+
+          {/* Title / Position */}
+          <div>
+            <label className="block text-sm font-bold text-stone-600 dark:text-stone-400 mb-1.5">
+              <Briefcase className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
+              Title / Position
+            </label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              onBlur={() => title && setTitle(toTitleCase(title))}
+              placeholder="e.g. Harbour Master for Aotearoa & Pacifica"
               className="w-full px-4 py-2.5 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-gold-500"
             />
           </div>

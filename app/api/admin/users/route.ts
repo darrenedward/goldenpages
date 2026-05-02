@@ -10,6 +10,7 @@ export async function GET() {
       id,
       email,
       display_name,
+      title,
       createdAt,
       department_id,
       departments (name),
@@ -30,6 +31,7 @@ export async function GET() {
     id: user.id,
     email: user.email,
     displayName: user.display_name || null,
+    title: user.title || null,
     departmentId: user.department_id || null,
     departmentName: (user.departments as Record<string, unknown>)?.name || null,
     roles: Array.isArray(user.user_roles)

@@ -349,6 +349,7 @@ export interface ManagedUser {
   id: string;
   email: string;
   displayName: string | null;
+  title: string | null;
   roles: string[];
   departmentId?: string | null;
   departmentName?: string | null;
