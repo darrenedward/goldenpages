@@ -95,25 +95,6 @@ export default function WizardStepDetails({ state, updateState }: WizardStepDeta
           />
         </div>
 
-        {/* Tags */}
-        <div>
-          <label className="block text-sm font-bold text-stone-600 dark:text-stone-400 mb-1">
-            Tags (comma separated)
-          </label>
-          <input
-            type="text"
-            value={tagsInput}
-            onChange={(e) => {
-              setTagsInput(e.target.value);
-              updateState({
-                tags: e.target.value.split(',').map(t => t.trim()).filter(Boolean),
-              });
-            }}
-            placeholder="e.g., covid, vaccine, data-request"
-            className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-gold-500"
-          />
-        </div>
-
         {/* Sender org — read-only */}
         <div>
           <label className="block text-sm font-bold text-stone-600 dark:text-stone-400 mb-1">
@@ -150,6 +131,25 @@ export default function WizardStepDetails({ state, updateState }: WizardStepDeta
               </option>
             ))}
           </select>
+        </div>
+
+        {/* Tags */}
+        <div className="md:col-span-2">
+          <label className="block text-sm font-bold text-stone-600 dark:text-stone-400 mb-1">
+            Tags (comma separated)
+          </label>
+          <input
+            type="text"
+            value={tagsInput}
+            onChange={(e) => {
+              setTagsInput(e.target.value);
+              updateState({
+                tags: e.target.value.split(',').map(t => t.trim()).filter(Boolean),
+              });
+            }}
+            placeholder="e.g., covid, vaccine, data-request"
+            className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-gold-500"
+          />
         </div>
       </div>
     </div>
