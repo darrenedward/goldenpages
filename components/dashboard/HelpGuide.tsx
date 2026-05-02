@@ -64,33 +64,52 @@ export default function HelpGuide() {
         <div className="space-y-4">
           <p className="text-stone-600 dark:text-stone-400">
             A &ldquo;communication&rdquo; is any formal letter, email, or meeting request you send to a
-            government department or organisation. Here&rsquo;s how to create one, step by step:
+            government department or organisation. There are <strong>two ways</strong> to create one:
           </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="p-4 bg-gold-50 dark:bg-gold-900/20 rounded-xl border border-gold-200 dark:border-gold-800/30">
+              <p className="text-sm font-bold text-gold-800 dark:text-gold-300 mb-1">Method 1: From the Sidebar</p>
+              <p className="text-xs text-gold-700 dark:text-gold-400">
+                Click &ldquo;New Communication&rdquo; in the sidebar to open the wizard fresh. Use the global search
+                in Step 2 to find and add recipients from any organisation.
+              </p>
+            </div>
+            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800/30">
+              <p className="text-sm font-bold text-blue-800 dark:text-blue-300 mb-1">Method 2: From a Contact Page</p>
+              <p className="text-xs text-blue-700 dark:text-blue-400">
+                Browse Organizations &rarr; pick an org &rarr; pick a department &rarr; click &ldquo;Start Communication&rdquo;
+                on any contact card. The wizard opens with that contact pre-selected — you can still add more recipients.
+              </p>
+            </div>
+          </div>
+
+          <p className="text-sm font-bold text-slate-800 dark:text-white">The wizard steps:</p>
 
           <div className="space-y-3">
             {[
               {
                 step: 1,
-                title: 'Click "New Communication" in the sidebar (or start from a contact page)',
-                desc: 'This opens the Communication Wizard — a guided step-by-step process. You can also start from a department or contact page, which pre-selects the recipient for you.',
-              },
-              {
-                step: 2,
                 title: 'Fill in the Details (Step 1 of 4)',
                 desc: 'Give it a clear title (e.g. "Inquiry: Water Infrastructure Plans 2026-2030"). Choose the type (letter, email, physical mail, or meeting). Add a description explaining what the communication is about. Pick a category like "Water" or "Public Health" — this helps the public find it later.',
               },
               {
-                step: 3,
+                step: 1,
+                title: 'Fill in the Details (Step 1 of 4)',
+                desc: 'Give it a clear title (e.g. "Inquiry: Water Infrastructure Plans 2026-2030"). Choose the type (letter, email, physical mail, or meeting). Add a description explaining what the communication is about. Pick a category like "Water" or "Public Health" — this helps the public find it later.',
+              },
+              {
+                step: 2,
                 title: 'Choose Recipients (Step 2 of 4)',
                 desc: 'Use the global search to find recipients across all organisations. Search by name, role, or department — e.g. type "finance" to find all finance ministers, "prime minister" for all PMs. You can add individual contacts or entire departments. Add as many recipients from different organisations as you need. Each gets its own tracking thread.',
               },
               {
-                step: 4,
+                step: 3,
                 title: 'Attach Documents (Step 3 of 4)',
                 desc: 'Upload the actual letter or document you are sending. You can mark each document as "Public" (visible on the website) or "Private" (team only). Supported formats: PDF, Word, images. Max 50MB per file.',
               },
               {
-                step: 5,
+                step: 4,
                 title: 'Review and Submit (Step 4 of 4)',
                 desc: 'Double-check everything — title, recipients, documents. Tick the confirmation checkbox to approve. Set how many working days you expect a response by. Click "Create Communication" — your communication is now live and tracked.',
               },
