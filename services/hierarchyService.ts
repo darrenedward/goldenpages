@@ -408,6 +408,18 @@ class HierarchyService {
 
     if (error) throw error;
   }
+
+  async getNWADepartments(): Promise<{ id: string; name: string; code?: string }[]> {
+    const { data, error } = await supabase
+      .from('departments')
+      .select('id, name, code')
+      .eq('organisationId', 'nwa-foundation-001')
+      .eq('isActive', true)
+      .order('name');
+
+    if (error) throw error;
+    return (data || []) as { id: string; name: string; code?: string }[];
+  }
 }
 
 // Export singleton instance

@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { CategoryAutocomplete } from '@/components/shared/CategoryAutocomplete';
+import { hierarchyService } from '@/services/hierarchyService';
 import type { CommunicationType } from '@/types';
 import type { WizardState } from './CreateCommunicationWizard';
 
@@ -19,6 +20,18 @@ interface WizardStepDetailsProps {
 
 export default function WizardStepDetails({ state, updateState }: WizardStepDetailsProps) {
   const [tagsInput, setTagsInput] = React.useState(state.tags.join(', '));
+  const [nwaDepartments, setNwaDepartments] = useState<{ id: string; name: string; code?: string }[]>([]);
+
+  useEffect(() => {
+    void (async () => {
+      try {
+        const depts = await hierarchyService.getNWADepartments();
+        setNwaDepartments(depts);
+      } catch (err) {
+        console.error('Failed to load NWA departments:', err);
+      }
+    })();
+  }, []);
 
   return (
     <div className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-sm border border-stone-200 dark:border-white/5 p-8">
@@ -101,7 +114,7 @@ export default function WizardStepDetails({ state, updateState }: WizardStepDeta
           />
         </div>
 
-        {/* Sender org */}
+        {/* Sender org — read-only */}
         <div>
           <label className="block text-sm font-bold text-stone-600 dark:text-stone-400 mb-1">
             Your Organisation
@@ -109,10 +122,34 @@ export default function WizardStepDetails({ state, updateState }: WizardStepDeta
           <input
             type="text"
             value={state.senderOrganisation}
-            onChange={(e) => updateState({ senderOrganisation: e.target.value })}
-            placeholder="Sending on behalf of..."
-            className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-gold-500"
+            disabled
+            className="w-full px-4 py-3 bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white opacity-70 cursor-not-allowed"
           />
+        </div>
+
+        {/* Sender department */}
+        <div>
+          <label className="block text-sm font-bold text-stone-600 dark:text-stone-400 mb-1">
+            Your Department
+          </label>
+          <select
+            value={state.senderDepartmentId}
+            onChange={(e) => {
+              const dept = nwaDepartments.find(d => d.id === e.target.value);
+              updateState({
+                senderDepartmentId: e.target.value,
+                senderDepartmentName: dept?.name || '',
+              });
+            }}
+            className="w-full px-4 py-3 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-gold-500"
+          >
+            <option value="">Select department...</option>
+            {nwaDepartments.map(dept => (
+              <option key={dept.id} value={dept.id}>
+                {dept.name}{dept.code ? ` (${dept.code})` : ''}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
     </div>

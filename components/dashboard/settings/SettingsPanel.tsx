@@ -5,6 +5,7 @@ import { Loader2 } from 'lucide-react';
 import { settingsService } from '@/services/settingsService';
 import { usePermissions } from '@/lib/hooks/usePermissions';
 import ProfileSection from './ProfileSection';
+import DepartmentSection from './DepartmentSection';
 import PasswordSection from './PasswordSection';
 import EmailSettingsSection from './EmailSettingsSection';
 import NotificationSettingsSection from './NotificationSettingsSection';
@@ -50,6 +51,7 @@ export default function SettingsPanel() {
       <div className="space-y-6 max-w-2xl">
         {/* Always visible */}
         <ProfileSection />
+        <DepartmentSection />
         <PasswordSection />
 
         {/* Admin-only sections */}

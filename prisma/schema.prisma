@@ -236,6 +236,8 @@ model Department {
   contacts          Contact[]          @relation("ContactDepartment")
   communications    Communication[]
   communicationRecipients CommunicationRecipient[]
+  users             User[]             @relation("UserDepartment")
+  senderCommunications Communication[] @relation("CommunicationSenderDepartment")
 
   @@unique([organisationId, name])
   @@unique([organisationId, code])
@@ -361,9 +363,11 @@ model User {
   id          String   @id @default(uuid()) @map("id") // Supabase auth.users id
   email       String   @unique
   displayName String?  @map("display_name")
+  departmentId String? @map("department_id")
   createdAt   DateTime @default(now())
 
   // Relationships
+  department   Department?          @relation("UserDepartment", fields: [departmentId], references: [id], onDelete: SetNull)
   roles         UserRoleAssignment[]
   ownedOrgs     Organisation[]       @relation("OrgOwner")
   ownedContacts Contact[]            @relation("ContactOwner")
@@ -380,6 +384,7 @@ model User {
   invitedMembers       CommunicationMember[]  @relation("MemberInviter")
   notifications        Notification[]
 
+  @@index([departmentId])
   @@map("users")
 }
 
@@ -527,6 +532,7 @@ model Communication {
   isApproved          Boolean              @default(false) @map("is_approved")
   createdById         String               @map("created_by_id")
   senderOrganisation  String?              @map("sender_organisation") @db.VarChar(255)
+  senderDepartmentId  String?              @map("sender_department_id")
   createdAt           DateTime             @default(now()) @map("created_at")
   updatedAt           DateTime             @updatedAt @map("updated_at")
 
@@ -539,6 +545,7 @@ model Communication {
   members             CommunicationMember[]
   inboundEmails       InboundEmail[]
   issueCategory       IssueCategory?       @relation(fields: [categoryId], references: [id])
+  senderDepartment    Department?          @relation("CommunicationSenderDepartment", fields: [senderDepartmentId], references: [id], onDelete: SetNull)
 
   @@index([contactId])
   @@index([departmentId])
@@ -547,6 +554,7 @@ model Communication {
   @@index([isPublic])
   @@index([createdById])
   @@index([createdAt])
+  @@index([senderDepartmentId])
   @@map("communications")
 }
 

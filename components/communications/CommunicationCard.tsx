@@ -108,7 +108,7 @@ export default function CommunicationCard({ communication, onClick, isPublicView
             </div>
             {communication.senderOrganisation && isPublicView && (
               <span className="text-xs text-stone-400 ml-auto">
-                From: {communication.senderOrganisation}
+                From: {communication.senderOrganisation}{communication.senderDepartment && ` — ${communication.senderDepartment.name}`}
               </span>
             )}
           </div>

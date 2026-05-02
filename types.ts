@@ -185,6 +185,7 @@ export interface Communication {
   isApproved: boolean;
   createdById: string;
   senderOrganisation?: string;
+  senderDepartmentId?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -215,6 +216,7 @@ export interface CommunicationWithDetails extends Communication {
   documents?: CommunicationDocument[];
   recipients?: CommunicationRecipient[];
   issueCategory?: { id: string; name: string; slug: string; icon: string | null };
+  senderDepartment?: { id: string; name: string };
 }
 
 export interface CommunicationDocument {
@@ -248,6 +250,7 @@ export interface CreateCommunicationInput {
   isPublic: boolean;
   isApproved: boolean;
   senderOrganisation?: string;
+  senderDepartmentId?: string;
   recipients?: { departmentId: string; contactId?: string }[];
 }
 
@@ -347,6 +350,8 @@ export interface ManagedUser {
   email: string;
   displayName: string | null;
   roles: string[];
+  departmentId?: string | null;
+  departmentName?: string | null;
   createdAt: string;
 }
 

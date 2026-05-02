@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, ArrowRight, Check, Loader2 } from 'lucide-react';
 import * as z from 'zod';
 import { communicationService } from '@/services/communicationService';
@@ -40,6 +40,8 @@ export interface WizardState {
   categoryId: string | undefined;
   tags: string[];
   senderOrganisation: string;
+  senderDepartmentId: string;
+  senderDepartmentName?: string;
   // Step 2: Recipients
   recipients: { departmentId: string; contactId?: string; departmentName?: string; contactName?: string }[];
   // Step 3: Documents
@@ -58,6 +60,8 @@ const INITIAL_STATE: WizardState = {
   categoryId: undefined,
   tags: [],
   senderOrganisation: 'New World Alliances Foundation',
+  senderDepartmentId: '',
+  senderDepartmentName: '',
   recipients: [],
   files: [],
   expectedResponseDays: 20,
@@ -83,7 +87,17 @@ export default function CreateCommunicationWizard({
     recipients: preselectedRecipients || [],
   });
   const [submitting, setSubmitting] = useState(false);
-  const { user } = useAuth();
+  const { user, userDepartmentId, userDepartmentName } = useAuth();
+
+  // Auto-fill sender department from user profile
+  useEffect(() => {
+    if (userDepartmentId && !state.senderDepartmentId) {
+      updateState({
+        senderDepartmentId: userDepartmentId,
+        senderDepartmentName: userDepartmentName || '',
+      });
+    }
+  }, [userDepartmentId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const updateState = (updates: Partial<WizardState>) => {
     setState(prev => ({ ...prev, ...updates }));
@@ -120,6 +134,7 @@ export default function CreateCommunicationWizard({
           categoryId: state.categoryId || undefined,
           tags: state.tags,
           senderOrganisation: state.senderOrganisation.trim() || undefined,
+          senderDepartmentId: state.senderDepartmentId || undefined,
           expectedResponseDays: state.expectedResponseDays,
           isPublic: state.isPublic,
           isApproved: state.isApproved,

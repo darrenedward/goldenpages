@@ -111,7 +111,7 @@ export default function PublicCommunicationDetail({ communicationId, onBack }: P
             {formatDate(communication.createdAt)}
           </span>
           {communication.senderOrganisation && (
-            <span>From: {communication.senderOrganisation}</span>
+            <span>From: {communication.senderOrganisation}{communication.senderDepartment && ` — ${communication.senderDepartment.name}`}</span>
           )}
         </div>
 

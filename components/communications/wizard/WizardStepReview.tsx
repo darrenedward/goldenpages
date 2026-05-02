@@ -53,6 +53,9 @@ export default function WizardStepReview({ state, updateState }: WizardStepRevie
             <div>
               <span className="text-xs font-bold text-stone-400 uppercase tracking-wider">Sending on behalf of</span>
               <p className="text-slate-800 dark:text-white text-sm mt-1">{state.senderOrganisation}</p>
+              {state.senderDepartmentName && (
+                <p className="text-xs text-stone-500 mt-0.5">{state.senderDepartmentName}</p>
+              )}
             </div>
           )}
         </div>

@@ -170,7 +170,10 @@ export default function CommunicationDetail({ communicationId, onBack }: Communi
               <p className="text-stone-600 dark:text-stone-400 mt-3 max-w-2xl">{communication.description}</p>
             )}
             {communication.senderOrganisation && (
-              <p className="text-xs text-stone-400 mt-2">Sent by: {communication.senderOrganisation}</p>
+              <p className="text-xs text-stone-400 mt-2">
+                Sent by: {communication.senderOrganisation}
+                {communication.senderDepartment && ` — ${communication.senderDepartment.name}`}
+              </p>
             )}
             {communication.expectedResponseDate && (
               <div className={`flex items-center gap-2 mt-2 text-xs ${isOverdue ? 'text-red-600 font-bold' : 'text-stone-400'}`}>

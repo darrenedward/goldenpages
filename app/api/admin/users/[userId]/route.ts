@@ -12,17 +12,21 @@ export async function PATCH(
   }
 
   const body = await request.json();
-  const { displayName } = body;
+  const { displayName, departmentId } = body;
 
-  if (displayName === undefined) {
-    return NextResponse.json({ error: 'displayName required' }, { status: 400 });
+  if (displayName === undefined && departmentId === undefined) {
+    return NextResponse.json({ error: 'displayName or departmentId required' }, { status: 400 });
   }
 
   const supabase = getAdminClient();
 
+  const updates: Record<string, unknown> = {};
+  if (displayName !== undefined) updates.display_name = displayName;
+  if (departmentId !== undefined) updates.department_id = departmentId || null;
+
   const { error } = await supabase
     .from('users')
-    .update({ display_name: displayName })
+    .update(updates)
     .eq('id', userId);
 
   if (error) {

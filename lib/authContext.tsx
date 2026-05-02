@@ -36,6 +36,10 @@ export interface AuthContextValue {
   permissions: string[];
   isAdmin: boolean;
 
+  // User Department
+  userDepartmentId: string | null;
+  userDepartmentName: string | null;
+
   // Auth Methods
   signIn: (credentials: SignInCredentials) => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<{ error: AuthError | null }>;
@@ -62,6 +66,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [loading, setLoading] = useState(true);
   const [roles, setRoles] = useState<UserRole[]>([]);
   const [permissions, setPermissions] = useState<string[]>([]);
+  const [userDepartmentId, setUserDepartmentId] = useState<string | null>(null);
+  const [userDepartmentName, setUserDepartmentName] = useState<string | null>(null);
 
   // Derived state
   const userId = user?.id || null;
@@ -156,6 +162,29 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setRoles([]);
       setPermissions([]);
     }
+
+    // Load user department (fire-and-forget within permissions load)
+    loadUserDepartment(userId).catch((err) => {
+      console.error('Department load failed:', err);
+    });
+  }
+
+  async function loadUserDepartment(userId: string) {
+    try {
+      const { supabase } = await import('@/services/supabaseClient');
+      const { data } = await supabase
+        .from('users')
+        .select('department_id, departments(name)')
+        .eq('id', userId)
+        .single();
+      if (data) {
+        setUserDepartmentId(data.department_id || null);
+        const dept = data.departments as unknown as { name: string } | null;
+        setUserDepartmentName(dept?.name || null);
+      }
+    } catch {
+      // Non-critical — department is optional
+    }
   }
 
   async function refreshPermissions() {
@@ -200,6 +229,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       if (!error) {
         setRoles([]);
         setPermissions([]);
+        setUserDepartmentId(null);
+        setUserDepartmentName(null);
       }
       return { error };
     } finally {
@@ -240,6 +271,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     roles,
     permissions,
     isAdmin,
+
+    // User Department
+    userDepartmentId,
+    userDepartmentName,
 
     // Auth Methods
     signIn,

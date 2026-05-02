@@ -70,6 +70,7 @@ class CommunicationService {
         is_approved: input.isApproved,
         created_by_id: userId,
         sender_organisation: input.senderOrganisation || null,
+        sender_department_id: input.senderDepartmentId || null,
       })
       .select()
       .single();
@@ -127,6 +128,7 @@ class CommunicationService {
         contact:contacts(id, fullName, roleTitle),
         department:departments(id, name, portfolio),
         organisation:organisations(id, name),
+        sender_department:departments!sender_department_id(id, name),
         documents:communication_documents(*),
         recipients:communication_recipients(
           *,
@@ -156,6 +158,7 @@ class CommunicationService {
         contact:contacts(id, fullName, roleTitle, organisationId),
         department:departments(id, name, portfolio, organisationId),
         organisation:organisations(id, name),
+        sender_department:departments!sender_department_id(id, name),
         documents:communication_documents(*),
         recipients:communication_recipients(
           *,
@@ -204,6 +207,7 @@ class CommunicationService {
         contact:contacts(id, fullName, roleTitle),
         department:departments(id, name, portfolio),
         organisation:organisations(id, name),
+        sender_department:departments!sender_department_id(id, name),
         documents:communication_documents(*),
         recipients:communication_recipients(
           *,
@@ -442,6 +446,7 @@ class CommunicationService {
       isApproved: (row.is_approved ?? row.isApproved) as boolean,
       createdById: (row.created_by_id ?? row.createdById) as string,
       senderOrganisation: (row.sender_organisation ?? row.senderOrganisation) as string | undefined,
+      senderDepartmentId: (row.sender_department_id ?? row.senderDepartmentId) as string | undefined,
       createdAt: (row.created_at ?? row.createdAt) as string,
       updatedAt: (row.updated_at ?? row.updatedAt) as string,
     };
@@ -475,6 +480,8 @@ class CommunicationService {
       ? row.recipients.map((r: Record<string, unknown>) => this.mapRecipient(r))
       : [];
 
+    const senderDept = (row.sender_department ?? row.senderDepartment) as Record<string, unknown> | null;
+
     return {
       ...communication,
       contact: row.contact as CommunicationWithDetails['contact'],
@@ -483,6 +490,7 @@ class CommunicationService {
       documents,
       recipients,
       issueCategory: row.issueCategory as CommunicationWithDetails['issueCategory'],
+      senderDepartment: senderDept ? { id: senderDept.id as string, name: senderDept.name as string } : undefined,
     };
   }
 
