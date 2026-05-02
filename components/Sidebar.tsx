@@ -1,7 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Settings, ShieldCheck, LogOut, Briefcase, MessageSquare, Eye, Tags, Bell, Users, Inbox, Plus, Bug, HelpCircle, UserCircle } from 'lucide-react';
+import { LayoutDashboard, Settings, ShieldCheck, LogOut, Briefcase, MessageSquare, Eye, Tags, Bell, Users, Inbox, Plus, Bug, HelpCircle, UserCircle, Building2 } from 'lucide-react';
 import { isPathActive } from '@/lib/dashboardNavigation';
 import NotificationBell from '@/components/notifications/NotificationBell';
 
@@ -31,6 +31,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isAdmin, onSignOut, userEmail }) => {
 
   const adminItems = [
     { path: '/dashboard/admin/users', label: 'User Management', icon: ShieldCheck },
+    { path: '/dashboard/admin/departments', label: 'Departments', icon: Building2 },
     { path: '/dashboard/admin/categories', label: 'Issue Categories', icon: Tags },
     { path: '/dashboard/admin/honeypot', label: 'Spam Log', icon: Bug },
     { path: '/dashboard/settings', label: 'Settings', icon: Settings },

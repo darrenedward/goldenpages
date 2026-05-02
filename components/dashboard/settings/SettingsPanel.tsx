@@ -7,7 +7,6 @@ import { usePermissions } from '@/lib/hooks/usePermissions';
 import ProfileSection from './ProfileSection';
 import OrganisationSection from './OrganisationSection';
 import DepartmentSection from './DepartmentSection';
-import NWADepartmentsSection from './NWADepartmentsSection';
 import PasswordSection from './PasswordSection';
 import EmailSettingsSection from './EmailSettingsSection';
 import NotificationSettingsSection from './NotificationSettingsSection';
@@ -60,7 +59,6 @@ export default function SettingsPanel() {
         {isAdmin && (
           <>
             <OrganisationSection />
-            <NWADepartmentsSection />
             {loading ? (
               <div className="flex items-center justify-center py-12 text-stone-400">
                 <Loader2 className="w-5 h-5 animate-spin mr-2" />
