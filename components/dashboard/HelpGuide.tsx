@@ -30,9 +30,11 @@ export default function HelpGuide() {
       content: (
         <div className="space-y-4">
           <p className="text-stone-600 dark:text-stone-400">
-            Golden Pages is a communication tracking system for the NWA Foundation. It helps you send
-            formal communications (letters, emails) to government departments and organisations, then
-            track whether they respond. Think of it like a registered mail system — but digital.
+            Golden Pages is a centralised contact directory and communication tracking system. It holds
+            the contact details for government departments, corporations, diplomatic missions, and
+            international organisations — and lets you send formal communications (letters, emails,
+            meeting requests) to them, then track whether they respond. Think of it like a registered
+            mail system — but digital, multi-recipient, and transparent.
           </p>
           <div className="bg-gold-50 dark:bg-gold-900/20 rounded-xl p-4 border border-gold-200 dark:border-gold-800/30">
             <p className="text-sm font-bold text-gold-800 dark:text-gold-300 mb-2">Your role determines what you can do:</p>
@@ -69,8 +71,8 @@ export default function HelpGuide() {
             {[
               {
                 step: 1,
-                title: 'Click "New Communication" in the sidebar',
-                desc: 'This opens the Communication Wizard — a guided step-by-step process.',
+                title: 'Click "New Communication" in the sidebar (or start from a contact page)',
+                desc: 'This opens the Communication Wizard — a guided step-by-step process. You can also start from a department or contact page, which pre-selects the recipient for you.',
               },
               {
                 step: 2,
@@ -80,7 +82,7 @@ export default function HelpGuide() {
               {
                 step: 3,
                 title: 'Choose Recipients (Step 2 of 4)',
-                desc: 'Select which government departments or organisations should receive this communication. You can send the same communication to multiple departments at once — each one gets its own tracking thread.',
+                desc: 'Use the global search to find recipients across all organisations. Search by name, role, or department — e.g. type "finance" to find all finance ministers, "prime minister" for all PMs. You can add individual contacts or entire departments. Add as many recipients from different organisations as you need. Each gets its own tracking thread.',
               },
               {
                 step: 4,
@@ -90,7 +92,7 @@ export default function HelpGuide() {
               {
                 step: 5,
                 title: 'Review and Submit (Step 4 of 4)',
-                desc: 'Double-check everything. Tick the approval checkbox. Set how many working days you expect a response by. Click "Submit" — your communication is now live and tracked.',
+                desc: 'Double-check everything — title, recipients, documents. Tick the confirmation checkbox to approve. Set how many working days you expect a response by. Click "Create Communication" — your communication is now live and tracked.',
               },
             ].map(item => (
               <div key={item.step} className="flex gap-3 p-3 bg-stone-50 dark:bg-stone-800/50 rounded-xl">
@@ -107,7 +109,14 @@ export default function HelpGuide() {
 
           <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800/30">
             <p className="text-xs font-bold text-blue-700 dark:text-blue-400">
-              Tip: After creating a communication, it starts with status "Sent". The system automatically
+              Tip: The recipient search works across all organisations at once. Search for &ldquo;finance&rdquo; to find
+              every finance ministry, or &ldquo;prime minister&rdquo; to find all heads of government. You can mix recipients
+              from different countries and organisations in a single communication.
+            </p>
+          </div>
+          <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-xl p-4 border border-emerald-200 dark:border-emerald-800/30">
+            <p className="text-xs font-bold text-emerald-700 dark:text-emerald-400">
+              After creating a communication, it starts with status &ldquo;Sent&rdquo;. The system automatically
               calculates the expected response date based on the working days you set.
             </p>
           </div>
@@ -239,7 +248,7 @@ export default function HelpGuide() {
       content: (
         <div className="space-y-4">
           <p className="text-stone-600 dark:text-stone-400">
-            The public register at <span className="font-bold text-slate-800 dark:text-white">goldenpages.vercel.app/communications</span> is
+            The public register at <span className="font-bold text-slate-800 dark:text-white">goldenpages.newworldalliances.nz/communications</span> is
             where the public can see your communications. This is the transparency part of the system.
           </p>
           <div className="space-y-2">
@@ -290,8 +299,10 @@ export default function HelpGuide() {
       content: (
         <div className="space-y-4">
           <p className="text-stone-600 dark:text-stone-400">
-            The directory contains government departments, diplomatic missions, and organisations
-            — along with the people who work there.
+            The directory contains government departments, diplomatic missions, corporations, and
+            international organisations — along with the people who work there. You can browse the
+            hierarchy: organisation &rarr; department &rarr; contacts, and start a communication
+            directly from any department or contact page.
           </p>
           <div className="space-y-3">
             <div className="p-3 bg-stone-50 dark:bg-stone-800/50 rounded-xl">
@@ -319,8 +330,9 @@ export default function HelpGuide() {
           </div>
           <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800/30">
             <p className="text-xs font-bold text-blue-700 dark:text-blue-400">
-              Tip: When creating a communication, you select the department as the recipient — not
-              a specific person. The system tracks delivery at the department level.
+              Tip: When creating a communication, you can address it to a specific person within a
+              department, or to the entire department. You can also start a communication directly from
+              a contact or department page — the recipient will be pre-selected for you.
             </p>
           </div>
         </div>
@@ -388,10 +400,10 @@ export default function HelpGuide() {
             <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800/30">
               <div className="flex items-center gap-2 mb-2">
                 <AlertCircle className="w-4 h-4 text-blue-600" />
-                <p className="text-sm font-bold text-blue-800 dark:text-blue-300">Dashboard Stuck on &ldquo;Loading...&rdquo;</p>
+                <p className="text-sm font-bold text-blue-800 dark:text-blue-300">Dashboard Stuck on &ldquo;Checking Authentication...&rdquo;</p>
               </div>
               <p className="text-xs text-blue-700 dark:text-blue-400">
-                If the dashboard page is stuck spinning and won&rsquo;t load, your browser session may be stale. Try clearing your browser cache and cookies for this site, then log in again. If the problem persists, try using an incognito/private browsing window.
+                If the dashboard is stuck on the loading spinner after login, try refreshing the page. If that doesn&rsquo;t work, clear your browser cache and cookies for this site, then log in again. Using an incognito/private browsing window can also help. This can happen if your session token becomes stale.
               </p>
             </div>
 
@@ -419,7 +431,7 @@ export default function HelpGuide() {
           </p>
           <div className="space-y-2">
             {[
-              { label: 'Dashboard', desc: 'Overview with stats — how many communications, organisations, contacts exist.' },
+              { label: 'Dashboard', desc: 'Overview with stats — how many communications, organisations, contacts exist. Every page has its own URL, so you can bookmark or share direct links.' },
               { label: 'Organizations', desc: 'Browse the full directory of organisations, departments, and contacts.' },
               { label: 'Communications', desc: 'All communications in the system. Search, filter by status, find what you need.' },
               { label: 'New Communication', desc: 'Start the 4-step wizard to create a new communication.' },
@@ -427,9 +439,10 @@ export default function HelpGuide() {
               { label: 'Public Register', desc: 'Preview what the public sees on the website.' },
               { label: 'Inbound Emails', desc: 'Emails received from external sources linked to communications.' },
               { label: 'Notifications', desc: 'Your notification history.' },
-              { label: 'User Management (Admin)', desc: 'Invite users, assign roles (admin, editor, user). Note: Invites are rate-limited to 3 per hour.' },
+              { label: 'User Management (Admin)', desc: 'Invite users, assign roles (admin, editor, user), edit display names, and generate login links. Note: Invites are rate-limited to 3 per hour.' },
               { label: 'Issue Categories (Admin)', desc: 'Manage the categories shown on the public site (Food Safety, Water, etc.).' },
               { label: 'Spam Log (Admin)', desc: 'See bot submissions caught by the honeypot on public forms.' },
+              { label: 'Help & Support', desc: 'This guide — everything you need to know about using Golden Pages.' },
               { label: 'Settings', desc: 'Update your password, social links, email settings, and notification preferences.' },
             ].map(item => (
               <div key={item.label} className="flex items-start gap-3 p-3 bg-stone-50 dark:bg-stone-800/50 rounded-xl">
