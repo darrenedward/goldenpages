@@ -99,6 +99,21 @@ export default function CreateCommunicationWizard({
     }
   }, [userDepartmentId]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Fetch org name from the NWA Foundation record
+  useEffect(() => {
+    void (async () => {
+      try {
+        const res = await fetch('/api/organisation');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.name) {
+            updateState({ senderOrganisation: data.name });
+          }
+        }
+      } catch { /* use default */ }
+    })();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const updateState = (updates: Partial<WizardState>) => {
     setState(prev => ({ ...prev, ...updates }));
   };

@@ -48,6 +48,7 @@ class HierarchyService {
         departments(count),
         contacts(count)
       `)
+      .neq('id', 'nwa-foundation-001')
       .order('name');
 
     if (error) throw error;
