@@ -57,7 +57,7 @@ const INITIAL_STATE: WizardState = {
   category: '',
   categoryId: undefined,
   tags: [],
-  senderOrganisation: '',
+  senderOrganisation: 'New World Alliances Foundation',
   recipients: [],
   files: [],
   expectedResponseDays: 20,
