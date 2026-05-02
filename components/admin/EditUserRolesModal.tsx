@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Shield, Loader2 } from 'lucide-react';
+import { X, Shield, Loader2, User } from 'lucide-react';
 import type { ManagedUser } from '@/types';
 
 interface EditUserRolesModalProps {
@@ -19,6 +19,7 @@ const ROLES = [
 
 export default function EditUserRolesModal({ user, open, onClose, onSaved }: EditUserRolesModalProps) {
   const [selectedRoles, setSelectedRoles] = useState<string[]>(user.roles || []);
+  const [displayName, setDisplayName] = useState(user.displayName || '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -35,19 +36,37 @@ export default function EditUserRolesModal({ user, open, onClose, onSaved }: Edi
     setLoading(true);
 
     try {
-      const res = await fetch(`/api/admin/users/${user.id}/roles`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roles: selectedRoles }),
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Failed to update roles');
+      // Update display name if changed
+      if (displayName !== (user.displayName || '')) {
+        const nameRes = await fetch(`/api/admin/users/${user.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ displayName: displayName || null }),
+        });
+        if (!nameRes.ok) {
+          const data = await nameRes.json();
+          throw new Error(data.error || 'Failed to update name');
+        }
       }
+
+      // Update roles if changed
+      const rolesChanged = JSON.stringify(selectedRoles.sort()) !== JSON.stringify((user.roles || []).sort());
+      if (rolesChanged) {
+        const res = await fetch(`/api/admin/users/${user.id}/roles`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ roles: selectedRoles }),
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || 'Failed to update roles');
+        }
+      }
+
       onSaved();
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update roles');
+      setError(err instanceof Error ? err.message : 'Failed to update');
     } finally {
       setLoading(false);
     }
@@ -59,7 +78,7 @@ export default function EditUserRolesModal({ user, open, onClose, onSaved }: Edi
         <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200 dark:border-stone-800">
           <div className="flex items-center gap-2">
             <Shield className="w-5 h-5 text-gold-600" />
-            <h2 className="font-serif font-bold text-lg text-slate-800 dark:text-white">Edit Roles</h2>
+            <h2 className="font-serif font-bold text-lg text-slate-800 dark:text-white">Edit User</h2>
           </div>
           <button type="button" onClick={onClose} className="p-1 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-lg">
             <X className="w-5 h-5 text-stone-400" />
@@ -70,36 +89,53 @@ export default function EditUserRolesModal({ user, open, onClose, onSaved }: Edi
           {/* User info */}
           <div className="bg-stone-50 dark:bg-slate-800 rounded-lg px-4 py-3">
             <p className="text-sm font-medium text-slate-800 dark:text-white">{user.email}</p>
-            {user.displayName && (
-              <p className="text-xs text-stone-500 mt-0.5">{user.displayName}</p>
-            )}
+          </div>
+
+          {/* Display name */}
+          <div>
+            <label className="block text-sm font-bold text-stone-600 dark:text-stone-400 mb-1.5">
+              <User className="w-3.5 h-3.5 inline mr-1.5 -mt-0.5" />
+              Display Name
+            </label>
+            <input
+              type="text"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              placeholder="e.g. Darren Edwards"
+              className="w-full px-4 py-2.5 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-white/5 rounded-xl text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-gold-500"
+            />
           </div>
 
           {/* Role checkboxes */}
-          <div className="space-y-2">
-            {ROLES.map((role) => (
-              <label
-                key={role.name}
-                className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                  selectedRoles.includes(role.name)
-                    ? 'border-gold-400 bg-gold-50/50 dark:bg-gold-900/10'
-                    : 'border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800/50'
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedRoles.includes(role.name)}
-                  onChange={() => toggleRole(role.name)}
-                  className="rounded"
-                />
-                <div>
-                  <span className={`text-sm font-medium ${role.color}`}>
-                    {role.label}
-                  </span>
-                  <p className="text-xs text-stone-500">{role.description}</p>
-                </div>
-              </label>
-            ))}
+          <div>
+            <label className="block text-sm font-bold text-stone-600 dark:text-stone-400 mb-2">
+              Roles
+            </label>
+            <div className="space-y-2">
+              {ROLES.map((role) => (
+                <label
+                  key={role.name}
+                  className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                    selectedRoles.includes(role.name)
+                      ? 'border-gold-400 bg-gold-50/50 dark:bg-gold-900/10'
+                      : 'border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800/50'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedRoles.includes(role.name)}
+                    onChange={() => toggleRole(role.name)}
+                    className="rounded"
+                  />
+                  <div>
+                    <span className={`text-sm font-medium ${role.color}`}>
+                      {role.label}
+                    </span>
+                    <p className="text-xs text-stone-500">{role.description}</p>
+                  </div>
+                </label>
+              ))}
+            </div>
           </div>
 
           {error && (
